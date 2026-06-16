@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>لوحة النشر - EVILE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            min-height: 100vh;
+            padding: 20px 16px 80px;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .dashboard-header h1 {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dashboard-header h1 i { color: #0088cc; }
+        .channel-info {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .channel-info .id { font-size: 14px; font-weight: 600; }
+        .channel-info .status { font-size: 12px; padding: 4px 12px; border-radius: 30px; background: rgba(0,0,0,0.05); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .number { font-size: 28px; font-weight: 800; }
+        .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+        .stat-card i { font-size: 24px; display: block; margin-bottom: 8px; color: #0088cc; }
+        .icon-center { text-align: center; margin: 20px 0; }
+        .icon-center i { font-size: 80px; color: #0088cc; opacity: 0.3; }
+        .times-box {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .times-box h3 { font-size: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .times-box .times-list { display: flex; gap: 12px; flex-wrap: wrap; }
+        .times-box .time-badge { background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 30px; font-size: 13px; }
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .actions .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            justify-content: center;
+        }
+        .btn-pause { background: #ffc107; color: #333; }
+        .btn-stop { background: #dc3545; color: #fff; }
+        .btn-publish { background: #28a745; color: #fff; }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
+        .recent-posts {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .recent-posts h3 { font-size: 16px; margin-bottom: 12px; }
+        .post-item { padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; line-height: 1.5; }
+        .post-item .time { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
+        .post-item:last-child { border-bottom: none; }
+        .toast {
+            position: fixed; bottom: 80px; left: 20px; right: 20px;
+            background: rgba(0,0,0,0.85); color: #fff;
+            padding: 14px; border-radius: 16px; text-align: center;
+            z-index: 1000; display: none;
+        }
+
+        /* شريط التنقل السفلي الموحد */
+        .bottom-nav {
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 14px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            height: 50px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        body.dark .bottom-nav {
+            background: rgba(30,30,40,0.85);
+            border-color: rgba(150,150,150,0.2);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            text-decoration: none;
+            color: #999;
+            font-size: 9px;
+            font-weight: 500;
+            transition: all 0.2s;
+            padding: 4px 12px;
+            border-radius: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            max-width: 80px;
+        }
+        .nav-item i { font-size: 18px; transition: all 0.2s; }
+        .nav-item span { font-size: 8px; }
+        .nav-item.active {
+            color: #1a1a1a;
+            background: rgba(0,0,0,0.05);
+        }
+        body.dark .nav-item.active {
+            color: #e0e0e0;
+            background: rgba(255,255,255,0.08);
+        }
+        .nav-item.active i { transform: scale(1.05); }
+        .nav-item:active { transform: scale(0.95); }
+
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 768px) { .bottom-nav { left: 20px; right: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1><i class="bi bi-megaphone"></i> لوحة النشر</h1>
+            <a href="/" style="color:#888; text-decoration:none;"><i class="bi bi-house"></i></a>
+        </div>
+
+        <div class="channel-info">
+            <span class="id"><i class="bi bi-hash"></i> {{ channel.channel_id }}</span>
+            <span class="status">
+                {% if channel.is_active %}
+                    {% if is_paused %}⏸️ موقّت مؤقت{% else %}✅ نشط{% endif %}
+                {% else %}
+                    ⛔ متوقف
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="bi bi-people"></i>
+                <div class="number">{{ members_count }}</div>
+                <div class="label">الأعضاء</div>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-file-text"></i>
+                <div class="number">{{ posts_count }}</div>
+                <div class="label">منشورات</div>
+            </div>
+            <div class="stat-card">
+                <i class="bi bi-clock"></i>
+                <div class="number">{{ times|length }}</div>
+                <div class="label">نشر يومي</div>
+            </div>
+        </div>
+
+        <div class="icon-center">
+            <i class="bi bi-robot"></i>
+        </div>
+
+        <div class="times-box">
+            <h3><i class="bi bi-clock-history"></i> أوقات النشر (بتوقيت صنعاء)</h3>
+            <div class="times-list">
+                {% for t in times %}
+                    <span class="time-badge">{{ t }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="actions">
+            {% if channel.is_active %}
+                <button class="btn btn-pause" id="pauseBtn">
+                    {% if is_paused %}
+                        <i class="bi bi-play"></i> استئناف
+                    {% else %}
+                        <i class="bi bi-pause"></i> إيقاف مؤقت
+                    {% endif %}
+                </button>
+                <button class="btn btn-stop" id="stopBtn"><i class="bi bi-stop-circle"></i> إيقاف نهائي</button>
+                <button class="btn btn-publish" id="publishNowBtn"><i class="bi bi-send"></i> نشر الآن</button>
+            {% else %}
+                <button class="btn btn-publish" disabled>القناة غير نشطة</button>
+            {% endif %}
+        </div>
+
+        <div class="recent-posts">
+            <h3><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
+            {% if recent_posts %}
+                {% for post in recent_posts %}
+                    <div class="post-item">
+                        <span class="time">{{ post.published_at }}</span>
+                        {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:#888; text-align:center;">لا توجد منشورات بعد</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- شريط التنقل السفلي الموحد -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
+            <i class="bi bi-chat-dots"></i>
+            <span>دردشة</span>
+        </a>
+        <button class="nav-item active" id="navPublish">
+            <i class="bi bi-megaphone"></i>
+            <span>نشر</span>
+        </button>
+    </nav>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(msg, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+
+        document.getElementById('pauseBtn')?.addEventListener('click', async function() {
+            try {
+                const res = await fetch('/publish/toggle_pause');
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.is_paused ? '⏸️ تم الإيقاف المؤقت' : '▶️ تم الاستئناف');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'حدث خطأ');
+                }
+            } catch (e) { showToast('خطأ في الاتصال'); }
+        });
+
+        document.getElementById('stopBtn')?.addEventListener('click', async function() {
+            if (!confirm('هل أنت متأكد من إيقاف النشر نهائياً؟')) return;
+            try {
+                const res = await fetch('/publish/stop');
+                const data = await res.json();
+                if (data.success) {
+                    showToast('⛔ تم إيقاف النشر نهائياً');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'حدث خطأ');
+                }
+            } catch (e) { showToast('خطأ في الاتصال'); }
+        });
+
+        document.getElementById('publishNowBtn')?.addEventListener('click', async function() {
+            this.disabled = true;
+            this.textContent = 'جاري النشر...';
+            try {
+                const res = await fetch('/publish/force_publish');
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ تم النشر بنجاح');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message || 'فشل النشر');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-send"></i> نشر الآن';
+                }
+            } catch (e) {
+                showToast('خطأ في الاتصال');
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-send"></i> نشر الآن';
+            }
+        });
+    </script>
+</body>
+</html>

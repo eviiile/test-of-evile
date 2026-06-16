@@ -129,17 +129,27 @@
             color: #155724;
         }
         .btn:active { transform: scale(0.96); }
-        .characters-grid, .channels-grid {
+        .characters-grid, .channels-grid, .content-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 16px;
             margin-top: 16px;
         }
-        .character-card, .channel-card {
+        .character-card, .channel-card, .content-card {
             background: rgba(255,255,255,0.7);
             border: 1px solid rgba(0,0,0,0.1);
             border-radius: 16px;
             padding: 12px;
+        }
+        .content-card .content-preview {
+            background: rgba(0,0,0,0.03);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            max-height: 60px;
+            overflow-y: auto;
+            margin: 6px 0 10px;
+            color: #444;
         }
         .channel-card .channel-id {
             font-size: 12px;
@@ -256,6 +266,7 @@
             <button class="tab-btn" data-tab="channels"><i class="bi bi-megaphone"></i> القنوات</button>
             <button class="tab-btn" data-tab="failures"><i class="bi bi-exclamation-triangle"></i> فشل النشر</button>
             <button class="tab-btn" data-tab="publish"><i class="bi bi-clock"></i> إعدادات النشر</button>
+            <button class="tab-btn" data-tab="content"><i class="bi bi-file-text"></i> المحتوى</button>
         </div>
 
         <!-- تبويب الشخصيات -->
@@ -334,37 +345,19 @@
 
             <div class="section-title" style="margin-top: 30px;"><i class="bi bi-check-circle"></i> القنوات النشطة</div>
             <div class="channels-grid">
-                {% for ch in active_channels %}
+                {% for ch in all_channels %}
                 <div class="channel-card">
                     <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
                     {% if ch.channel_username %}<div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
                     <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.admin_id }}</div>
                     <div style="font-size:10px; color:#888; margin-top:4px;">تمت الإضافة: {{ ch.created_at }}</div>
                     <div class="card-actions">
-                        <button class="btn btn-danger" onclick="if(confirm('إيقاف النشر في هذه القناة؟')) location.href='/admin/channel/{{ ch.id }}/toggle'"><i class="bi bi-pause-circle"></i> إيقاف</button>
-                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/{{ ch.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                        <button class="btn btn-danger" onclick="if(confirm('إيقاف النشر في هذه القناة؟')) location.href='/admin/channel/toggle/{{ ch.id }}'"><i class="bi bi-pause-circle"></i> {% if ch.is_active %}إيقاف{% else %}تفعيل{% endif %}</button>
+                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/delete/{{ ch.id }}'"><i class="bi bi-trash3"></i> حذف</button>
                     </div>
                 </div>
                 {% else %}
-                <p style="color:#888; grid-column:1/-1; text-align:center;">لا توجد قنوات نشطة</p>
-                {% endfor %}
-            </div>
-
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-pause-circle"></i> القنوات المتوقفة</div>
-            <div class="channels-grid">
-                {% for ch in inactive_channels %}
-                <div class="channel-card" style="opacity:0.6;">
-                    <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
-                    {% if ch.channel_username %}<div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
-                    <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.admin_id }}</div>
-                    <div style="font-size:10px; color:#888; margin-top:4px;">تم الإيقاف</div>
-                    <div class="card-actions">
-                        <button class="btn btn-success" onclick="location.href='/admin/channel/{{ ch.id }}/toggle'"><i class="bi bi-play-circle"></i> تفعيل</button>
-                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/{{ ch.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
-                    </div>
-                </div>
-                {% else %}
-                <p style="color:#888; grid-column:1/-1; text-align:center;">لا توجد قنوات متوقفة</p>
+                <p style="color:#888; grid-column:1/-1; text-align:center;">لا توجد قنوات</p>
                 {% endfor %}
             </div>
         </div>
@@ -411,9 +404,37 @@
                 <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ الإعدادات</button>
             </form>
         </div>
+
+        <!-- تبويب المحتوى -->
+        <div id="tab-content" class="tab-content">
+            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة محتوى جديد</div>
+            <form method="POST" action="/admin/content/add">
+                <div class="form-group"><label>اسم المحتوى</label><input type="text" name="name" required></div>
+                <div class="form-group"><label>البرومبت (وصف)</label><textarea name="prompt"></textarea></div>
+                <div class="form-group"><label>نص المحتوى</label><textarea name="content" required></textarea></div>
+                <button type="submit" class="btn"><i class="bi bi-save"></i> إضافة محتوى</button>
+            </form>
+
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> المحتويات المتاحة</div>
+            <div class="content-grid">
+                {% for item in content_templates %}
+                <div class="content-card">
+                    <div style="font-weight:700; font-size:14px;">{{ item.name }}</div>
+                    {% if item.prompt %}<div style="font-size:11px; color:#555; margin:4px 0;">{{ item.prompt }}</div>{% endif %}
+                    <div class="content-preview">{{ item.content[:120] }}{% if item.content|length > 120 %}...{% endif %}</div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="openContentEditModal({{ item.id }}, '{{ item.name }}', `{{ item.prompt|replace('`', '\\`') }}`, `{{ item.content|replace('`', '\\`') }}`)"><i class="bi bi-pencil-square"></i> تعديل</button>
+                        <button class="btn btn-danger" onclick="if(confirm('حذف المحتوى؟')) location.href='/admin/content/{{ item.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                    </div>
+                </div>
+                {% else %}
+                <p style="color:#888; grid-column:1/-1; text-align:center;">لا يوجد محتوى مضاف</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
-    <!-- مودال التعديل -->
+    <!-- مودال تعديل الشخصية -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
@@ -425,6 +446,22 @@
                 <div class="form-group"><label>رابط الصورة</label><input type="url" name="logo_url" id="editImage"></div>
                 <div class="form-group"><label>وصف مختصر</label><input type="text" name="description" id="editDesc" required></div>
                 <div class="form-group"><label>البرومبت</label><textarea name="prompt" id="editPrompt" required></textarea></div>
+                <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- مودال تعديل المحتوى -->
+    <div id="contentEditModal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+                <h3><i class="bi bi-pencil-square"></i> تعديل المحتوى</h3>
+                <button onclick="closeContentEditModal()" style="background:none; border:none; font-size:20px;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="POST" id="contentEditForm">
+                <div class="form-group"><label>اسم المحتوى</label><input type="text" name="name" id="contentEditName" required></div>
+                <div class="form-group"><label>البرومبت (وصف)</label><textarea name="prompt" id="contentEditPrompt"></textarea></div>
+                <div class="form-group"><label>نص المحتوى</label><textarea name="content" id="contentEditContent" required></textarea></div>
                 <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ التعديلات</button>
             </form>
         </div>
@@ -442,7 +479,7 @@
             });
         });
 
-        // مودال التعديل
+        // مودال تعديل الشخصية
         function openEditModal(id, name, desc, prompt, image) {
             document.getElementById('editForm').action = `/admin/character/${id}/edit`;
             document.getElementById('editName').value = name;
@@ -457,6 +494,20 @@
         window.onclick = function(e) {
             const modal = document.getElementById('editModal');
             if (e.target === modal) closeEditModal();
+            const modal2 = document.getElementById('contentEditModal');
+            if (e.target === modal2) closeContentEditModal();
+        }
+
+        // مودال تعديل المحتوى
+        function openContentEditModal(id, name, prompt, content) {
+            document.getElementById('contentEditForm').action = `/admin/content/${id}/edit`;
+            document.getElementById('contentEditName').value = name;
+            document.getElementById('contentEditPrompt').value = prompt;
+            document.getElementById('contentEditContent').value = content;
+            document.getElementById('contentEditModal').classList.add('active');
+        }
+        function closeContentEditModal() {
+            document.getElementById('contentEditModal').classList.remove('active');
         }
 
         // إدارة أوقات النشر
@@ -470,7 +521,6 @@
                 <button type="button" class="remove-time" onclick="removeTime(this)"><i class="bi bi-x-circle"></i></button>
             `;
             container.appendChild(newDiv);
-            // إظهار زر الحذف للعنصر الأول إذا كان مخفياً
             const firstRemove = container.querySelector('.time-input-group:first-child .remove-time');
             if (firstRemove) firstRemove.style.display = 'inline';
         }
@@ -480,7 +530,6 @@
             const container = document.getElementById('timesContainer');
             if (container.children.length > 1) {
                 group.remove();
-                // إذا بقي عنصر واحد، نخفي زر الحذف
                 if (container.children.length === 1) {
                     const firstRemove = container.querySelector('.time-input-group:first-child .remove-time');
                     if (firstRemove) firstRemove.style.display = 'none';
@@ -488,7 +537,6 @@
             }
         }
 
-        // تحديث عدد الأوقات تلقائياً عند تغيير عدد مرات النشر
         document.getElementById('publishCount').addEventListener('change', function() {
             const count = parseInt(this.value) || 1;
             const container = document.getElementById('timesContainer');
@@ -508,7 +556,6 @@
                     container.children[i].remove();
                 }
             }
-            // إظهار/إخفاء أزرار الحذف
             const removeBtns = container.querySelectorAll('.remove-time');
             removeBtns.forEach((btn, index) => {
                 if (index === 0 && removeBtns.length === 1) {
@@ -519,7 +566,6 @@
             });
         });
 
-        // عند تحميل الصفحة، تأكد من عرض/إخفاء أزرار الحذف بشكل صحيح
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('timesContainer');
             const removeBtns = container.querySelectorAll('.remove-time');

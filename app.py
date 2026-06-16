@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-import pytz  # نضيف pytz للتعامل مع المنطقة الزمنية
+import pytz
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -24,7 +24,6 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
-# المنطقة الزمنية لصنعاء
 TIMEZONE = pytz.timezone('Asia/Aden')
 
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +70,18 @@ def ensure_notification_columns(cur):
     if not cur.fetchone():
         cur.execute("ALTER TABLE notifications ADD COLUMN show_in_chat BOOLEAN DEFAULT FALSE")
         logger.info("Added column show_in_chat to notifications table")
+
+def ensure_channel_columns(cur):
+    """إضافة الأعمدة المفقودة في جدول channels"""
+    # التحقق من وجود is_paused
+    cur.execute("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='channels' AND column_name='is_paused'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE channels ADD COLUMN is_paused BOOLEAN DEFAULT FALSE")
+        logger.info("Added column is_paused to channels table")
 
 def init_db():
     try:
@@ -133,6 +144,11 @@ def init_db():
                 published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 message_id TEXT
             )''')
+            
+            # إضافة الأعمدة المفقودة في الجداول الموجودة
+            ensure_channel_columns(cur)
+            
+            # إدخال إعدادات النشر الافتراضية
             cur.execute("SELECT COUNT(*) FROM publish_settings")
             if cur.fetchone()['count'] == 0:
                 cur.execute("INSERT INTO publish_settings (publish_count, publish_times) VALUES (3, '[\"09:00\",\"13:00\",\"17:00\"]')")
@@ -237,7 +253,6 @@ def schedule_posts_for_channel(channel_id, admin_id):
     for time_str in times:
         hour, minute = map(int, time_str.split(':'))
         job_id = f'publish_{channel_id}_{hour}_{minute}'
-        # استخدام المنطقة الزمنية المحددة
         trigger = CronTrigger(hour=hour, minute=minute, timezone=TIMEZONE)
         scheduler.add_job(
             func=publish_scheduled_post,
@@ -267,7 +282,7 @@ def publish_scheduled_post(channel_id, admin_id):
             "INSERT INTO scheduled_posts (channel_id, content, scheduled_time, status) VALUES (%s, %s, %s, 'pending')",
             (channel_id, content, scheduled_time)
         )
-        post_id = cur.fetchone()['id'] if hasattr(cur, 'fetchone') else None
+        post_id = cur.fetchone()['id']
     
     message_id = send_telegram_message(channel_id, content)
     if message_id:
@@ -326,7 +341,7 @@ def publish():
         cur.execute("SELECT * FROM channels WHERE admin_id = %s", (telegram_id,))
         channel = cur.fetchone()
         if not channel:
-            return render_template('publish_register.html')
+            return render_template('register.html')
         
         cur.execute("SELECT COUNT(*) FROM published_posts WHERE channel_id = %s", (channel['channel_id'],))
         posts_count = cur.fetchone()['count']
@@ -349,7 +364,7 @@ def publish():
         
         is_paused = channel.get('is_paused', False)
         
-        return render_template('publish_dashboard.html',
+        return render_template('publish.html',
                              channel=channel,
                              posts_count=posts_count,
                              recent_posts=recent_posts,

@@ -1,4 +1,3 @@
-<!-- ==================== publish.html ==================== -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -527,10 +526,10 @@
 
     <!-- شريط التنقل السفلي -->
     <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item" id="navChat" onclick="goToChat()">
+        <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
             <span>دردشة</span>
-        </button>
+        </a>
         <button class="nav-item active" id="navPublish">
             <i class="bi bi-megaphone"></i>
             <span>نشر</span>
@@ -697,12 +696,6 @@
                     }, 3000);
                 }, 2500);
             });
-
-            // التنقل إلى الدردشة
-            window.goToChat = function() {
-                showToast('سيتم توجيهك إلى صفحة الدردشة', 1500);
-                // يمكن إضافة window.location.href = '/'؛ لكننا في اختبار
-            };
 
             // بدء التشغيل
             goToStep(0);

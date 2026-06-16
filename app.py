@@ -104,13 +104,11 @@ def init_db():
                 reason TEXT,
                 failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
-            # جدول إعدادات النشر
             cur.execute('''CREATE TABLE IF NOT EXISTS publish_settings (
                 id SERIAL PRIMARY KEY,
                 publish_count INTEGER DEFAULT 3,
                 publish_times TEXT DEFAULT '["09:00","13:00","17:00"]'
             )''')
-            # إدخال القيمة الافتراضية إذا لم تكن موجودة
             cur.execute("SELECT COUNT(*) FROM publish_settings")
             if cur.fetchone()['count'] == 0:
                 cur.execute("INSERT INTO publish_settings (publish_count, publish_times) VALUES (3, '[\"09:00\",\"13:00\",\"17:00\"]')")
@@ -165,8 +163,6 @@ def index():
 
 @app.route('/publish')
 def publish():
-    """صفحة النشر التلقائي"""
-    # جلب إعدادات النشر لعرضها في الصفحة (اختياري)
     try:
         with get_db() as cur:
             cur.execute("SELECT publish_count, publish_times FROM publish_settings LIMIT 1")
@@ -263,7 +259,6 @@ def admin_panel():
                            LEFT JOIN channels c ON cf.channel_id = c.channel_id 
                            ORDER BY cf.failed_at DESC''')
             failures = cur.fetchall()
-            # جلب إعدادات النشر
             cur.execute("SELECT publish_count, publish_times FROM publish_settings LIMIT 1")
             settings = cur.fetchone()
             if settings:
@@ -437,20 +432,14 @@ def delete_channel(channel_id):
 def save_publish_settings():
     try:
         publish_count = int(request.form.get('publish_count', 3))
-        # جمع الأوقات من النموذج (قد تصل كقائمة)
         times = request.form.getlist('publish_time[]')
-        # إذا لم تصل كقائمة، حاول قراءة الحقل الواحد
         if not times:
             times = request.form.get('publish_time', '').split(',')
-        # تنظيف الأوقات وإزالة الفارغ
         times = [t.strip() for t in times if t.strip()]
-        # التأكد من أن العدد مطابق للعدد المختار
         if len(times) != publish_count:
-            # إذا كان العدد مختلفاً، نأخذ أول publish_count وقت أو نملأ بالقيم الافتراضية
             if len(times) > publish_count:
                 times = times[:publish_count]
             else:
-                # نملأ بالقيم الافتراضية
                 default_times = ["09:00", "13:00", "17:00", "20:00", "22:00"]
                 for i in range(len(times), publish_count):
                     times.append(default_times[i] if i < len(default_times) else "12:00")
@@ -526,6 +515,7 @@ def api_chat():
         logger.error(f"API chat error: {e}")
         return jsonify({'error': str(e)}), 500
 
+# ------------------- تشغيل التطبيق -------------------
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)h
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)

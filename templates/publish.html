@@ -17,6 +17,29 @@
         }
         .container { max-width: 700px; margin: 0 auto; }
         
+        /* ألوان زجاجية */
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        .glass-dark {
+            background: rgba(20, 20, 30, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .glass-blue {
+            background: rgba(0, 136, 204, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 136, 204, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.1);
+        }
+        
         .dashboard-header {
             display: flex;
             align-items: center;
@@ -33,21 +56,35 @@
         .dashboard-header h1 i { color: #0088cc; font-size: 20px; }
         .dashboard-header a { font-size: 18px; color: #888; }
         
-        .channel-info {
-            background: rgba(255,255,255,0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.08);
+        /* مستطيل أزرق عريض وصغير لمعلومات القناة */
+        .channel-card {
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             margin-bottom: 14px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
+            flex-direction: column;
+            gap: 4px;
         }
-        .channel-info .id { font-size: 12px; font-weight: 600; }
-        .channel-info .status { font-size: 10px; padding: 3px 10px; border-radius: 20px; background: rgba(0,0,0,0.05); }
+        .channel-card .channel-id {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0088cc;
+        }
+        .channel-card .channel-username {
+            font-size: 12px;
+            color: #555;
+        }
+        .channel-card .channel-status {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            width: fit-content;
+            background: rgba(0,0,0,0.05);
+        }
+        .channel-card .channel-status.active { color: #28a745; }
+        .channel-card .channel-status.paused { color: #ffc107; }
+        .channel-card .channel-status.inactive { color: #dc3545; }
         
         .stats-grid {
             display: grid;
@@ -56,12 +93,13 @@
             margin-bottom: 14px;
         }
         .stat-card {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.08);
             border-radius: 10px;
             padding: 10px 8px;
             text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .stat-card .number { font-size: 20px; font-weight: 800; }
         .stat-card .label { font-size: 10px; color: #666; margin-top: 2px; }
@@ -71,24 +109,26 @@
         .icon-center i { font-size: 56px; color: #0088cc; opacity: 0.3; }
         
         .times-box {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.08);
             border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .times-box h3 { font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
         .times-box .times-list { display: flex; gap: 8px; flex-wrap: wrap; }
         .times-box .time-badge { background: rgba(0,0,0,0.05); padding: 3px 10px; border-radius: 20px; font-size: 11px; }
         
         .content-selector {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.08);
             border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .content-selector h3 { font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .content-selector .selector-row {
@@ -109,10 +149,10 @@
         }
         .content-selector .btn-select {
             padding: 6px 14px;
-            background: linear-gradient(135deg, #ddd, #bbb);
+            background: linear-gradient(135deg, #0088cc, #00aaff);
             border: none;
             border-radius: 6px;
-            color: #333;
+            color: #fff;
             font-weight: 600;
             font-size: 11px;
             cursor: pointer;
@@ -125,7 +165,7 @@
             color: #555;
             margin-top: 8px;
             padding: 6px 10px;
-            background: rgba(0,0,0,0.03);
+            background: rgba(0, 136, 204, 0.05);
             border-radius: 6px;
             border-right: 3px solid #0088cc;
         }
@@ -164,11 +204,12 @@
         .btn:disabled { opacity: 0.5; pointer-events: none; }
         
         .recent-posts {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.08);
             border-radius: 12px;
             padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .recent-posts h3 { font-size: 13px; margin-bottom: 8px; }
         .post-item { padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 12px; line-height: 1.4; }
@@ -177,9 +218,17 @@
         
         .toast {
             position: fixed; bottom: 80px; left: 20px; right: 20px;
-            background: rgba(0,0,0,0.85); color: #fff;
-            padding: 12px 16px; border-radius: 12px; text-align: center;
-            z-index: 1000; display: none; font-size: 13px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .bottom-nav {
@@ -188,22 +237,23 @@
             left: 12px;
             right: 12px;
             z-index: 1000;
-            background: rgba(255,255,255,0.85);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.08);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
             height: 44px;
             max-width: 400px;
             margin: 0 auto;
         }
         body.dark .bottom-nav {
-            background: rgba(30,30,40,0.85);
-            border-color: rgba(150,150,150,0.2);
+            background: rgba(30, 30, 40, 0.15);
+            border-color: rgba(255, 255, 255, 0.05);
         }
         .nav-item {
             display: flex;
@@ -227,12 +277,8 @@
         .nav-item i { font-size: 16px; transition: all 0.2s; }
         .nav-item span { font-size: 7px; }
         .nav-item.active {
-            color: #1a1a1a;
-            background: rgba(0,0,0,0.05);
-        }
-        body.dark .nav-item.active {
-            color: #e0e0e0;
-            background: rgba(255,255,255,0.08);
+            color: #0088cc;
+            background: rgba(0, 136, 204, 0.15);
         }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
@@ -248,16 +294,22 @@
             <a href="/" style="color:#888; text-decoration:none;"><i class="bi bi-house"></i></a>
         </div>
 
-        <!-- معلومات القناة -->
-        <div class="channel-info">
-            <span class="id"><i class="bi bi-hash"></i> {{ channel.channel_id }}</span>
-            <span class="status">
+        <!-- مستطيل أزرق عريض لمعلومات القناة -->
+        <div class="channel-card glass-blue">
+            <div class="channel-id"><i class="bi bi-hash"></i> {{ channel.channel_id }}</div>
+            {% if channel.channel_username %}
+                <div class="channel-username"><i class="bi bi-at"></i> {{ channel.channel_username }}</div>
+            {% endif %}
+            <div class="channel-status 
                 {% if channel.is_active %}
-                    {% if is_paused %}⏸️ موقّت{% else %}✅ نشط{% endif %}
+                    {% if is_paused %}paused{% else %}active{% endif %}
+                {% else %}inactive{% endif %}">
+                {% if channel.is_active %}
+                    {% if is_paused %}⏸️ موقّت مؤقت{% else %}✅ نشط{% endif %}
                 {% else %}
                     ⛔ متوقف
                 {% endif %}
-            </span>
+            </div>
         </div>
 
         <!-- بطاقات الإحصائيات -->
@@ -300,7 +352,6 @@
             <form id="selectContentForm">
                 <div class="selector-row">
                     <select name="content_id" id="contentSelect">
-                        <option value="">-- توليد تلقائي --</option>
                         {% for item in content_templates %}
                             <option value="{{ item.id }}" {% if selected_content_id == item.id %}selected{% endif %}>
                                 {{ item.name }}
@@ -321,12 +372,10 @@
                 {% endfor %}
             {% else %}
                 <div class="current-content" style="color:#888;">
-                    <i class="bi bi-info-circle"></i> يتم توليد محتوى تلقائياً عند النشر
+                    <i class="bi bi-info-circle"></i> سيتم توليد محتوى تلقائياً عند النشر
                 </div>
             {% endif %}
-            <div style="font-size:10px; color:#999; margin-top:6px;">
-                <i class="bi bi-info-circle"></i> يمكنك إضافة محتوى جديد من <a href="/admin#tab-content" style="color:#0088cc; text-decoration:none;">لوحة التحكم</a>
-            </div>
+            <!-- تم حذف النص الذي يقود إلى لوحة التحكم -->
         </div>
 
         <!-- أزرار التحكم -->
@@ -381,7 +430,6 @@
             toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
         }
 
-        // اختيار المحتوى
         document.getElementById('selectContentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -408,7 +456,6 @@
             }
         });
 
-        // إيقاف مؤقت
         document.getElementById('pauseBtn')?.addEventListener('click', async function() {
             try {
                 const res = await fetch('/publish/toggle_pause');
@@ -422,7 +469,6 @@
             } catch (e) { showToast('خطأ في الاتصال'); }
         });
 
-        // إيقاف نهائي
         document.getElementById('stopBtn')?.addEventListener('click', async function() {
             if (!confirm('هل أنت متأكد من إيقاف النشر نهائياً؟')) return;
             try {
@@ -437,7 +483,6 @@
             } catch (e) { showToast('خطأ في الاتصال'); }
         });
 
-        // نشر فوري
         document.getElementById('publishNowBtn')?.addEventListener('click', async function() {
             this.disabled = true;
             this.textContent = 'جاري النشر...';

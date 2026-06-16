@@ -19,14 +19,16 @@
             padding: 20px 16px 80px;
         }
         .register-card {
-            background: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.12);
             backdrop-filter: blur(25px);
-            border: 1px solid rgba(0,0,0,0.1);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 24px;
             padding: 30px;
             max-width: 500px;
             width: 100%;
             text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
         }
         .register-card i.bi-telegram { font-size: 64px; color: #0088cc; margin-bottom: 16px; }
         .register-card h1 { font-size: 24px; margin-bottom: 8px; }
@@ -41,48 +43,56 @@
             font-family: 'Tajawal', sans-serif;
             font-size: 14px;
         }
-        input:focus { outline: none; border-color: #aaa; }
+        input:focus { outline: none; border-color: #0088cc; }
         .btn {
             width: 100%; padding: 12px;
-            background: linear-gradient(135deg, #ddd, #bbb);
+            background: linear-gradient(135deg, #0088cc, #00aaff);
             border: none;
             border-radius: 40px;
             font-weight: 700;
             font-size: 16px;
+            color: #fff;
             cursor: pointer;
             transition: all 0.3s;
         }
         .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
         .toast {
             position: fixed; bottom: 80px; left: 20px; right: 20px;
-            background: rgba(0,0,0,0.85); color: #fff;
-            padding: 14px; border-radius: 16px; text-align: center;
-            z-index: 1000; display: none;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: #fff;
+            padding: 14px;
+            border-radius: 16px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        /* شريط التنقل السفلي الموحد */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
             left: 12px;
             right: 12px;
             z-index: 1000;
-            background: rgba(255,255,255,0.85);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 14px;
-            padding: 6px 10px;
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            height: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            height: 44px;
             max-width: 400px;
             margin: 0 auto;
         }
         body.dark .bottom-nav {
-            background: rgba(30,30,40,0.85);
-            border-color: rgba(150,150,150,0.2);
+            background: rgba(30, 30, 40, 0.15);
+            border-color: rgba(255, 255, 255, 0.05);
         }
         .nav-item {
             display: flex;
@@ -92,30 +102,25 @@
             gap: 1px;
             text-decoration: none;
             color: #999;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 500;
             transition: all 0.2s;
-            padding: 4px 12px;
-            border-radius: 30px;
+            padding: 3px 10px;
+            border-radius: 20px;
             background: transparent;
             border: none;
             cursor: pointer;
             flex: 1;
-            max-width: 80px;
+            max-width: 70px;
         }
-        .nav-item i { font-size: 18px; transition: all 0.2s; }
-        .nav-item span { font-size: 8px; }
+        .nav-item i { font-size: 16px; transition: all 0.2s; }
+        .nav-item span { font-size: 7px; }
         .nav-item.active {
-            color: #1a1a1a;
-            background: rgba(0,0,0,0.05);
-        }
-        body.dark .nav-item.active {
-            color: #e0e0e0;
-            background: rgba(255,255,255,0.08);
+            color: #0088cc;
+            background: rgba(0, 136, 204, 0.15);
         }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
-
         @media (min-width: 768px) { .bottom-nav { left: 20px; right: 20px; } }
     </style>
 </head>
@@ -128,10 +133,12 @@
             <div class="form-group">
                 <label>معرف القناة (رقمي)</label>
                 <input type="text" id="channelId" placeholder="مثال: -1001234567890" required>
+                <div style="font-size: 11px; color: #888; margin-top: 4px;">أدخل المعرف الرقمي للقناة (يبدأ بـ -100)</div>
             </div>
             <div class="form-group">
-                <label>اسم المستخدم (اختياري)</label>
-                <input type="text" id="channelUsername" placeholder="@example">
+                <label>اسم المستخدم (يبدأ بـ @)</label>
+                <input type="text" id="channelUsername" placeholder="@example" required>
+                <div style="font-size: 11px; color: #888; margin-top: 4px;">يجب أن يبدأ بـ @ (مثال: @my_channel)</div>
             </div>
             <button type="submit" class="btn">تسجيل القناة</button>
         </form>
@@ -140,7 +147,6 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي الموحد -->
     <nav class="bottom-nav" id="bottomNav">
         <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
@@ -159,10 +165,8 @@
             e.preventDefault();
             const channelId = document.getElementById('channelId').value.trim();
             const channelUsername = document.getElementById('channelUsername').value.trim();
-            if (!channelId) {
-                showToast('معرف القناة مطلوب');
-                return;
-            }
+            if (!channelId) { showToast('معرف القناة مطلوب'); return; }
+            if (!channelUsername.startsWith('@')) { showToast('اسم المستخدم يجب أن يبدأ بـ @'); return; }
             const btn = this.querySelector('.btn');
             btn.disabled = true;
             btn.textContent = 'جاري التسجيل...';
@@ -173,7 +177,7 @@
                 const res = await fetch('/publish/register_channel', { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('تم تسجيل القناة بنجاح! سيتم توجيهك إلى لوحة التحكم...', 3000);
+                    showToast('تم تسجيل القناة بنجاح! جاري التوجيه...', 3000);
                     setTimeout(() => { window.location.href = '/publish'; }, 2000);
                 } else {
                     showToast(data.message || 'حدث خطأ');

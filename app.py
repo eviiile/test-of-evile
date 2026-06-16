@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
 import pytz
 
 import psycopg2
@@ -83,15 +84,6 @@ def ensure_channel_columns(cur):
     if not cur.fetchone():
         cur.execute("ALTER TABLE channels ADD COLUMN is_paused BOOLEAN DEFAULT FALSE")
         logger.info("Added column is_paused to channels table")
-    
-    cur.execute("""
-        SELECT column_name 
-        FROM information_schema.columns 
-        WHERE table_name='channels' AND column_name='selected_content_id'
-    """)
-    if not cur.fetchone():
-        cur.execute("ALTER TABLE channels ADD COLUMN selected_content_id INTEGER DEFAULT NULL")
-        logger.info("Added column selected_content_id to channels table")
 
 def init_db():
     try:
@@ -124,7 +116,6 @@ def init_db():
                 admin_id TEXT NOT NULL,
                 is_active BOOLEAN DEFAULT TRUE,
                 is_paused BOOLEAN DEFAULT FALSE,
-                selected_content_id INTEGER DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_post_at TIMESTAMP
             )''')
@@ -139,15 +130,6 @@ def init_db():
                 publish_count INTEGER DEFAULT 3,
                 publish_times TEXT DEFAULT '["09:00","13:00","17:00"]'
             )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS scheduled_posts (
-                id SERIAL PRIMARY KEY,
-                channel_id TEXT NOT NULL,
-                content TEXT NOT NULL,
-                scheduled_time TIMESTAMP NOT NULL,
-                status TEXT DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                published_at TIMESTAMP
-            )''')
             cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
                 id SERIAL PRIMARY KEY,
                 channel_id TEXT NOT NULL,
@@ -160,6 +142,15 @@ def init_db():
                 name TEXT NOT NULL,
                 prompt TEXT,
                 content TEXT NOT NULL,
+                publish_time TIMESTAMP,  -- وقت النشر المحدد
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
+            cur.execute('''CREATE TABLE IF NOT EXISTS scheduled_content (
+                id SERIAL PRIMARY KEY,
+                content_id INTEGER NOT NULL,
+                channel_id TEXT NOT NULL,
+                scheduled_time TIMESTAMP NOT NULL,
+                status TEXT DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
             
@@ -205,9 +196,10 @@ def get_publish_times():
     return ["09:00", "13:00", "17:00"]
 
 # ==================== توليد المحتوى ====================
-def generate_post_content(prompt=None):
-    """توليد محتوى باستخدام الذكاء الاصطناعي"""
-    if not prompt:
+def generate_post_content(custom_prompt=None):
+    if custom_prompt:
+        prompt = custom_prompt
+    else:
         prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
     
     headers = {
@@ -239,16 +231,6 @@ def generate_post_content(prompt=None):
             if content:
                 logger.debug("Content generated successfully")
                 return content.strip()
-            else:
-                # محاولة استخدام نموذج بديل
-                logger.warning("First model returned no content, trying fallback model")
-                payload['model'] = 'openai/gpt-3.5-turbo'
-                response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
-                result = response.json()
-                if result and 'choices' in result and len(result['choices']) > 0:
-                    content = result['choices'][0].get('message', {}).get('content')
-                    if content:
-                        return content.strip()
         
         logger.error(f"Invalid response from OpenRouter: {result}")
         return None
@@ -287,10 +269,12 @@ scheduler = BackgroundScheduler(timezone=TIMEZONE)
 scheduler.start()
 
 def schedule_posts_for_channel(channel_id, admin_id):
+    # إلغاء المهام القديمة
     for job in scheduler.get_jobs():
         if job.id.startswith(f'publish_{channel_id}_'):
             scheduler.remove_job(job.id)
     
+    # جدولة الأوقات الثابتة (09:00، 13:00، 17:00)
     times = get_publish_times()
     for time_str in times:
         hour, minute = map(int, time_str.split(':'))
@@ -300,63 +284,118 @@ def schedule_posts_for_channel(channel_id, admin_id):
             func=publish_scheduled_post,
             trigger=trigger,
             id=job_id,
-            args=[channel_id, admin_id],
+            args=[channel_id],
             replace_existing=True
         )
-        logger.info(f"Scheduled post for channel {channel_id} at {time_str} (Asia/Aden)")
+        logger.info(f"Scheduled daily post for channel {channel_id} at {time_str} (Asia/Aden)")
+    
+    # جدولة المحتويات المحددة بوقت
+    schedule_content_templates(channel_id)
 
-def publish_scheduled_post(channel_id, admin_id):
+def schedule_content_templates(channel_id):
+    """جدولة المحتويات التي لها وقت نشر محدد"""
     with get_db() as cur:
-        cur.execute("SELECT is_paused, is_active, selected_content_id FROM channels WHERE channel_id = %s", (channel_id,))
+        # جلب المحتويات التي لم تُجدول بعد لهذه القناة
+        cur.execute("""
+            SELECT ct.id, ct.content, ct.publish_time 
+            FROM content_templates ct
+            LEFT JOIN scheduled_content sc ON sc.content_id = ct.id AND sc.channel_id = %s
+            WHERE ct.publish_time IS NOT NULL 
+              AND ct.publish_time > NOW()
+              AND sc.id IS NULL
+        """, (channel_id,))
+        contents = cur.fetchall()
+        
+        for content in contents:
+            scheduled_time = content['publish_time']
+            # تحويل إلى وقت محلي إذا لزم الأمر
+            if scheduled_time.tzinfo is None:
+                scheduled_time = TIMEZONE.localize(scheduled_time)
+            else:
+                scheduled_time = scheduled_time.astimezone(TIMEZONE)
+            
+            # تسجيل في جدول scheduled_content
+            cur.execute(
+                "INSERT INTO scheduled_content (content_id, channel_id, scheduled_time) VALUES (%s, %s, %s)",
+                (content['id'], channel_id, scheduled_time)
+            )
+            
+            # إضافة مهمة مفردة (DateTrigger)
+            job_id = f'content_{content["id"]}_{channel_id}'
+            scheduler.add_job(
+                func=publish_content_job,
+                trigger=DateTrigger(run_date=scheduled_time, timezone=TIMEZONE),
+                id=job_id,
+                args=[content['id'], channel_id, content['content']],
+                replace_existing=True
+            )
+            logger.info(f"Scheduled content {content['id']} for channel {channel_id} at {scheduled_time}")
+
+def publish_scheduled_post(channel_id):
+    """النشر اليومي الثابت - يولد محتوى جديداً في كل مرة"""
+    with get_db() as cur:
+        cur.execute("SELECT is_paused, is_active FROM channels WHERE channel_id = %s", (channel_id,))
         row = cur.fetchone()
         if not row or not row['is_active'] or row['is_paused']:
-            logger.info(f"Channel {channel_id} is paused or inactive, skipping post")
+            logger.info(f"Channel {channel_id} is paused or inactive, skipping daily post")
             return
-        
-        content = None
-        if row['selected_content_id']:
-            cur.execute("SELECT content FROM content_templates WHERE id = %s", (row['selected_content_id'],))
-            template = cur.fetchone()
-            if template:
-                content = template['content']
-                logger.info(f"Using selected content template {row['selected_content_id']} for channel {channel_id}")
-        
-        if not content:
-            content = generate_post_content()
-            if not content:
-                cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, 'فشل توليد المحتوى'))
-                logger.error(f"Failed to generate content for channel {channel_id}")
-                return
     
-    scheduled_time = datetime.now(TIMEZONE)
-    with get_db() as cur:
-        cur.execute(
-            "INSERT INTO scheduled_posts (channel_id, content, scheduled_time, status) VALUES (%s, %s, %s, 'pending')",
-            (channel_id, content, scheduled_time)
-        )
-        post_id = cur.fetchone()['id']
+    # توليد محتوى جديد
+    content = generate_post_content()
+    if not content:
+        with get_db() as cur:
+            cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, 'فشل توليد المحتوى اليومي'))
+        logger.error(f"Failed to generate content for channel {channel_id}")
+        return
     
+    # النشر
     message_id = send_telegram_message(channel_id, content)
     if message_id:
         with get_db() as cur:
-            cur.execute("UPDATE scheduled_posts SET status = 'published', published_at = NOW() WHERE id = %s", (post_id,))
             cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
             cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
-            cur.execute("DELETE FROM scheduled_posts WHERE channel_id = %s AND status = 'published'", (channel_id,))
-        logger.info(f"Published post to channel {channel_id}")
+        logger.info(f"Published daily post to channel {channel_id}")
     else:
         with get_db() as cur:
-            cur.execute("UPDATE scheduled_posts SET status = 'failed' WHERE id = %s", (post_id,))
             cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, 'فشل إرسال الرسالة إلى تلغرام'))
-        logger.error(f"Failed to publish to channel {channel_id}")
+        logger.error(f"Failed to publish daily post to channel {channel_id}")
+
+def publish_content_job(content_id, channel_id, content):
+    """نشر محتوى محدد بوقت"""
+    with get_db() as cur:
+        cur.execute("SELECT is_paused, is_active FROM channels WHERE channel_id = %s", (channel_id,))
+        row = cur.fetchone()
+        if not row or not row['is_active'] or row['is_paused']:
+            logger.info(f"Channel {channel_id} is paused or inactive, skipping scheduled content {content_id}")
+            # تحديث حالة الجدولة
+            cur.execute("UPDATE scheduled_content SET status = 'cancelled' WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
+            return
+        
+        # تحديث حالة الجدولة
+        cur.execute("UPDATE scheduled_content SET status = 'published' WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
+    
+    # النشر
+    message_id = send_telegram_message(channel_id, content)
+    if message_id:
+        with get_db() as cur:
+            cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
+            cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
+            # حذف الجدولة بعد النشر
+            cur.execute("DELETE FROM scheduled_content WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
+        logger.info(f"Published scheduled content {content_id} to channel {channel_id}")
+    else:
+        with get_db() as cur:
+            cur.execute("UPDATE scheduled_content SET status = 'failed' WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
+            cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, f'فشل نشر المحتوى {content_id}'))
+        logger.error(f"Failed to publish scheduled content {content_id} to channel {channel_id}")
 
 def schedule_all_channels():
     try:
         with get_db() as cur:
-            cur.execute("SELECT channel_id, admin_id FROM channels WHERE is_active = true AND is_paused = false")
+            cur.execute("SELECT channel_id FROM channels WHERE is_active = true AND is_paused = false")
             rows = cur.fetchall()
             for row in rows:
-                schedule_posts_for_channel(row['channel_id'], row['admin_id'])
+                schedule_posts_for_channel(row['channel_id'], None)
             logger.info(f"Scheduled {len(rows)} channels")
     except Exception as e:
         logger.error(f"Error scheduling all channels: {e}")
@@ -398,11 +437,28 @@ def publish():
         if not channel:
             return render_template('register.html')
         
-        cur.execute("SELECT id, name, content FROM content_templates ORDER BY name")
+        # جلب المحتويات المتاحة (التي لم تُنشر بعد)
+        cur.execute("""
+            SELECT ct.*, 
+                   CASE WHEN sc.id IS NOT NULL THEN 'scheduled' ELSE 'available' END as status
+            FROM content_templates ct
+            LEFT JOIN scheduled_content sc ON sc.content_id = ct.id AND sc.channel_id = %s
+            WHERE ct.publish_time IS NULL OR ct.publish_time > NOW()
+            ORDER BY ct.created_at DESC
+        """, (channel['channel_id'],))
         content_templates = cur.fetchall()
         
-        selected_content_id = channel.get('selected_content_id')
+        # جلب المحتويات المجدولة
+        cur.execute("""
+            SELECT ct.*, sc.scheduled_time
+            FROM scheduled_content sc
+            JOIN content_templates ct ON ct.id = sc.content_id
+            WHERE sc.channel_id = %s AND sc.status = 'pending'
+            ORDER BY sc.scheduled_time ASC
+        """, (channel['channel_id'],))
+        scheduled_contents = cur.fetchall()
         
+        # إحصائيات النشر
         cur.execute("SELECT COUNT(*) FROM published_posts WHERE channel_id = %s", (channel['channel_id'],))
         posts_count = cur.fetchone()['count']
         
@@ -432,36 +488,7 @@ def publish():
                              members_count=members_count,
                              is_paused=is_paused,
                              content_templates=content_templates,
-                             selected_content_id=selected_content_id)
-
-@app.route('/publish/select_content', methods=['POST'])
-def select_content():
-    telegram_id = session.get('telegram_id')
-    if not telegram_id:
-        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
-    
-    content_id = request.form.get('content_id')
-    if not content_id:
-        return jsonify({'success': False, 'message': 'معرف المحتوى مطلوب'}), 400
-    
-    try:
-        content_id = int(content_id)
-        with get_db() as cur:
-            cur.execute("SELECT id FROM content_templates WHERE id = %s", (content_id,))
-            if not cur.fetchone():
-                return jsonify({'success': False, 'message': 'المحتوى غير موجود'}), 404
-            cur.execute("UPDATE channels SET selected_content_id = %s WHERE admin_id = %s", (content_id, telegram_id))
-            logger.info(f"User {telegram_id} selected content template {content_id}")
-            
-            cur.execute("SELECT channel_id FROM channels WHERE admin_id = %s", (telegram_id,))
-            row = cur.fetchone()
-            if row:
-                schedule_posts_for_channel(row['channel_id'], telegram_id)
-        
-        return jsonify({'success': True, 'message': 'تم اختيار المحتوى بنجاح'})
-    except Exception as e:
-        logger.error(f"Error selecting content: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
+                             scheduled_contents=scheduled_contents)
 
 @app.route('/publish/register_channel', methods=['POST'])
 def register_channel():
@@ -518,7 +545,7 @@ def toggle_pause():
             
             if new_status:
                 for job in scheduler.get_jobs():
-                    if job.id.startswith(f'publish_{row["channel_id"]}_'):
+                    if job.id.startswith(f'publish_{row["channel_id"]}_') or job.id.startswith(f'content_'):
                         scheduler.remove_job(job.id)
                 logger.info(f"Paused publishing for channel {row['channel_id']}")
             else:
@@ -544,7 +571,7 @@ def stop_publishing():
                 return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
             
             for job in scheduler.get_jobs():
-                if job.id.startswith(f'publish_{row["channel_id"]}_'):
+                if job.id.startswith(f'publish_{row["channel_id"]}_') or job.id.startswith(f'content_'):
                     scheduler.remove_job(job.id)
             
             cur.execute("UPDATE channels SET is_active = false WHERE id = %s", (row['id'],))
@@ -563,24 +590,13 @@ def force_publish():
     
     try:
         with get_db() as cur:
-            cur.execute("SELECT channel_id, selected_content_id FROM channels WHERE admin_id = %s AND is_active = true", (telegram_id,))
+            cur.execute("SELECT channel_id FROM channels WHERE admin_id = %s AND is_active = true", (telegram_id,))
             row = cur.fetchone()
             if not row:
                 return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
             channel_id = row['channel_id']
-            selected_content_id = row['selected_content_id']
         
-        content = None
-        if selected_content_id:
-            with get_db() as cur:
-                cur.execute("SELECT content FROM content_templates WHERE id = %s", (selected_content_id,))
-                template = cur.fetchone()
-                if template:
-                    content = template['content']
-        
-        if not content:
-            content = generate_post_content()
-        
+        content = generate_post_content()
         if not content:
             return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
         
@@ -589,7 +605,6 @@ def force_publish():
             with get_db() as cur:
                 cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
                 cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
-                cur.execute("DELETE FROM scheduled_posts WHERE channel_id = %s AND status = 'pending'", (channel_id,))
             logger.info(f"Forced publish to channel {channel_id}")
             return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
         else:
@@ -598,7 +613,157 @@ def force_publish():
         logger.error(f"Error in force publish: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ==================== باقي المسارات ====================
+# ==================== إدارة المحتوى (Admin) ====================
+@app.route('/admin/content/generate', methods=['POST'])
+@admin_required
+def generate_content_ai():
+    prompt = request.form.get('prompt', '').strip()
+    if not prompt:
+        return jsonify({'success': False, 'message': 'البرومبت مطلوب'}), 400
+    
+    content = generate_post_content(prompt)
+    if content:
+        return jsonify({'success': True, 'content': content})
+    else:
+        return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
+
+@app.route('/admin/content/add', methods=['POST'])
+@admin_required
+def add_content():
+    name = request.form.get('name', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    content = request.form.get('content', '').strip()
+    publish_time_str = request.form.get('publish_time', '').strip()
+    
+    if not name or not content:
+        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    # معالجة وقت النشر
+    publish_time = None
+    if publish_time_str:
+        try:
+            # تنسيق: YYYY-MM-DDTHH:mm (من input type="datetime-local")
+            publish_time = datetime.fromisoformat(publish_time_str)
+            # إضافة المنطقة الزمنية
+            publish_time = TIMEZONE.localize(publish_time)
+        except ValueError as e:
+            flash(f'تنسيق الوقت غير صحيح: {e}', 'error')
+            return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "INSERT INTO content_templates (name, prompt, content, publish_time) VALUES (%s, %s, %s, %s)",
+                (name, prompt, content, publish_time)
+            )
+            content_id = cur.fetchone()['id'] if hasattr(cur, 'fetchone') else None
+            
+            # إذا كان هناك وقت نشر، جدولة المهمة لجميع القنوات
+            if publish_time and content_id:
+                cur.execute("SELECT channel_id FROM channels WHERE is_active = true AND is_paused = false")
+                channels = cur.fetchall()
+                for ch in channels:
+                    schedule_content_for_channel(content_id, ch['channel_id'], content, publish_time)
+        
+        flash('تم إضافة المحتوى بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error adding content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+def schedule_content_for_channel(content_id, channel_id, content, publish_time):
+    """جدولة محتوى محدد لقناة معينة"""
+    with get_db() as cur:
+        cur.execute(
+            "INSERT INTO scheduled_content (content_id, channel_id, scheduled_time) VALUES (%s, %s, %s)",
+            (content_id, channel_id, publish_time)
+        )
+    
+    job_id = f'content_{content_id}_{channel_id}'
+    scheduler.add_job(
+        func=publish_content_job,
+        trigger=DateTrigger(run_date=publish_time, timezone=TIMEZONE),
+        id=job_id,
+        args=[content_id, channel_id, content],
+        replace_existing=True
+    )
+    logger.info(f"Scheduled content {content_id} for channel {channel_id} at {publish_time}")
+
+@app.route('/admin/content/<int:content_id>/edit', methods=['POST'])
+@admin_required
+def edit_content(content_id):
+    name = request.form.get('name', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    content = request.form.get('content', '').strip()
+    publish_time_str = request.form.get('publish_time', '').strip()
+    
+    if not name or not content:
+        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    publish_time = None
+    if publish_time_str:
+        try:
+            publish_time = datetime.fromisoformat(publish_time_str)
+            publish_time = TIMEZONE.localize(publish_time)
+        except ValueError as e:
+            flash(f'تنسيق الوقت غير صحيح: {e}', 'error')
+            return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            # جلب الوقت القديم
+            cur.execute("SELECT publish_time FROM content_templates WHERE id = %s", (content_id,))
+            old = cur.fetchone()
+            old_time = old['publish_time'] if old else None
+            
+            cur.execute(
+                "UPDATE content_templates SET name = %s, prompt = %s, content = %s, publish_time = %s WHERE id = %s",
+                (name, prompt, content, publish_time, content_id)
+            )
+            
+            # إلغاء الجدولة القديمة إذا تغير الوقت
+            if old_time != publish_time:
+                # إلغاء المهام القديمة
+                for job in scheduler.get_jobs():
+                    if job.id.startswith(f'content_{content_id}_'):
+                        scheduler.remove_job(job.id)
+                
+                # حذف الجدولة القديمة
+                cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
+                
+                # جدولة جديدة إذا كان هناك وقت
+                if publish_time:
+                    cur.execute("SELECT channel_id FROM channels WHERE is_active = true AND is_paused = false")
+                    channels = cur.fetchall()
+                    for ch in channels:
+                        schedule_content_for_channel(content_id, ch['channel_id'], content, publish_time)
+        
+        flash('تم تعديل المحتوى بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error editing content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/content/<int:content_id>/delete')
+@admin_required
+def delete_content(content_id):
+    try:
+        with get_db() as cur:
+            # إلغاء الجدولة
+            for job in scheduler.get_jobs():
+                if job.id.startswith(f'content_{content_id}_'):
+                    scheduler.remove_job(job.id)
+            cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
+            cur.execute("DELETE FROM content_templates WHERE id = %s", (content_id,))
+        flash('تم حذف المحتوى بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== بقية مسارات الإدارة ====================
 @app.route('/register', methods=['POST'])
 def register():
     try:
@@ -705,98 +870,7 @@ def admin_panel():
                          publish_times=publish_times,
                          content_templates=content_templates)
 
-# ==================== إدارة المحتوى (مع توليد AI) ====================
-@app.route('/admin/content/add', methods=['POST'])
-@admin_required
-def add_content():
-    name = request.form.get('name', '').strip()
-    prompt = request.form.get('prompt', '').strip()
-    content = request.form.get('content', '').strip()
-    
-    if not name:
-        flash('اسم المحتوى مطلوب', 'error')
-        return redirect(url_for('admin_panel'))
-    
-    # إذا كان البرومبت موجوداً والمحتوى فارغاً، نقوم بتوليد المحتوى باستخدام AI
-    if prompt and not content:
-        logger.info(f"Generating content using AI with prompt: {prompt[:100]}...")
-        generated_content = generate_post_content(prompt)
-        if generated_content:
-            content = generated_content
-            flash('تم توليد المحتوى باستخدام الذكاء الاصطناعي', 'success')
-        else:
-            flash('فشل توليد المحتوى باستخدام الذكاء الاصطناعي. يرجى كتابة المحتوى يدوياً.', 'error')
-            return redirect(url_for('admin_panel'))
-    elif not content:
-        flash('المحتوى مطلوب (أو استخدم البرومبت لتوليده تلقائياً)', 'error')
-        return redirect(url_for('admin_panel'))
-    
-    try:
-        with get_db() as cur:
-            cur.execute(
-                "INSERT INTO content_templates (name, prompt, content) VALUES (%s, %s, %s)",
-                (name, prompt, content)
-            )
-        flash('تم إضافة المحتوى بنجاح', 'success')
-    except Exception as e:
-        logger.error(f"Error adding content: {e}")
-        flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/content/<int:content_id>/edit', methods=['POST'])
-@admin_required
-def edit_content(content_id):
-    name = request.form.get('name', '').strip()
-    prompt = request.form.get('prompt', '').strip()
-    content = request.form.get('content', '').strip()
-    
-    if not name:
-        flash('اسم المحتوى مطلوب', 'error')
-        return redirect(url_for('admin_panel'))
-    
-    # إذا كان البرومبت موجوداً والمحتوى فارغاً، نقوم بتوليد المحتوى
-    if prompt and not content:
-        logger.info(f"Regenerating content using AI with prompt: {prompt[:100]}...")
-        generated_content = generate_post_content(prompt)
-        if generated_content:
-            content = generated_content
-            flash('تم إعادة توليد المحتوى باستخدام الذكاء الاصطناعي', 'success')
-        else:
-            flash('فشل توليد المحتوى باستخدام الذكاء الاصطناعي. يرجى كتابة المحتوى يدوياً.', 'error')
-            return redirect(url_for('admin_panel'))
-    elif not content:
-        flash('المحتوى مطلوب (أو استخدم البرومبت لتوليده تلقائياً)', 'error')
-        return redirect(url_for('admin_panel'))
-    
-    try:
-        with get_db() as cur:
-            cur.execute(
-                "UPDATE content_templates SET name = %s, prompt = %s, content = %s WHERE id = %s",
-                (name, prompt, content, content_id)
-            )
-        flash('تم تعديل المحتوى بنجاح', 'success')
-    except Exception as e:
-        logger.error(f"Error editing content: {e}")
-        flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/content/<int:content_id>/delete')
-@admin_required
-def delete_content(content_id):
-    try:
-        with get_db() as cur:
-            cur.execute("SELECT id FROM channels WHERE selected_content_id = %s", (content_id,))
-            if cur.fetchone():
-                flash('لا يمكن حذف هذا المحتوى لأنه مستخدم في قناة حالياً', 'error')
-                return redirect(url_for('admin_panel'))
-            cur.execute("DELETE FROM content_templates WHERE id = %s", (content_id,))
-        flash('تم حذف المحتوى بنجاح', 'success')
-    except Exception as e:
-        logger.error(f"Error deleting content: {e}")
-        flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-# ==================== باقي مسارات الإدارة ====================
+# ==================== بقية مسارات الإدارة (الشخصيات، الإشعارات، القنوات، الإعدادات) ====================
 @app.route('/admin/character/add', methods=['POST'])
 @admin_required
 def add_character():
@@ -895,16 +969,16 @@ def admin_toggle_channel(channel_id):
                 new_status = not row['is_active']
                 cur.execute("UPDATE channels SET is_active=%s WHERE id=%s", (new_status, channel_id))
                 if new_status:
-                    cur.execute("SELECT channel_id, admin_id FROM channels WHERE id=%s", (channel_id,))
+                    cur.execute("SELECT channel_id FROM channels WHERE id=%s", (channel_id,))
                     ch = cur.fetchone()
                     if ch:
-                        schedule_posts_for_channel(ch['channel_id'], ch['admin_id'])
+                        schedule_posts_for_channel(ch['channel_id'], None)
                 else:
                     cur.execute("SELECT channel_id FROM channels WHERE id=%s", (channel_id,))
                     ch = cur.fetchone()
                     if ch:
                         for job in scheduler.get_jobs():
-                            if job.id.startswith(f'publish_{ch["channel_id"]}_'):
+                            if job.id.startswith(f'publish_{ch["channel_id"]}_') or job.id.startswith(f'content_'):
                                 scheduler.remove_job(job.id)
                 flash('تم تحديث حالة القناة', 'success')
     except Exception as e:

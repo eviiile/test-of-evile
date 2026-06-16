@@ -155,7 +155,6 @@ def init_db():
                 published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 message_id TEXT
             )''')
-            # جدول المحتوى المُعد مسبقاً
             cur.execute('''CREATE TABLE IF NOT EXISTS content_templates (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -205,7 +204,7 @@ def get_publish_times():
         logger.error(f"Error getting publish times: {e}")
     return ["09:00", "13:00", "17:00"]
 
-# ==================== توليد المحتوى ====================
+# ==================== توليد المحتوى (معدل) ====================
 def generate_post_content():
     prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
     
@@ -215,24 +214,42 @@ def generate_post_content():
         'HTTP-Referer': 'https://evile.onrender.com',
         'X-Title': 'EVILE Publisher'
     }
+    
+    # استخدام نموذج لا يدعم التفكير (reasoning) لتجنب إرجاع content: None
     payload = {
-        'model': 'openrouter/auto',
+        'model': 'openai/gpt-4o-mini',  # نموذج سريع وغير مكلف
         'messages': [
-            {'role': 'system', 'content': 'أنت كاتب محتوى تقني محترف.'},
+            {'role': 'system', 'content': 'أنت كاتب محتوى تقني محترف. اكتب مقالة قصيرة وجذابة.'},
             {'role': 'user', 'content': prompt}
         ],
-        'temperature': 0.8,
-        'max_tokens': 300
+        'temperature': 0.9,
+        'max_tokens': 400,
+        'top_p': 0.95
     }
+    
     try:
-        logger.debug("Generating post content via OpenRouter")
+        logger.debug("Generating post content via OpenRouter (GPT-4o-mini)")
         response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
         result = response.json()
-        # التحقق من وجود المفتاح المناسب
+        
+        # التحقق من وجود المحتوى
         if result and 'choices' in result and len(result['choices']) > 0:
-            content = result['choices'][0]['message']['content']
+            message = result['choices'][0].get('message', {})
+            content = message.get('content')
             if content:
+                logger.debug("Content generated successfully")
                 return content.strip()
+            else:
+                # محاولة استخدام نموذج بديل إذا فشل الأول
+                logger.warning("First model returned no content, trying fallback model")
+                payload['model'] = 'openai/gpt-3.5-turbo'
+                response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
+                result = response.json()
+                if result and 'choices' in result and len(result['choices']) > 0:
+                    content = result['choices'][0].get('message', {}).get('content')
+                    if content:
+                        return content.strip()
+        
         logger.error(f"Invalid response from OpenRouter: {result}")
         return None
     except Exception as e:
@@ -296,7 +313,6 @@ def publish_scheduled_post(channel_id, admin_id):
             logger.info(f"Channel {channel_id} is paused or inactive, skipping post")
             return
         
-        # التحقق من وجود محتوى محدد
         content = None
         if row['selected_content_id']:
             cur.execute("SELECT content FROM content_templates WHERE id = %s", (row['selected_content_id'],))
@@ -305,7 +321,6 @@ def publish_scheduled_post(channel_id, admin_id):
                 content = template['content']
                 logger.info(f"Using selected content template {row['selected_content_id']} for channel {channel_id}")
         
-        # إذا لم يوجد محتوى محدد، نقوم بتوليد محتوى جديد
         if not content:
             content = generate_post_content()
             if not content:
@@ -384,11 +399,9 @@ def publish():
             logger.info(f"User {telegram_id} has no channel, showing register page")
             return render_template('register.html')
         
-        # جلب جميع قوالب المحتوى المتاحة
         cur.execute("SELECT id, name, content FROM content_templates ORDER BY name")
         content_templates = cur.fetchall()
         
-        # جلب المحتوى المحدد حالياً
         selected_content_id = channel.get('selected_content_id')
         
         cur.execute("SELECT COUNT(*) FROM published_posts WHERE channel_id = %s", (channel['channel_id'],))
@@ -433,18 +446,15 @@ def select_content():
         return jsonify({'success': False, 'message': 'معرف المحتوى مطلوب'}), 400
     
     try:
-        content_id = int(content_id)
+        content_id = int(content_id) if content_id != '' else None
         with get_db() as cur:
-            # التحقق من أن المحتوى موجود
-            cur.execute("SELECT id FROM content_templates WHERE id = %s", (content_id,))
-            if not cur.fetchone():
-                return jsonify({'success': False, 'message': 'المحتوى غير موجود'}), 404
-            
-            # تحديث القناة
+            if content_id is not None:
+                cur.execute("SELECT id FROM content_templates WHERE id = %s", (content_id,))
+                if not cur.fetchone():
+                    return jsonify({'success': False, 'message': 'المحتوى غير موجود'}), 404
             cur.execute("UPDATE channels SET selected_content_id = %s WHERE admin_id = %s", (content_id, telegram_id))
             logger.info(f"User {telegram_id} selected content template {content_id}")
             
-            # إعادة جدولة القناة لتطبيق التغيير فوراً
             cur.execute("SELECT channel_id FROM channels WHERE admin_id = %s", (telegram_id,))
             row = cur.fetchone()
             if row:
@@ -570,7 +580,6 @@ def force_publish():
             channel_id = row['channel_id']
             selected_content_id = row['selected_content_id']
         
-        # محاولة استخدام المحتوى المحدد أولاً
         content = None
         if selected_content_id:
             with get_db() as cur:
@@ -686,7 +695,6 @@ def admin_panel():
             else:
                 publish_count = 3
                 publish_times = ["09:00", "13:00", "17:00"]
-            # جلب قوالب المحتوى
             cur.execute("SELECT * FROM content_templates ORDER BY id DESC")
             content_templates = cur.fetchall()
     except Exception as e:
@@ -706,7 +714,7 @@ def admin_panel():
                          publish_times=publish_times,
                          content_templates=content_templates)
 
-# ==================== إدارة الشخصيات والإشعارات والقنوات ====================
+# ==================== إدارة الشخصيات والإشعارات والقنوات والمحتوى ====================
 @app.route('/admin/character/add', methods=['POST'])
 @admin_required
 def add_character():
@@ -821,7 +829,6 @@ def admin_toggle_channel(channel_id):
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 
-# ==================== إدارة المحتوى (Content Templates) ====================
 @app.route('/admin/content/add', methods=['POST'])
 @admin_required
 def add_content():
@@ -873,7 +880,6 @@ def edit_content(content_id):
 def delete_content(content_id):
     try:
         with get_db() as cur:
-            # التحقق من عدم استخدام المحتوى في أي قناة
             cur.execute("SELECT id FROM channels WHERE selected_content_id = %s", (content_id,))
             if cur.fetchone():
                 flash('لا يمكن حذف هذا المحتوى لأنه مستخدم في قناة حالياً', 'error')

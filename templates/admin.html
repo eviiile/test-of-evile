@@ -1,3 +1,4 @@
+<!-- ==================== admin.html ==================== -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -15,24 +16,6 @@
             color: #1a1a1a;
             padding: 20px;
         }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.7; }
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-            100% { transform: translateY(0px); }
-        }
-        .icon-spin { animation: spin 2s linear infinite; display: inline-block; }
-        .icon-pulse { animation: pulse 1.5s ease-in-out infinite; display: inline-block; }
-        .icon-float { animation: float 2s ease-in-out infinite; display: inline-block; }
-
         .admin-container { max-width: 1200px; margin: 0 auto; }
         .admin-tabs {
             display: flex;
@@ -59,12 +42,11 @@
             align-items: center;
             gap: 6px;
         }
-        .tab-btn i { font-size: 14px; transition: transform 0.3s; }
-        .tab-btn:hover i { transform: scale(1.2) rotate(-10deg); }
+        .tab-btn i { font-size: 14px; }
         .tab-btn.active {
-            background: rgba(0,188,212,0.15);
-            border-color: #00bcd4;
-            color: #00bcd4;
+            background: rgba(0,0,0,0.1);
+            border-color: #aaa;
+            color: #000;
         }
         .tab-btn:active { transform: scale(0.96); }
         .tab-content {
@@ -81,12 +63,12 @@
             font-weight: 700;
             margin-bottom: 16px;
             padding-right: 12px;
-            border-right: 3px solid #00bcd4;
+            border-right: 3px solid #aaa;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .section-title i { font-size: 18px; color: #00bcd4; }
+        .section-title i { font-size: 18px; color: #888; }
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -100,7 +82,6 @@
             font-size: 12px;
             color: #555;
         }
-        label i { color: #00bcd4; margin-left: 4px; }
         input, textarea, select {
             width: 100%;
             padding: 8px 12px;
@@ -113,7 +94,7 @@
         }
         input:focus, textarea:focus {
             outline: none;
-            border-color: #00bcd4;
+            border-color: #aaa;
         }
         textarea { min-height: 80px; resize: vertical; }
         .checkbox-group {
@@ -125,14 +106,13 @@
         .checkbox-group input {
             width: auto;
             margin: 0;
-            accent-color: #00bcd4;
         }
         .btn {
             padding: 8px 16px;
-            background: linear-gradient(135deg, #00bcd4, #0097a7);
+            background: linear-gradient(135deg, #ddd, #bbb);
             border: none;
             border-radius: 40px;
-            color: #fff;
+            color: #333;
             font-weight: 600;
             font-size: 12px;
             cursor: pointer;
@@ -141,27 +121,37 @@
             align-items: center;
             gap: 6px;
         }
-        .btn i { transition: transform 0.3s; }
-        .btn:hover i { transform: scale(1.2) rotate(-10deg); }
         .btn-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: #fff;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
         }
         .btn:active { transform: scale(0.96); }
-        .characters-grid {
+        .characters-grid, .channels-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 16px;
             margin-top: 16px;
         }
-        .character-card {
+        .character-card, .channel-card {
             background: rgba(255,255,255,0.7);
             border: 1px solid rgba(0,0,0,0.1);
             border-radius: 16px;
             padding: 12px;
-            transition: transform 0.3s;
         }
-        .character-card:hover { transform: translateY(-4px); }
+        .channel-card .channel-id {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        .channel-card .admin-id {
+            font-size: 11px;
+            color: #777;
+        }
+        .card-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .character-header {
             display: flex;
             align-items: center;
@@ -172,12 +162,11 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: rgba(0,188,212,0.1);
+            background: rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            color: #00bcd4;
         }
         .character-name {
             font-size: 15px;
@@ -198,22 +187,18 @@
             overflow-y: auto;
             margin-bottom: 12px;
         }
-        .card-actions { display: flex; gap: 8px; }
         .notification-item {
             background: rgba(255,255,255,0.7);
             border: 1px solid rgba(0,0,0,0.1);
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 10px;
-            transition: transform 0.3s;
         }
-        .notification-item:hover { transform: translateX(-4px); }
         .notification-title {
             font-weight: 700;
             font-size: 13px;
             margin-bottom: 4px;
         }
-        .notification-title i { color: #00bcd4; }
         .notification-text {
             font-size: 11px;
             color: #555;
@@ -237,11 +222,6 @@
             padding: 20px;
             max-width: 500px;
             width: 100%;
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
         }
         @media (max-width: 640px) {
             body { padding: 12px; }
@@ -253,32 +233,33 @@
 <body>
     <div class="admin-container">
         <div class="admin-tabs">
-            <button class="tab-btn active" data-tab="characters"><i class="bi bi-people icon-pulse"></i> الشخصيات</button>
-            <button class="tab-btn" data-tab="notifications"><i class="bi bi-bell icon-bounce"></i> الإشعارات</button>
-            <button class="tab-btn" data-tab="channels"><i class="bi bi-megaphone icon-float"></i> قنوات الاشتراك</button>
-            <button class="tab-btn" data-tab="banned"><i class="bi bi-ban icon-shake"></i> حظر المستخدمين</button>
+            <button class="tab-btn active" data-tab="characters"><i class="bi bi-people"></i> الشخصيات</button>
+            <button class="tab-btn" data-tab="notifications"><i class="bi bi-bell"></i> الإشعارات</button>
+            <button class="tab-btn" data-tab="channels"><i class="bi bi-megaphone"></i> القنوات</button>
+            <button class="tab-btn" data-tab="failures"><i class="bi bi-exclamation-triangle"></i> فشل النشر</button>
         </div>
 
+        <!-- تبويب الشخصيات -->
         <div id="tab-characters" class="tab-content active">
-            <div class="section-title"><i class="bi bi-plus-circle icon-pulse"></i> إضافة شخصية جديدة</div>
+            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة شخصية جديدة</div>
             <form method="POST" action="/admin/character/add">
                 <div class="form-grid">
-                    <div class="form-group"><label><i class="bi bi-person"></i> اسم الشخصية</label><input type="text" name="name" required></div>
-                    <div class="form-group"><label><i class="bi bi-image"></i> رابط الصورة</label><input type="url" name="logo_url" placeholder="اختياري"></div>
-                    <div class="form-group"><label><i class="bi bi-card-text"></i> وصف مختصر</label><input type="text" name="description" required></div>
-                    <div class="form-group"><label><i class="bi bi-file-earmark-text"></i> البرومبت</label><textarea name="prompt" required></textarea></div>
-                    <div class="form-group"><label><i class="bi bi-key"></i> مفتاح الاستدعاء</label><input type="text" name="callback_key" placeholder="مثال: logo_maker"></div>
+                    <div class="form-group"><label>اسم الشخصية</label><input type="text" name="name" required></div>
+                    <div class="form-group"><label>رابط الصورة</label><input type="url" name="logo_url" placeholder="اختياري"></div>
+                    <div class="form-group"><label>وصف مختصر</label><input type="text" name="description" required></div>
+                    <div class="form-group"><label>البرومبت</label><textarea name="prompt" required></textarea></div>
+                    <div class="form-group"><label>مفتاح الاستدعاء</label><input type="text" name="callback_key" placeholder="مثال: logo_maker"></div>
                 </div>
                 <button type="submit" class="btn"><i class="bi bi-save"></i> إضافة شخصية</button>
             </form>
 
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul icon-float"></i> قائمة الشخصيات</div>
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> قائمة الشخصيات</div>
             <div class="characters-grid">
                 {% for char in characters %}
                 <div class="character-card">
                     <div class="character-header">
                         <div class="character-avatar">
-                            {% if char.logo_url %}<img src="{{ char.logo_url }}" width="40" height="40" style="border-radius:12px; object-fit:cover;">{% else %}<i class="bi bi-robot icon-pulse"></i>{% endif %}
+                            {% if char.logo_url %}<img src="{{ char.logo_url }}" width="40" height="40" style="border-radius:12px; object-fit:cover;">{% else %}<i class="bi bi-robot"></i>{% endif %}
                         </div>
                         <div class="character-name">{{ char.name }}</div>
                     </div>
@@ -293,22 +274,23 @@
             </div>
         </div>
 
+        <!-- تبويب الإشعارات -->
         <div id="tab-notifications" class="tab-content">
-            <div class="section-title"><i class="bi bi-send icon-pulse"></i> إرسال إشعار جديد</div>
+            <div class="section-title"><i class="bi bi-send"></i> إرسال إشعار جديد</div>
             <form method="POST" action="/admin/notification/add">
-                <div class="form-group"><label><i class="bi bi-tag"></i> العنوان</label><input type="text" name="title" required></div>
-                <div class="form-group"><label><i class="bi bi-card-text"></i> النص</label><textarea name="text" required></textarea></div>
-                <div class="form-group"><label><i class="bi bi-clock"></i> مدة الظهور (ساعات)</label><input type="number" name="duration_hours" value="1" min="1" step="1"></div>
+                <div class="form-group"><label>العنوان</label><input type="text" name="title" required></div>
+                <div class="form-group"><label>النص</label><textarea name="text" required></textarea></div>
+                <div class="form-group"><label>مدة الظهور (ساعات)</label><input type="number" name="duration_hours" value="1" min="1" step="1"></div>
                 <div class="checkbox-group">
                     <input type="checkbox" name="show_in_chat" id="show_in_chat">
-                    <label for="show_in_chat"><i class="bi bi-chat"></i> ظهور إجباري في واجهة الدردشة</label>
+                    <label for="show_in_chat">ظهور إجباري في واجهة الدردشة (لمدة 10 ثوانٍ)</label>
                 </div>
-                <button type="submit" class="btn"><i class="bi bi-bell icon-bounce"></i> إرسال الإشعار</button>
+                <button type="submit" class="btn"><i class="bi bi-bell"></i> إرسال الإشعار</button>
             </form>
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-clock-history icon-float"></i> الإشعارات المرسلة</div>
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-clock-history"></i> الإشعارات المرسلة</div>
             {% for notif in notifications %}
             <div class="notification-item">
-                <div class="notification-title"><i class="bi bi-bell icon-pulse"></i> {{ notif.title }} <span style="font-size: 10px; color:#888;">({{ notif.created_at }})</span></div>
+                <div class="notification-title"><i class="bi bi-bell"></i> {{ notif.title }} <span style="font-size: 10px; color:#888;">({{ notif.created_at }})</span></div>
                 <div class="notification-text">{{ notif.text }}</div>
                 <div class="notification-meta" style="font-size: 10px; color:#888; margin-top: 5px;">
                     المدة: {{ notif.duration_hours }} ساعة | ظهور إجباري: {{ 'نعم' if notif.show_in_chat else 'لا' }}
@@ -319,38 +301,87 @@
             {% endfor %}
         </div>
 
+        <!-- تبويب القنوات -->
         <div id="tab-channels" class="tab-content">
-            <div class="section-title"><i class="bi bi-link-45deg icon-float"></i> قنوات الاشتراك الإجباري</div>
-            <div style="background: rgba(255,255,255,0.6); border-radius: 16px; padding: 16px; margin-bottom: 20px;">
-                <p style="margin-bottom: 12px;"><strong><i class="bi bi-telegram icon-pulse" style="color:#0088cc;"></i> رابط تيليجرام:</strong> <a href="https://t.me/Evile_Prompts" target="_blank">https://t.me/Evile_Prompts</a></p>
-                <p><strong><i class="bi bi-instagram icon-pulse" style="color:#e4405f;"></i> رابط إنستغرام:</strong> <a href="https://www.instagram.com/bla6c7" target="_blank">https://www.instagram.com/bla6c7</a></p>
+            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة قناة جديدة</div>
+            <form method="POST" action="/admin/channel/add">
+                <div class="form-grid">
+                    <div class="form-group"><label>معرف القناة (رقمي)</label><input type="text" name="channel_id" placeholder="مثال: -1001234567890" required></div>
+                    <div class="form-group"><label>اسم المستخدم (اختياري)</label><input type="text" name="channel_username" placeholder="@example"></div>
+                    <div class="form-group"><label>معرف المشرف (Admin ID)</label><input type="text" name="admin_id" placeholder="أرقام فقط" required></div>
+                </div>
+                <button type="submit" class="btn"><i class="bi bi-plus-circle"></i> إضافة قناة</button>
+            </form>
+
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-check-circle"></i> القنوات النشطة</div>
+            <div class="channels-grid">
+                {% for ch in active_channels %}
+                <div class="channel-card">
+                    <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
+                    {% if ch.channel_username %}<div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
+                    <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.admin_id }}</div>
+                    <div style="font-size:10px; color:#888; margin-top:4px;">تمت الإضافة: {{ ch.created_at }}</div>
+                    <div class="card-actions">
+                        <button class="btn btn-danger" onclick="if(confirm('إيقاف النشر في هذه القناة؟')) location.href='/admin/channel/{{ ch.id }}/toggle'"><i class="bi bi-pause-circle"></i> إيقاف</button>
+                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/{{ ch.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                    </div>
+                </div>
+                {% else %}
+                <p style="color:#888; grid-column:1/-1; text-align:center;">لا توجد قنوات نشطة</p>
+                {% endfor %}
+            </div>
+
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-pause-circle"></i> القنوات المتوقفة</div>
+            <div class="channels-grid">
+                {% for ch in inactive_channels %}
+                <div class="channel-card" style="opacity:0.6;">
+                    <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
+                    {% if ch.channel_username %}<div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
+                    <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.admin_id }}</div>
+                    <div style="font-size:10px; color:#888; margin-top:4px;">تم الإيقاف</div>
+                    <div class="card-actions">
+                        <button class="btn btn-success" onclick="location.href='/admin/channel/{{ ch.id }}/toggle'"><i class="bi bi-play-circle"></i> تفعيل</button>
+                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/{{ ch.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                    </div>
+                </div>
+                {% else %}
+                <p style="color:#888; grid-column:1/-1; text-align:center;">لا توجد قنوات متوقفة</p>
+                {% endfor %}
             </div>
         </div>
 
-        <div id="tab-banned" class="tab-content">
-            <div class="section-title"><i class="bi bi-person-x icon-shake"></i> حظر مستخدم</div>
-            <form method="POST" action="/admin/ban_user">
-                <div class="form-group"><label><i class="bi bi-person"></i> معرف تيليجرام</label><input type="text" name="telegram_id" placeholder="أدخل المعرف المراد حظره" required></div>
-                <button type="submit" class="btn btn-danger"><i class="bi bi-ban icon-pulse"></i> حظر المستخدم</button>
-            </form>
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul icon-float"></i> قائمة المحظورين</div>
-            <div id="bannedList">
-                <p style="color:#888; text-align:center;">لا يوجد مستخدمون محظورون حالياً</p>
+        <!-- تبويب فشل النشر -->
+        <div id="tab-failures" class="tab-content">
+            <div class="section-title"><i class="bi bi-exclamation-triangle"></i> سجل فشل النشر</div>
+            {% if failures %}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for fail in failures %}
+                <div style="background:rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.1); border-radius:14px; padding:12px;">
+                    <div><strong>معرف القناة:</strong> {{ fail.channel_id }}</div>
+                    {% if fail.channel_username %}<div><strong>اسم المستخدم:</strong> {{ fail.channel_username }}</div>{% endif %}
+                    <div><strong>السبب:</strong> {{ fail.reason or 'غير محدد' }}</div>
+                    <div><strong>التاريخ:</strong> {{ fail.failed_at }}</div>
+                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p style="text-align:center; color:#888;">لا توجد حالات فشل</p>
+            {% endif %}
         </div>
     </div>
 
+    <!-- مودال التعديل -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-                <h3><i class="bi bi-pencil-square icon-pulse"></i> تعديل الشخصية</h3>
-                <button onclick="closeEditModal()" style="background:none; border:none; font-size:20px; cursor:pointer;"><i class="bi bi-x-lg"></i></button>
+                <h3><i class="bi bi-pencil-square"></i> تعديل الشخصية</h3>
+                <button onclick="closeEditModal()" style="background:none; border:none; font-size:20px;"><i class="bi bi-x-lg"></i></button>
             </div>
             <form method="POST" id="editForm">
-                <div class="form-group"><label><i class="bi bi-person"></i> اسم الشخصية</label><input type="text" name="name" id="editName" required></div>
-                <div class="form-group"><label><i class="bi bi-image"></i> رابط الصورة</label><input type="url" name="logo_url" id="editImage"></div>
-                <div class="form-group"><label><i class="bi bi-card-text"></i> وصف مختصر</label><input type="text" name="description" id="editDesc" required></div>
-                <div class="form-group"><label><i class="bi bi-file-earmark-text"></i> البرومبت</label><textarea name="prompt" id="editPrompt" required></textarea></div>
+                <div class="form-group"><label>اسم الشخصية</label><input type="text" name="name" id="editName" required></div>
+                <div class="form-group"><label>رابط الصورة</label><input type="url" name="logo_url" id="editImage"></div>
+                <div class="form-group"><label>وصف مختصر</label><input type="text" name="description" id="editDesc" required></div>
+                <div class="form-group"><label>البرومبت</label><textarea name="prompt" id="editPrompt" required></textarea></div>
                 <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ التعديلات</button>
             </form>
         </div>

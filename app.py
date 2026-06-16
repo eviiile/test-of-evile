@@ -1,4 +1,3 @@
-# ==================== app.py ====================
 import os
 import logging
 import requests
@@ -19,7 +18,7 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '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')
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
-BOT_TOKEN = os.getenv('BOT_TOKEN', '')  # توكن البوت لإرسال الإشعارات
+BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,13 +88,11 @@ def init_db():
                 telegram_id TEXT UNIQUE NOT NULL,
                 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
-            
-            # جداول القنوات الجديدة
             cur.execute('''CREATE TABLE IF NOT EXISTS channels (
                 id SERIAL PRIMARY KEY,
-                channel_id TEXT UNIQUE NOT NULL,   -- معرف القناة الرقمي
-                channel_username TEXT,              -- اسم المستخدم (للإشارة)
-                admin_id TEXT NOT NULL,             -- معرف المشرف
+                channel_id TEXT UNIQUE NOT NULL,
+                channel_username TEXT,
+                admin_id TEXT NOT NULL,
                 is_active BOOLEAN DEFAULT TRUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_post_at TIMESTAMP
@@ -106,7 +103,6 @@ def init_db():
                 reason TEXT,
                 failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
-            
             ensure_notification_columns(cur)
             logger.info("Database initialized/updated successfully")
     except Exception as e:
@@ -154,6 +150,11 @@ def index():
                          latest_notification=latest_notification,
                          channel_url=channel_url,
                          instagram_url=instagram_url)
+
+@app.route('/publish')
+def publish():
+    """صفحة النشر التلقائي (المعالج متعدد الخطوات)"""
+    return render_template('publish.html')
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -226,8 +227,6 @@ def admin_panel():
             cur.execute('SELECT COUNT(*) FROM users')
             row = cur.fetchone()
             users_count = row['count'] if row else 0
-            
-            # جلب القنوات النشطة والفاشلة
             cur.execute('SELECT * FROM channels WHERE is_active = true ORDER BY created_at DESC')
             active_channels = cur.fetchall()
             cur.execute('SELECT * FROM channels WHERE is_active = false ORDER BY created_at DESC')
@@ -339,7 +338,6 @@ def add_channel():
         return redirect(url_for('admin_panel'))
     try:
         with get_db() as cur:
-            # التحقق من عدم التكرار
             cur.execute("SELECT id FROM channels WHERE channel_id = %s", (channel_id,))
             if cur.fetchone():
                 flash('هذه القناة مسجلة مسبقاً', 'error')
@@ -365,13 +363,11 @@ def toggle_channel(channel_id):
                 return redirect(url_for('admin_panel'))
             new_status = not row['is_active']
             cur.execute("UPDATE channels SET is_active = %s WHERE id = %s", (new_status, channel_id))
-            # إذا تم الإيقاف، نسجل في جدول الفشل ونرسل إشعار
             if not new_status:
                 cur.execute(
                     "INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)",
                     (row['channel_id'], 'تم إيقاف القناة يدوياً')
                 )
-                # إرسال إشعار للمشرف (إذا كان البوت مفعلاً)
                 if BOT_TOKEN:
                     try:
                         msg = f"🚫 تم إيقاف النشر في قناتك (ID: {row['channel_id']}) يدوياً بواسطة المشرف."
@@ -395,7 +391,7 @@ def delete_channel(channel_id):
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 
-# ------------------- API للنشر -------------------
+# ------------------- API -------------------
 @app.route('/api/characters')
 def api_characters():
     now = time.time()

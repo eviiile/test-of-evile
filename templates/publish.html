@@ -13,106 +13,175 @@
             background: #f5f5f5;
             color: #1a1a1a;
             min-height: 100vh;
-            padding: 20px 16px 80px;
+            padding: 16px 12px 80px;
         }
         .container { max-width: 700px; margin: 0 auto; }
+        
         .dashboard-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
         .dashboard-header h1 {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
-        .dashboard-header h1 i { color: #0088cc; }
+        .dashboard-header h1 i { color: #0088cc; font-size: 20px; }
+        .dashboard-header a { font-size: 18px; color: #888; }
+        
         .channel-info {
             background: rgba(255,255,255,0.75);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 6px;
         }
-        .channel-info .id { font-size: 14px; font-weight: 600; }
-        .channel-info .status { font-size: 12px; padding: 4px 12px; border-radius: 30px; background: rgba(0,0,0,0.05); }
+        .channel-info .id { font-size: 12px; font-weight: 600; }
+        .channel-info .status { font-size: 10px; padding: 3px 10px; border-radius: 20px; background: rgba(0,0,0,0.05); }
+        
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
         }
         .stat-card {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 16px;
-            padding: 16px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            padding: 10px 8px;
             text-align: center;
         }
-        .stat-card .number { font-size: 28px; font-weight: 800; }
-        .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; }
-        .stat-card i { font-size: 24px; display: block; margin-bottom: 8px; color: #0088cc; }
-        .icon-center { text-align: center; margin: 20px 0; }
-        .icon-center i { font-size: 80px; color: #0088cc; opacity: 0.3; }
+        .stat-card .number { font-size: 20px; font-weight: 800; }
+        .stat-card .label { font-size: 10px; color: #666; margin-top: 2px; }
+        .stat-card i { font-size: 18px; display: block; margin-bottom: 4px; color: #0088cc; }
+        
+        .icon-center { text-align: center; margin: 12px 0; }
+        .icon-center i { font-size: 56px; color: #0088cc; opacity: 0.3; }
+        
         .times-box {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
         }
-        .times-box h3 { font-size: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .times-box .times-list { display: flex; gap: 12px; flex-wrap: wrap; }
-        .times-box .time-badge { background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 30px; font-size: 13px; }
-        .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-        .actions .btn {
-            padding: 10px 20px;
+        .times-box h3 { font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .times-box .times-list { display: flex; gap: 8px; flex-wrap: wrap; }
+        .times-box .time-badge { background: rgba(0,0,0,0.05); padding: 3px 10px; border-radius: 20px; font-size: 11px; }
+        
+        .content-selector {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+        }
+        .content-selector h3 { font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .content-selector .selector-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .content-selector select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 6px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 12px;
+            background: rgba(255,255,255,0.8);
+            min-width: 120px;
+        }
+        .content-selector .btn-select {
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #ddd, #bbb);
             border: none;
-            border-radius: 40px;
+            border-radius: 6px;
+            color: #333;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .content-selector .btn-select:active { transform: scale(0.96); }
+        .content-selector .current-content {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+            border-right: 3px solid #0088cc;
+        }
+        .content-selector .current-content strong { color: #1a1a1a; }
+        .content-selector .content-preview {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .actions .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            flex: 1;
             justify-content: center;
+            gap: 4px;
+            text-align: center;
         }
         .btn-pause { background: #ffc107; color: #333; }
         .btn-stop { background: #dc3545; color: #fff; }
         .btn-publish { background: #28a745; color: #fff; }
-        .btn:active { transform: scale(0.96); }
+        .btn:active { transform: scale(0.95); }
         .btn:disabled { opacity: 0.5; pointer-events: none; }
+        
         .recent-posts {
             background: rgba(255,255,255,0.7);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 16px;
-            padding: 16px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
         }
-        .recent-posts h3 { font-size: 16px; margin-bottom: 12px; }
-        .post-item { padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; line-height: 1.5; }
-        .post-item .time { font-size: 11px; color: #888; display: block; margin-bottom: 4px; }
+        .recent-posts h3 { font-size: 13px; margin-bottom: 8px; }
+        .post-item { padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 12px; line-height: 1.4; }
+        .post-item .time { font-size: 10px; color: #888; display: block; margin-bottom: 2px; }
         .post-item:last-child { border-bottom: none; }
+        
         .toast {
             position: fixed; bottom: 80px; left: 20px; right: 20px;
             background: rgba(0,0,0,0.85); color: #fff;
-            padding: 14px; border-radius: 16px; text-align: center;
-            z-index: 1000; display: none;
+            padding: 12px 16px; border-radius: 12px; text-align: center;
+            z-index: 1000; display: none; font-size: 13px;
         }
 
-        /* شريط التنقل السفلي الموحد */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -122,13 +191,13 @@
             background: rgba(255,255,255,0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 14px;
-            padding: 6px 10px;
+            border-radius: 12px;
+            padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            height: 50px;
+            height: 44px;
             max-width: 400px;
             margin: 0 auto;
         }
@@ -144,19 +213,19 @@
             gap: 1px;
             text-decoration: none;
             color: #999;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 500;
             transition: all 0.2s;
-            padding: 4px 12px;
-            border-radius: 30px;
+            padding: 3px 10px;
+            border-radius: 20px;
             background: transparent;
             border: none;
             cursor: pointer;
             flex: 1;
-            max-width: 80px;
+            max-width: 70px;
         }
-        .nav-item i { font-size: 18px; transition: all 0.2s; }
-        .nav-item span { font-size: 8px; }
+        .nav-item i { font-size: 16px; transition: all 0.2s; }
+        .nav-item span { font-size: 7px; }
         .nav-item.active {
             color: #1a1a1a;
             background: rgba(0,0,0,0.05);
@@ -168,28 +237,30 @@
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
-        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr 1fr; } .actions { grid-template-columns: 1fr 1fr; } }
         @media (min-width: 768px) { .bottom-nav { left: 20px; right: 20px; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="dashboard-header">
-            <h1><i class="bi bi-megaphone"></i> لوحة النشر</h1>
+            <h1><i class="bi bi-megaphone"></i> النشر</h1>
             <a href="/" style="color:#888; text-decoration:none;"><i class="bi bi-house"></i></a>
         </div>
 
+        <!-- معلومات القناة -->
         <div class="channel-info">
             <span class="id"><i class="bi bi-hash"></i> {{ channel.channel_id }}</span>
             <span class="status">
                 {% if channel.is_active %}
-                    {% if is_paused %}⏸️ موقّت مؤقت{% else %}✅ نشط{% endif %}
+                    {% if is_paused %}⏸️ موقّت{% else %}✅ نشط{% endif %}
                 {% else %}
                     ⛔ متوقف
                 {% endif %}
             </span>
         </div>
 
+        <!-- بطاقات الإحصائيات -->
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="bi bi-people"></i>
@@ -208,12 +279,14 @@
             </div>
         </div>
 
+        <!-- أيقونة مركزية -->
         <div class="icon-center">
             <i class="bi bi-robot"></i>
         </div>
 
+        <!-- أوقات النشر -->
         <div class="times-box">
-            <h3><i class="bi bi-clock-history"></i> أوقات النشر (بتوقيت صنعاء)</h3>
+            <h3><i class="bi bi-clock-history"></i> أوقات النشر (صنعاء)</h3>
             <div class="times-list">
                 {% for t in times %}
                     <span class="time-badge">{{ t }}</span>
@@ -221,14 +294,46 @@
             </div>
         </div>
 
+        <!-- اختيار المحتوى -->
+        <div class="content-selector">
+            <h3><i class="bi bi-file-text"></i> المحتوى المراد نشره</h3>
+            <form id="selectContentForm">
+                <div class="selector-row">
+                    <select name="content_id" id="contentSelect">
+                        <option value="">-- توليد تلقائي --</option>
+                        {% for item in content_templates %}
+                            <option value="{{ item.id }}" {% if selected_content_id == item.id %}selected{% endif %}>
+                                {{ item.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-select"><i class="bi bi-check"></i> اختيار</button>
+                </div>
+            </form>
+            {% if selected_content_id %}
+                {% for item in content_templates %}
+                    {% if item.id == selected_content_id %}
+                        <div class="current-content">
+                            <strong>المحتوى الحالي:</strong> {{ item.name }}
+                            <div class="content-preview">{{ item.content[:100] }}{% if item.content|length > 100 %}...{% endif %}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="current-content" style="color:#888;">
+                    <i class="bi bi-info-circle"></i> يتم توليد محتوى تلقائياً عند النشر
+                </div>
+            {% endif %}
+            <div style="font-size:10px; color:#999; margin-top:6px;">
+                <i class="bi bi-info-circle"></i> يمكنك إضافة محتوى جديد من <a href="/admin#tab-content" style="color:#0088cc; text-decoration:none;">لوحة التحكم</a>
+            </div>
+        </div>
+
+        <!-- أزرار التحكم -->
         <div class="actions">
             {% if channel.is_active %}
                 <button class="btn btn-pause" id="pauseBtn">
-                    {% if is_paused %}
-                        <i class="bi bi-play"></i> استئناف
-                    {% else %}
-                        <i class="bi bi-pause"></i> إيقاف مؤقت
-                    {% endif %}
+                    {% if is_paused %}<i class="bi bi-play"></i> استئناف{% else %}<i class="bi bi-pause"></i> إيقاف{% endif %}
                 </button>
                 <button class="btn btn-stop" id="stopBtn"><i class="bi bi-stop-circle"></i> إيقاف نهائي</button>
                 <button class="btn btn-publish" id="publishNowBtn"><i class="bi bi-send"></i> نشر الآن</button>
@@ -237,22 +342,23 @@
             {% endif %}
         </div>
 
+        <!-- آخر المنشورات -->
         <div class="recent-posts">
             <h3><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
             {% if recent_posts %}
                 {% for post in recent_posts %}
                     <div class="post-item">
                         <span class="time">{{ post.published_at }}</span>
-                        {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
+                        {{ post.content[:120] }}{% if post.content|length > 120 %}...{% endif %}
                     </div>
                 {% endfor %}
             {% else %}
-                <p style="color:#888; text-align:center;">لا توجد منشورات بعد</p>
+                <p style="color:#888; text-align:center; font-size:12px;">لا توجد منشورات بعد</p>
             {% endif %}
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي الموحد -->
+    <!-- شريط التنقل السفلي -->
     <nav class="bottom-nav" id="bottomNav">
         <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
@@ -275,6 +381,34 @@
             toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
         }
 
+        // اختيار المحتوى
+        document.getElementById('selectContentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const btn = this.querySelector('.btn-select');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
+            
+            try {
+                const res = await fetch('/publish/select_content', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ تم اختيار المحتوى بنجاح');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'حدث خطأ');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check"></i> اختيار';
+                }
+            } catch (e) {
+                console.error('Error:', e);
+                showToast('خطأ في الاتصال بالخادم');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check"></i> اختيار';
+            }
+        });
+
+        // إيقاف مؤقت
         document.getElementById('pauseBtn')?.addEventListener('click', async function() {
             try {
                 const res = await fetch('/publish/toggle_pause');
@@ -288,6 +422,7 @@
             } catch (e) { showToast('خطأ في الاتصال'); }
         });
 
+        // إيقاف نهائي
         document.getElementById('stopBtn')?.addEventListener('click', async function() {
             if (!confirm('هل أنت متأكد من إيقاف النشر نهائياً؟')) return;
             try {
@@ -302,6 +437,7 @@
             } catch (e) { showToast('خطأ في الاتصال'); }
         });
 
+        // نشر فوري
         document.getElementById('publishNowBtn')?.addEventListener('click', async function() {
             this.disabled = true;
             this.textContent = 'جاري النشر...';

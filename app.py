@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+import pytz  # نضيف pytz للتعامل مع المنطقة الزمنية
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -23,6 +23,9 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-c9df44eba45bd3f60
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
+
+# المنطقة الزمنية لصنعاء
+TIMEZONE = pytz.timezone('Asia/Aden')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -114,17 +117,15 @@ def init_db():
                 publish_count INTEGER DEFAULT 3,
                 publish_times TEXT DEFAULT '["09:00","13:00","17:00"]'
             )''')
-            # جدول المحتوى المجدول
             cur.execute('''CREATE TABLE IF NOT EXISTS scheduled_posts (
                 id SERIAL PRIMARY KEY,
                 channel_id TEXT NOT NULL,
                 content TEXT NOT NULL,
                 scheduled_time TIMESTAMP NOT NULL,
-                status TEXT DEFAULT 'pending', -- pending, published, failed
+                status TEXT DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 published_at TIMESTAMP
             )''')
-            # جدول سجل النشر
             cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
                 id SERIAL PRIMARY KEY,
                 channel_id TEXT NOT NULL,
@@ -132,7 +133,6 @@ def init_db():
                 published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 message_id TEXT
             )''')
-            # إدخال إعدادات النشر الافتراضية
             cur.execute("SELECT COUNT(*) FROM publish_settings")
             if cur.fetchone()['count'] == 0:
                 cur.execute("INSERT INTO publish_settings (publish_count, publish_times) VALUES (3, '[\"09:00\",\"13:00\",\"17:00\"]')")
@@ -161,18 +161,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-def get_channel_ids(admin_id):
-    """جلب جميع القنوات النشطة لمشرف معين"""
-    try:
-        with get_db() as cur:
-            cur.execute("SELECT channel_id FROM channels WHERE admin_id = %s AND is_active = true", (admin_id,))
-            rows = cur.fetchall()
-            return [row['channel_id'] for row in rows]
-    except:
-        return []
-
 def get_publish_times():
-    """جلب أوقات النشر المحفوظة"""
     try:
         with get_db() as cur:
             cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
@@ -185,7 +174,6 @@ def get_publish_times():
 
 # ==================== توليد المحتوى ====================
 def generate_post_content():
-    """توليد محتوى باستخدام OpenRouter مع البرومبت المطلوب"""
     prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
     
     headers = {
@@ -214,12 +202,10 @@ def generate_post_content():
 
 # ==================== النشر في تلغرام ====================
 def send_telegram_message(channel_id, text):
-    """إرسال رسالة إلى قناة تلغرام باستخدام البوت"""
     if not BOT_TOKEN:
         logger.error("BOT_TOKEN not set")
         return None
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    # نستخدم parse_mode='Markdown' لدعم الروابط
     payload = {
         'chat_id': channel_id,
         'text': text,
@@ -238,25 +224,21 @@ def send_telegram_message(channel_id, text):
         logger.error(f"Error sending message: {e}")
         return None
 
-# ==================== جدولة النشر ====================
-scheduler = BackgroundScheduler()
+# ==================== جدولة النشر (بتوقيت صنعاء) ====================
+scheduler = BackgroundScheduler(timezone=TIMEZONE)
 scheduler.start()
 
 def schedule_posts_for_channel(channel_id, admin_id):
-    """جدولة النشر لقناة معينة بناءً على الأوقات المحفوظة"""
-    # إلغاء المهام السابقة لهذه القناة
     for job in scheduler.get_jobs():
         if job.id.startswith(f'publish_{channel_id}_'):
             scheduler.remove_job(job.id)
     
-    # جلب الأوقات
     times = get_publish_times()
-    # جلب المنطقة الزمنية (نفترض UTC)
     for time_str in times:
         hour, minute = map(int, time_str.split(':'))
-        # إنشاء مهمة يومية في الساعة والدقيقة المحددة
         job_id = f'publish_{channel_id}_{hour}_{minute}'
-        trigger = CronTrigger(hour=hour, minute=minute, timezone='UTC')
+        # استخدام المنطقة الزمنية المحددة
+        trigger = CronTrigger(hour=hour, minute=minute, timezone=TIMEZONE)
         scheduler.add_job(
             func=publish_scheduled_post,
             trigger=trigger,
@@ -264,24 +246,22 @@ def schedule_posts_for_channel(channel_id, admin_id):
             args=[channel_id, admin_id],
             replace_existing=True
         )
-        logger.info(f"Scheduled post for channel {channel_id} at {time_str} UTC")
+        logger.info(f"Scheduled post for channel {channel_id} at {time_str} (Asia/Aden)")
 
 def publish_scheduled_post(channel_id, admin_id):
-    """تنفيذ النشر المجدول لقناة محددة"""
-    # توليد المحتوى
+    with get_db() as cur:
+        cur.execute("SELECT is_paused, is_active FROM channels WHERE channel_id = %s", (channel_id,))
+        row = cur.fetchone()
+        if not row or not row['is_active'] or row['is_paused']:
+            return
+    
     content = generate_post_content()
     if not content:
-        logger.error(f"Failed to generate content for channel {channel_id}")
-        # تسجيل فشل
         with get_db() as cur:
-            cur.execute(
-                "INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)",
-                (channel_id, 'فشل توليد المحتوى')
-            )
+            cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, 'فشل توليد المحتوى'))
         return
     
-    # تخزين المحتوى في scheduled_posts
-    scheduled_time = datetime.now()
+    scheduled_time = datetime.now(TIMEZONE)
     with get_db() as cur:
         cur.execute(
             "INSERT INTO scheduled_posts (channel_id, content, scheduled_time, status) VALUES (%s, %s, %s, 'pending')",
@@ -289,39 +269,19 @@ def publish_scheduled_post(channel_id, admin_id):
         )
         post_id = cur.fetchone()['id'] if hasattr(cur, 'fetchone') else None
     
-    # النشر
     message_id = send_telegram_message(channel_id, content)
     if message_id:
-        # تحديث حالة النشر
         with get_db() as cur:
-            cur.execute(
-                "UPDATE scheduled_posts SET status = 'published', published_at = NOW() WHERE id = %s",
-                (post_id,)
-            )
-            cur.execute(
-                "INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)",
-                (channel_id, content, message_id)
-            )
-            cur.execute(
-                "UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s",
-                (channel_id,)
-            )
+            cur.execute("UPDATE scheduled_posts SET status = 'published', published_at = NOW() WHERE id = %s", (post_id,))
+            cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
+            cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
         logger.info(f"Published post to channel {channel_id}")
     else:
-        # فشل النشر
         with get_db() as cur:
-            cur.execute(
-                "UPDATE scheduled_posts SET status = 'failed' WHERE id = %s",
-                (post_id,)
-            )
-            cur.execute(
-                "INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)",
-                (channel_id, 'فشل إرسال الرسالة إلى تلغرام')
-            )
-        logger.error(f"Failed to publish to channel {channel_id}")
+            cur.execute("UPDATE scheduled_posts SET status = 'failed' WHERE id = %s", (post_id,))
+            cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, 'فشل إرسال الرسالة إلى تلغرام'))
 
 def schedule_all_channels():
-    """جدولة جميع القنوات النشطة"""
     try:
         with get_db() as cur:
             cur.execute("SELECT channel_id, admin_id FROM channels WHERE is_active = true AND is_paused = false")
@@ -362,26 +322,20 @@ def publish():
     if not telegram_id:
         return redirect(url_for('index'))
     
-    # جلب معلومات القناة للمستخدم (نفترض قناة واحدة لكل مستخدم حالياً)
     with get_db() as cur:
         cur.execute("SELECT * FROM channels WHERE admin_id = %s", (telegram_id,))
         channel = cur.fetchone()
         if not channel:
-            # لا توجد قناة مسجلة، عرض واجهة التسجيل (مع إمكانية إضافة قناة)
             return render_template('publish_register.html')
         
-        # جلب الإحصائيات
         cur.execute("SELECT COUNT(*) FROM published_posts WHERE channel_id = %s", (channel['channel_id'],))
         posts_count = cur.fetchone()['count']
         
-        # جلب آخر 5 منشورات
         cur.execute("SELECT content, published_at FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 5", (channel['channel_id'],))
         recent_posts = cur.fetchall()
         
-        # جلب أوقات النشر
         times = get_publish_times()
         
-        # جلب عدد أعضاء القناة (محاكاة أو عبر API)
         members_count = 0
         if BOT_TOKEN:
             try:
@@ -393,7 +347,6 @@ def publish():
             except:
                 pass
         
-        # حالة الجدولة
         is_paused = channel.get('is_paused', False)
         
         return render_template('publish_dashboard.html',
@@ -416,21 +369,17 @@ def register_channel():
     if not channel_id:
         return jsonify({'success': False, 'message': 'معرف القناة مطلوب'}), 400
     
-    # التأكد من أن المستخدم ليس لديه قناة مسجلة مسبقاً
     with get_db() as cur:
         cur.execute("SELECT id FROM channels WHERE admin_id = %s", (telegram_id,))
         if cur.fetchone():
             return jsonify({'success': False, 'message': 'لديك قناة مسجلة مسبقاً'}), 400
         
-        # إضافة القناة
         cur.execute(
             "INSERT INTO channels (channel_id, channel_username, admin_id, is_active, is_paused) VALUES (%s, %s, %s, true, false)",
             (channel_id, channel_username, telegram_id)
         )
     
-    # جدولة النشر لهذه القناة
     schedule_posts_for_channel(channel_id, telegram_id)
-    
     return jsonify({'success': True, 'message': 'تم تسجيل القناة بنجاح'})
 
 @app.route('/publish/toggle_pause')
@@ -448,9 +397,7 @@ def toggle_pause():
         new_status = not row['is_paused']
         cur.execute("UPDATE channels SET is_paused = %s WHERE id = %s", (new_status, row['id']))
         
-        # إذا تم الإيقاف المؤقت، نلغي الجدولة، وإلا نعيد جدولتها
         if new_status:
-            # إلغاء جميع المهام لهذه القناة
             for job in scheduler.get_jobs():
                 if job.id.startswith(f'publish_{row["channel_id"]}_'):
                     scheduler.remove_job(job.id)
@@ -471,19 +418,16 @@ def stop_publishing():
         if not row:
             return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
         
-        # إلغاء جميع المهام
         for job in scheduler.get_jobs():
             if job.id.startswith(f'publish_{row["channel_id"]}_'):
                 scheduler.remove_job(job.id)
         
-        # تعطيل القناة نهائياً
         cur.execute("UPDATE channels SET is_active = false WHERE id = %s", (row['id'],))
     
     return jsonify({'success': True, 'message': 'تم إيقاف النشر نهائياً'})
 
 @app.route('/publish/force_publish')
 def force_publish():
-    """نشر فوري (اختباري)"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
@@ -495,7 +439,6 @@ def force_publish():
             return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
         channel_id = row['channel_id']
     
-    # تنفيذ النشر الفوري
     content = generate_post_content()
     if not content:
         return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
@@ -503,16 +446,13 @@ def force_publish():
     message_id = send_telegram_message(channel_id, content)
     if message_id:
         with get_db() as cur:
-            cur.execute(
-                "INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)",
-                (channel_id, content, message_id)
-            )
+            cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
             cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
         return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
     else:
         return jsonify({'success': False, 'message': 'فشل النشر'}), 500
 
-# ==================== باقي المسارات (الإدارة، API، إلخ) ====================
+# ==================== باقي المسارات ====================
 @app.route('/register', methods=['POST'])
 def register():
     try:
@@ -614,7 +554,6 @@ def admin_panel():
                          publish_count=publish_count,
                          publish_times=publish_times)
 
-# ==================== إدارة الشخصيات والإشعارات والقنوات (نفس السابق) ====================
 @app.route('/admin/character/add', methods=['POST'])
 @admin_required
 def add_character():
@@ -712,14 +651,12 @@ def admin_toggle_channel(channel_id):
             if row:
                 new_status = not row['is_active']
                 cur.execute("UPDATE channels SET is_active=%s WHERE id=%s", (new_status, channel_id))
-                # إذا تم التفعيل، نقوم بجدولة القناة
                 if new_status:
                     cur.execute("SELECT channel_id, admin_id FROM channels WHERE id=%s", (channel_id,))
                     ch = cur.fetchone()
                     if ch:
                         schedule_posts_for_channel(ch['channel_id'], ch['admin_id'])
                 else:
-                    # إلغاء الجدولة
                     cur.execute("SELECT channel_id FROM channels WHERE id=%s", (channel_id,))
                     ch = cur.fetchone()
                     if ch:
@@ -750,7 +687,6 @@ def save_publish_settings():
         times_json = json.dumps(times)
         with get_db() as cur:
             cur.execute("UPDATE publish_settings SET publish_count = %s, publish_times = %s", (publish_count, times_json))
-        # إعادة جدولة جميع القنوات
         schedule_all_channels()
         flash('تم حفظ إعدادات النشر وإعادة جدولة القنوات', 'success')
     except Exception as e:
@@ -824,6 +760,5 @@ def api_chat():
 # ==================== بدء التشغيل ====================
 if __name__ == '__main__':
     init_db()
-    # جدولة جميع القنوات عند بدء التشغيل
     schedule_all_channels()
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)

@@ -2,6 +2,7 @@ import os
 import logging
 import requests
 import time
+import json
 from datetime import datetime, timedelta
 from functools import wraps
 from contextlib import contextmanager
@@ -103,6 +104,17 @@ def init_db():
                 reason TEXT,
                 failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
+            # جدول إعدادات النشر
+            cur.execute('''CREATE TABLE IF NOT EXISTS publish_settings (
+                id SERIAL PRIMARY KEY,
+                publish_count INTEGER DEFAULT 3,
+                publish_times TEXT DEFAULT '["09:00","13:00","17:00"]'
+            )''')
+            # إدخال القيمة الافتراضية إذا لم تكن موجودة
+            cur.execute("SELECT COUNT(*) FROM publish_settings")
+            if cur.fetchone()['count'] == 0:
+                cur.execute("INSERT INTO publish_settings (publish_count, publish_times) VALUES (3, '[\"09:00\",\"13:00\",\"17:00\"]')")
+            
             ensure_notification_columns(cur)
             logger.info("Database initialized/updated successfully")
     except Exception as e:
@@ -154,7 +166,22 @@ def index():
 @app.route('/publish')
 def publish():
     """صفحة النشر التلقائي"""
-    return render_template('publish.html')
+    # جلب إعدادات النشر لعرضها في الصفحة (اختياري)
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT publish_count, publish_times FROM publish_settings LIMIT 1")
+            settings = cur.fetchone()
+            if settings:
+                publish_count = settings['publish_count']
+                publish_times = json.loads(settings['publish_times'])
+            else:
+                publish_count = 3
+                publish_times = ["09:00", "13:00", "17:00"]
+    except Exception as e:
+        logger.error(f"Error fetching publish settings: {e}")
+        publish_count = 3
+        publish_times = ["09:00", "13:00", "17:00"]
+    return render_template('publish.html', publish_count=publish_count, publish_times=publish_times)
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -236,17 +263,30 @@ def admin_panel():
                            LEFT JOIN channels c ON cf.channel_id = c.channel_id 
                            ORDER BY cf.failed_at DESC''')
             failures = cur.fetchall()
+            # جلب إعدادات النشر
+            cur.execute("SELECT publish_count, publish_times FROM publish_settings LIMIT 1")
+            settings = cur.fetchone()
+            if settings:
+                publish_count = settings['publish_count']
+                publish_times = json.loads(settings['publish_times'])
+            else:
+                publish_count = 3
+                publish_times = ["09:00", "13:00", "17:00"]
     except Exception as e:
         logger.error(f"Admin panel error: {e}")
         characters, notifications, users_count = [], [], 0
         active_channels = inactive_channels = failures = []
+        publish_count = 3
+        publish_times = ["09:00", "13:00", "17:00"]
     return render_template('admin.html', 
                          characters=characters, 
                          notifications=notifications, 
                          users_count=users_count,
                          active_channels=active_channels,
                          inactive_channels=inactive_channels,
-                         failures=failures)
+                         failures=failures,
+                         publish_count=publish_count,
+                         publish_times=publish_times)
 
 # ------------------- إدارة الشخصيات -------------------
 @app.route('/admin/character/add', methods=['POST'])
@@ -391,6 +431,38 @@ def delete_channel(channel_id):
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 
+# ------------------- إعدادات النشر -------------------
+@app.route('/admin/publish/settings', methods=['POST'])
+@admin_required
+def save_publish_settings():
+    try:
+        publish_count = int(request.form.get('publish_count', 3))
+        # جمع الأوقات من النموذج (قد تصل كقائمة)
+        times = request.form.getlist('publish_time[]')
+        # إذا لم تصل كقائمة، حاول قراءة الحقل الواحد
+        if not times:
+            times = request.form.get('publish_time', '').split(',')
+        # تنظيف الأوقات وإزالة الفارغ
+        times = [t.strip() for t in times if t.strip()]
+        # التأكد من أن العدد مطابق للعدد المختار
+        if len(times) != publish_count:
+            # إذا كان العدد مختلفاً، نأخذ أول publish_count وقت أو نملأ بالقيم الافتراضية
+            if len(times) > publish_count:
+                times = times[:publish_count]
+            else:
+                # نملأ بالقيم الافتراضية
+                default_times = ["09:00", "13:00", "17:00", "20:00", "22:00"]
+                for i in range(len(times), publish_count):
+                    times.append(default_times[i] if i < len(default_times) else "12:00")
+        times_json = json.dumps(times)
+        with get_db() as cur:
+            cur.execute("UPDATE publish_settings SET publish_count = %s, publish_times = %s", (publish_count, times_json))
+        flash('تم حفظ إعدادات النشر بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error saving publish settings: {e}")
+        flash(f'حدث خطأ: {str(e)}', 'error')
+    return redirect(url_for('admin_panel'))
+
 # ------------------- API -------------------
 @app.route('/api/characters')
 def api_characters():
@@ -456,4 +528,4 @@ def api_chat():
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)h

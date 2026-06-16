@@ -13,10 +13,10 @@
             background: #f5f5f5;
             color: #1a1a1a;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px 16px 80px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
         .register-card {
             background: rgba(255,255,255,0.12);
@@ -29,12 +29,38 @@
             width: 100%;
             text-align: center;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            margin-top: 20px;
         }
-        .register-card i.bi-telegram { font-size: 64px; color: #0088cc; margin-bottom: 16px; }
-        .register-card h1 { font-size: 24px; margin-bottom: 8px; }
-        .register-card p { color: #666; font-size: 14px; margin-bottom: 24px; }
+        .register-card .logo-img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        .register-card .description {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #444;
+            text-align: justify;
+            margin-bottom: 24px;
+            padding: 0 4px;
+        }
+        .register-card .description strong {
+            color: #0088cc;
+        }
+        .register-card h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+        .register-card .sub {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
         .form-group { margin-bottom: 16px; text-align: right; }
-        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #333; }
         input {
             width: 100%; padding: 12px 16px;
             background: rgba(255,255,255,0.8);
@@ -45,7 +71,7 @@
         }
         input:focus { outline: none; border-color: #0088cc; }
         .btn {
-            width: 100%; padding: 12px;
+            width: 100%; padding: 14px;
             background: linear-gradient(135deg, #0088cc, #00aaff);
             border: none;
             border-radius: 40px;
@@ -121,32 +147,69 @@
         }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
+        .hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
         @media (min-width: 768px) { .bottom-nav { left: 20px; right: 20px; } }
     </style>
 </head>
 <body>
     <div class="register-card">
-        <i class="bi bi-telegram"></i>
-        <h1>سجّل قناتك</h1>
-        <p>أدخل معرف قناتك لبدء النشر التلقائي</p>
+        <!-- الصورة -->
+        <img src="https://img.sanishtech.com/u/ee1d7d91cf4b7ab4950b402e79a93e16.png" alt="EVILE" class="logo-img">
+        
+        <!-- العنوان -->
+        <h1>مرحباً بك في EVILE</h1>
+        <p class="sub">خدمة النشر التلقائي المدعومة بالذكاء الاصطناعي</p>
+        
+        <!-- النص الطويل -->
+        <div class="description">
+            <strong>EVILE</strong> هي منصة متطورة تتيح لك نشر محتوى تقني مميز تلقائياً في قناتك على تلغرام باستخدام أحدث تقنيات الذكاء الاصطناعي.
+            <br><br>
+            <strong>ماذا نقدم لك؟</strong>
+            <br>
+            • <strong>محتوى متجدد يومياً:</strong> يتم توليد مقالات قصيرة وجذابة في مواضيع تقنية متنوعة مثل الأمن السيبراني، لغات البرمجة، المشاريع الساخنة، والذكاء الاصطناعي.
+            <br>
+            • <strong>جدولة ذكية:</strong> حدد أوقات النشر التي تناسبك، وسنقوم بالنشر تلقائياً في هذه الأوقات.
+            <br>
+            • <strong>برومبتات مخصصة:</strong> يمكنك كتابة برومبت خاص بك لتوجيه الذكاء الاصطناعي لإنتاج محتوى يتناسب مع جمهورك.
+            <br>
+            • <strong>لوحة تحكم شاملة:</strong> تابع إحصائيات قناتك، عدد المنشورات، الأعضاء، وتحكم كامل في عملية النشر.
+            <br>
+            • <strong>مرونة كاملة:</strong> يمكنك إيقاف النشر مؤقتاً أو نهائياً في أي وقت.
+            <br><br>
+            <strong>كيف تعمل الخدمة؟</strong>
+            <br>
+            1. سجل قناتك بإدخال المعرف الرقمي واسم المستخدم.
+            2. أضف البوت <strong>@eV7Ile_bot</strong> كمشرف في قناتك.
+            3. اختر المحتوى المناسب أو اكتب برومبتك الخاص.
+            4. حدد أوقات النشر واستمتع بمحتوى متجدد يومياً.
+            <br><br>
+            <strong>انضم الآن وابدأ رحلتك نحو نشر ذكي ومميز!</strong>
+        </div>
+        
+        <!-- نموذج التسجيل -->
         <form id="registerForm">
             <div class="form-group">
                 <label>معرف القناة (رقمي)</label>
                 <input type="text" id="channelId" placeholder="مثال: -1001234567890" required>
-                <div style="font-size: 11px; color: #888; margin-top: 4px;">أدخل المعرف الرقمي للقناة (يبدأ بـ -100)</div>
+                <div class="hint">أدخل المعرف الرقمي للقناة (يبدأ بـ -100)</div>
             </div>
             <div class="form-group">
                 <label>اسم المستخدم (يبدأ بـ @)</label>
                 <input type="text" id="channelUsername" placeholder="@example" required>
-                <div style="font-size: 11px; color: #888; margin-top: 4px;">يجب أن يبدأ بـ @ (مثال: @my_channel)</div>
+                <div class="hint">يجب أن يبدأ بـ @ (مثال: @my_channel)</div>
             </div>
-            <button type="submit" class="btn">تسجيل القناة</button>
+            <button type="submit" class="btn">تسجيل القناة والبدء</button>
         </form>
         <div style="margin-top:16px; font-size:12px; color:#888;">
             <i class="bi bi-info-circle"></i> تأكد من إضافة البوت @eV7Ile_bot كمشرف في قناتك.
         </div>
     </div>
 
+    <!-- شريط التنقل -->
     <nav class="bottom-nav" id="bottomNav">
         <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
@@ -177,17 +240,17 @@
                 const res = await fetch('/publish/register_channel', { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('تم تسجيل القناة بنجاح! جاري التوجيه...', 3000);
+                    showToast('✅ تم تسجيل القناة بنجاح! جاري التوجيه...', 3000);
                     setTimeout(() => { window.location.href = '/publish'; }, 2000);
                 } else {
                     showToast(data.message || 'حدث خطأ');
                     btn.disabled = false;
-                    btn.textContent = 'تسجيل القناة';
+                    btn.textContent = 'تسجيل القناة والبدء';
                 }
             } catch (err) {
                 showToast('خطأ في الاتصال');
                 btn.disabled = false;
-                btn.textContent = 'تسجيل القناة';
+                btn.textContent = 'تسجيل القناة والبدء';
             }
         });
 

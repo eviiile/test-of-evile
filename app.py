@@ -85,6 +85,17 @@ def ensure_channel_columns(cur):
         cur.execute("ALTER TABLE channels ADD COLUMN is_paused BOOLEAN DEFAULT FALSE")
         logger.info("Added column is_paused to channels table")
 
+def ensure_content_columns(cur):
+    """إضافة أعمدة content_templates إذا كانت مفقودة"""
+    cur.execute("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='content_templates' AND column_name='publish_time'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE content_templates ADD COLUMN publish_time TIMESTAMP DEFAULT NULL")
+        logger.info("Added column publish_time to content_templates table")
+
 def init_db():
     try:
         with get_db() as cur:
@@ -142,7 +153,7 @@ def init_db():
                 name TEXT NOT NULL,
                 prompt TEXT,
                 content TEXT NOT NULL,
-                publish_time TIMESTAMP,  -- وقت النشر المحدد
+                publish_time TIMESTAMP DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
             cur.execute('''CREATE TABLE IF NOT EXISTS scheduled_content (
@@ -155,6 +166,7 @@ def init_db():
             )''')
             
             ensure_channel_columns(cur)
+            ensure_content_columns(cur)  # تأكد من وجود العمود
             
             cur.execute("SELECT COUNT(*) FROM publish_settings")
             if cur.fetchone()['count'] == 0:
@@ -271,10 +283,10 @@ scheduler.start()
 def schedule_posts_for_channel(channel_id, admin_id):
     # إلغاء المهام القديمة
     for job in scheduler.get_jobs():
-        if job.id.startswith(f'publish_{channel_id}_'):
+        if job.id.startswith(f'publish_{channel_id}_') or job.id.startswith(f'content_'):
             scheduler.remove_job(job.id)
     
-    # جدولة الأوقات الثابتة (09:00، 13:00، 17:00)
+    # جدولة الأوقات الثابتة
     times = get_publish_times()
     for time_str in times:
         hour, minute = map(int, time_str.split(':'))
@@ -293,9 +305,8 @@ def schedule_posts_for_channel(channel_id, admin_id):
     schedule_content_templates(channel_id)
 
 def schedule_content_templates(channel_id):
-    """جدولة المحتويات التي لها وقت نشر محدد"""
+    """جدولة المحتويات التي لها وقت نشر محدد لهذه القناة"""
     with get_db() as cur:
-        # جلب المحتويات التي لم تُجدول بعد لهذه القناة
         cur.execute("""
             SELECT ct.id, ct.content, ct.publish_time 
             FROM content_templates ct
@@ -308,19 +319,16 @@ def schedule_content_templates(channel_id):
         
         for content in contents:
             scheduled_time = content['publish_time']
-            # تحويل إلى وقت محلي إذا لزم الأمر
             if scheduled_time.tzinfo is None:
                 scheduled_time = TIMEZONE.localize(scheduled_time)
             else:
                 scheduled_time = scheduled_time.astimezone(TIMEZONE)
             
-            # تسجيل في جدول scheduled_content
             cur.execute(
                 "INSERT INTO scheduled_content (content_id, channel_id, scheduled_time) VALUES (%s, %s, %s)",
                 (content['id'], channel_id, scheduled_time)
             )
             
-            # إضافة مهمة مفردة (DateTrigger)
             job_id = f'content_{content["id"]}_{channel_id}'
             scheduler.add_job(
                 func=publish_content_job,
@@ -340,7 +348,6 @@ def publish_scheduled_post(channel_id):
             logger.info(f"Channel {channel_id} is paused or inactive, skipping daily post")
             return
     
-    # توليد محتوى جديد
     content = generate_post_content()
     if not content:
         with get_db() as cur:
@@ -348,7 +355,6 @@ def publish_scheduled_post(channel_id):
         logger.error(f"Failed to generate content for channel {channel_id}")
         return
     
-    # النشر
     message_id = send_telegram_message(channel_id, content)
     if message_id:
         with get_db() as cur:
@@ -367,20 +373,16 @@ def publish_content_job(content_id, channel_id, content):
         row = cur.fetchone()
         if not row or not row['is_active'] or row['is_paused']:
             logger.info(f"Channel {channel_id} is paused or inactive, skipping scheduled content {content_id}")
-            # تحديث حالة الجدولة
             cur.execute("UPDATE scheduled_content SET status = 'cancelled' WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
             return
         
-        # تحديث حالة الجدولة
         cur.execute("UPDATE scheduled_content SET status = 'published' WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
     
-    # النشر
     message_id = send_telegram_message(channel_id, content)
     if message_id:
         with get_db() as cur:
             cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
             cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
-            # حذف الجدولة بعد النشر
             cur.execute("DELETE FROM scheduled_content WHERE content_id = %s AND channel_id = %s", (content_id, channel_id))
         logger.info(f"Published scheduled content {content_id} to channel {channel_id}")
     else:
@@ -639,13 +641,10 @@ def add_content():
         flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
         return redirect(url_for('admin_panel'))
     
-    # معالجة وقت النشر
     publish_time = None
     if publish_time_str:
         try:
-            # تنسيق: YYYY-MM-DDTHH:mm (من input type="datetime-local")
             publish_time = datetime.fromisoformat(publish_time_str)
-            # إضافة المنطقة الزمنية
             publish_time = TIMEZONE.localize(publish_time)
         except ValueError as e:
             flash(f'تنسيق الوقت غير صحيح: {e}', 'error')
@@ -659,7 +658,6 @@ def add_content():
             )
             content_id = cur.fetchone()['id'] if hasattr(cur, 'fetchone') else None
             
-            # إذا كان هناك وقت نشر، جدولة المهمة لجميع القنوات
             if publish_time and content_id:
                 cur.execute("SELECT channel_id FROM channels WHERE is_active = true AND is_paused = false")
                 channels = cur.fetchall()
@@ -673,7 +671,6 @@ def add_content():
     return redirect(url_for('admin_panel'))
 
 def schedule_content_for_channel(content_id, channel_id, content, publish_time):
-    """جدولة محتوى محدد لقناة معينة"""
     with get_db() as cur:
         cur.execute(
             "INSERT INTO scheduled_content (content_id, channel_id, scheduled_time) VALUES (%s, %s, %s)",
@@ -713,7 +710,6 @@ def edit_content(content_id):
     
     try:
         with get_db() as cur:
-            # جلب الوقت القديم
             cur.execute("SELECT publish_time FROM content_templates WHERE id = %s", (content_id,))
             old = cur.fetchone()
             old_time = old['publish_time'] if old else None
@@ -723,17 +719,13 @@ def edit_content(content_id):
                 (name, prompt, content, publish_time, content_id)
             )
             
-            # إلغاء الجدولة القديمة إذا تغير الوقت
             if old_time != publish_time:
-                # إلغاء المهام القديمة
                 for job in scheduler.get_jobs():
                     if job.id.startswith(f'content_{content_id}_'):
                         scheduler.remove_job(job.id)
                 
-                # حذف الجدولة القديمة
                 cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
                 
-                # جدولة جديدة إذا كان هناك وقت
                 if publish_time:
                     cur.execute("SELECT channel_id FROM channels WHERE is_active = true AND is_paused = false")
                     channels = cur.fetchall()
@@ -751,7 +743,6 @@ def edit_content(content_id):
 def delete_content(content_id):
     try:
         with get_db() as cur:
-            # إلغاء الجدولة
             for job in scheduler.get_jobs():
                 if job.id.startswith(f'content_{content_id}_'):
                     scheduler.remove_job(job.id)
@@ -870,7 +861,7 @@ def admin_panel():
                          publish_times=publish_times,
                          content_templates=content_templates)
 
-# ==================== بقية مسارات الإدارة (الشخصيات، الإشعارات، القنوات، الإعدادات) ====================
+# ==================== بقية مسارات الإدارة ====================
 @app.route('/admin/character/add', methods=['POST'])
 @admin_required
 def add_character():

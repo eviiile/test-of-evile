@@ -22,7 +22,7 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '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')
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
-BOT_TOKEN = os.getenv('BOT_TOKEN', '')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '8785192184:AAHckCzqabzQbGp0I9r2DDm89zuk1vihc')
 
 TIMEZONE = pytz.timezone('Asia/Aden')
 
@@ -210,7 +210,15 @@ def generate_post_content():
         logger.debug("Generating post content via OpenRouter")
         response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
         result = response.json()
-        content = result['choices'][0]['message']['content'].strip()
+        # التحقق من وجود المفتاح choices
+        if not result.get('choices') or len(result['choices']) == 0:
+            logger.error(f"OpenRouter response missing choices: {result}")
+            return None
+        content = result['choices'][0].get('message', {}).get('content', '')
+        if not content:
+            logger.error(f"OpenRouter response empty content: {result}")
+            return None
+        content = content.strip()
         logger.debug("Content generated successfully")
         return content
     except Exception as e:
@@ -615,6 +623,7 @@ def admin_panel():
                          publish_count=publish_count,
                          publish_times=publish_times)
 
+# ==================== إدارة الشخصيات والإشعارات والقنوات ====================
 @app.route('/admin/character/add', methods=['POST'])
 @admin_required
 def add_character():

@@ -204,7 +204,7 @@ def get_publish_times():
         logger.error(f"Error getting publish times: {e}")
     return ["09:00", "13:00", "17:00"]
 
-# ==================== توليد المحتوى (معدل) ====================
+# ==================== توليد المحتوى ====================
 def generate_post_content():
     prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
     
@@ -215,9 +215,8 @@ def generate_post_content():
         'X-Title': 'EVILE Publisher'
     }
     
-    # استخدام نموذج لا يدعم التفكير (reasoning) لتجنب إرجاع content: None
     payload = {
-        'model': 'openai/gpt-4o-mini',  # نموذج سريع وغير مكلف
+        'model': 'openai/gpt-4o-mini',
         'messages': [
             {'role': 'system', 'content': 'أنت كاتب محتوى تقني محترف. اكتب مقالة قصيرة وجذابة.'},
             {'role': 'user', 'content': prompt}
@@ -232,7 +231,6 @@ def generate_post_content():
         response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
         result = response.json()
         
-        # التحقق من وجود المحتوى
         if result and 'choices' in result and len(result['choices']) > 0:
             message = result['choices'][0].get('message', {})
             content = message.get('content')
@@ -240,7 +238,6 @@ def generate_post_content():
                 logger.debug("Content generated successfully")
                 return content.strip()
             else:
-                # محاولة استخدام نموذج بديل إذا فشل الأول
                 logger.warning("First model returned no content, trying fallback model")
                 payload['model'] = 'openai/gpt-3.5-turbo'
                 response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
@@ -282,7 +279,7 @@ def send_telegram_message(channel_id, text):
         logger.error(f"Error sending message: {e}")
         return None
 
-# ==================== جدولة النشر (بتوقيت صنعاء) ====================
+# ==================== جدولة النشر ====================
 scheduler = BackgroundScheduler(timezone=TIMEZONE)
 scheduler.start()
 
@@ -342,6 +339,8 @@ def publish_scheduled_post(channel_id, admin_id):
             cur.execute("UPDATE scheduled_posts SET status = 'published', published_at = NOW() WHERE id = %s", (post_id,))
             cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
             cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
+            # حذف المنشورات المجدولة التي تم نشرها بنجاح (باستثناء السجل في published_posts)
+            cur.execute("DELETE FROM scheduled_posts WHERE channel_id = %s AND status = 'published'", (channel_id,))
         logger.info(f"Published post to channel {channel_id}")
     else:
         with get_db() as cur:
@@ -389,14 +388,12 @@ def index():
 def publish():
     telegram_id = session.get('telegram_id')
     if not telegram_id:
-        logger.warning("User not logged in, redirecting to index")
         return redirect(url_for('index'))
     
     with get_db() as cur:
         cur.execute("SELECT * FROM channels WHERE admin_id = %s", (telegram_id,))
         channel = cur.fetchone()
         if not channel:
-            logger.info(f"User {telegram_id} has no channel, showing register page")
             return render_template('register.html')
         
         cur.execute("SELECT id, name, content FROM content_templates ORDER BY name")
@@ -446,12 +443,11 @@ def select_content():
         return jsonify({'success': False, 'message': 'معرف المحتوى مطلوب'}), 400
     
     try:
-        content_id = int(content_id) if content_id != '' else None
+        content_id = int(content_id)
         with get_db() as cur:
-            if content_id is not None:
-                cur.execute("SELECT id FROM content_templates WHERE id = %s", (content_id,))
-                if not cur.fetchone():
-                    return jsonify({'success': False, 'message': 'المحتوى غير موجود'}), 404
+            cur.execute("SELECT id FROM content_templates WHERE id = %s", (content_id,))
+            if not cur.fetchone():
+                return jsonify({'success': False, 'message': 'المحتوى غير موجود'}), 404
             cur.execute("UPDATE channels SET selected_content_id = %s WHERE admin_id = %s", (content_id, telegram_id))
             logger.info(f"User {telegram_id} selected content template {content_id}")
             
@@ -469,32 +465,25 @@ def select_content():
 def register_channel():
     telegram_id = session.get('telegram_id')
     if not telegram_id:
-        logger.warning("Unauthorized register attempt (no session)")
         return jsonify({'success': False, 'message': 'يجب تسجيل الدخول أولاً'}), 401
     
     channel_id = request.form.get('channel_id', '').strip()
     channel_username = request.form.get('channel_username', '').strip()
     
-    logger.debug(f"Register request: channel_id={channel_id}, username={channel_username}, admin={telegram_id}")
-    
     if not channel_id:
-        logger.warning("Channel ID is empty")
         return jsonify({'success': False, 'message': 'معرف القناة مطلوب'}), 400
     
     if channel_username and not channel_username.startswith('@'):
-        logger.warning(f"Username {channel_username} does not start with @")
         return jsonify({'success': False, 'message': 'اسم المستخدم يجب أن يبدأ بـ @'}), 400
     
     try:
         with get_db() as cur:
             cur.execute("SELECT id FROM channels WHERE admin_id = %s", (telegram_id,))
             if cur.fetchone():
-                logger.warning(f"User {telegram_id} already has a channel registered")
                 return jsonify({'success': False, 'message': 'لديك قناة مسجلة مسبقاً'}), 400
             
             cur.execute("SELECT id FROM channels WHERE channel_id = %s", (channel_id,))
             if cur.fetchone():
-                logger.warning(f"Channel {channel_id} already registered")
                 return jsonify({'success': False, 'message': 'هذه القناة مسجلة مسبقاً'}), 400
             
             cur.execute(
@@ -505,10 +494,9 @@ def register_channel():
         
         schedule_posts_for_channel(channel_id, telegram_id)
         return jsonify({'success': True, 'message': 'تم تسجيل القناة بنجاح'})
-        
     except Exception as e:
         logger.error(f"Error registering channel: {e}")
-        return jsonify({'success': False, 'message': f'حدث خطأ في الخادم: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/publish/toggle_pause')
 def toggle_pause():
@@ -599,6 +587,8 @@ def force_publish():
             with get_db() as cur:
                 cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
                 cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
+                # حذف أي منشورات مجدولة قديمة لهذه القناة
+                cur.execute("DELETE FROM scheduled_posts WHERE channel_id = %s AND status = 'pending'", (channel_id,))
             logger.info(f"Forced publish to channel {channel_id}")
             return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
         else:
@@ -714,7 +704,70 @@ def admin_panel():
                          publish_times=publish_times,
                          content_templates=content_templates)
 
-# ==================== إدارة الشخصيات والإشعارات والقنوات والمحتوى ====================
+# ==================== إدارة المحتوى ====================
+@app.route('/admin/content/add', methods=['POST'])
+@admin_required
+def add_content():
+    name = request.form.get('name', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    content = request.form.get('content', '').strip()
+    
+    if not name or not content:
+        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "INSERT INTO content_templates (name, prompt, content) VALUES (%s, %s, %s)",
+                (name, prompt, content)
+            )
+        flash('تم إضافة المحتوى بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error adding content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/content/<int:content_id>/edit', methods=['POST'])
+@admin_required
+def edit_content(content_id):
+    name = request.form.get('name', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    content = request.form.get('content', '').strip()
+    
+    if not name or not content:
+        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "UPDATE content_templates SET name = %s, prompt = %s, content = %s WHERE id = %s",
+                (name, prompt, content, content_id)
+            )
+        flash('تم تعديل المحتوى بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error editing content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/content/<int:content_id>/delete')
+@admin_required
+def delete_content(content_id):
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT id FROM channels WHERE selected_content_id = %s", (content_id,))
+            if cur.fetchone():
+                flash('لا يمكن حذف هذا المحتوى لأنه مستخدم في قناة حالياً', 'error')
+                return redirect(url_for('admin_panel'))
+            cur.execute("DELETE FROM content_templates WHERE id = %s", (content_id,))
+        flash('تم حذف المحتوى بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== باقي مسارات الإدارة ====================
 @app.route('/admin/character/add', methods=['POST'])
 @admin_required
 def add_character():
@@ -826,68 +879,6 @@ def admin_toggle_channel(channel_id):
                                 scheduler.remove_job(job.id)
                 flash('تم تحديث حالة القناة', 'success')
     except Exception as e:
-        flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/content/add', methods=['POST'])
-@admin_required
-def add_content():
-    name = request.form.get('name', '').strip()
-    prompt = request.form.get('prompt', '').strip()
-    content = request.form.get('content', '').strip()
-    
-    if not name or not content:
-        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
-        return redirect(url_for('admin_panel'))
-    
-    try:
-        with get_db() as cur:
-            cur.execute(
-                "INSERT INTO content_templates (name, prompt, content) VALUES (%s, %s, %s)",
-                (name, prompt, content)
-            )
-        flash('تم إضافة المحتوى بنجاح', 'success')
-    except Exception as e:
-        logger.error(f"Error adding content: {e}")
-        flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/content/<int:content_id>/edit', methods=['POST'])
-@admin_required
-def edit_content(content_id):
-    name = request.form.get('name', '').strip()
-    prompt = request.form.get('prompt', '').strip()
-    content = request.form.get('content', '').strip()
-    
-    if not name or not content:
-        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
-        return redirect(url_for('admin_panel'))
-    
-    try:
-        with get_db() as cur:
-            cur.execute(
-                "UPDATE content_templates SET name = %s, prompt = %s, content = %s WHERE id = %s",
-                (name, prompt, content, content_id)
-            )
-        flash('تم تعديل المحتوى بنجاح', 'success')
-    except Exception as e:
-        logger.error(f"Error editing content: {e}")
-        flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/content/<int:content_id>/delete')
-@admin_required
-def delete_content(content_id):
-    try:
-        with get_db() as cur:
-            cur.execute("SELECT id FROM channels WHERE selected_content_id = %s", (content_id,))
-            if cur.fetchone():
-                flash('لا يمكن حذف هذا المحتوى لأنه مستخدم في قناة حالياً', 'error')
-                return redirect(url_for('admin_panel'))
-            cur.execute("DELETE FROM content_templates WHERE id = %s", (content_id,))
-        flash('تم حذف المحتوى بنجاح', 'success')
-    except Exception as e:
-        logger.error(f"Error deleting content: {e}")
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 

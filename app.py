@@ -86,7 +86,6 @@ def ensure_channel_columns(cur):
         logger.info("Added column is_paused to channels table")
 
 def ensure_content_columns(cur):
-    """إضافة أعمدة content_templates إذا كانت مفقودة"""
     cur.execute("""
         SELECT column_name 
         FROM information_schema.columns 
@@ -166,7 +165,7 @@ def init_db():
             )''')
             
             ensure_channel_columns(cur)
-            ensure_content_columns(cur)  # تأكد من وجود العمود
+            ensure_content_columns(cur)
             
             cur.execute("SELECT COUNT(*) FROM publish_settings")
             if cur.fetchone()['count'] == 0:
@@ -207,11 +206,23 @@ def get_publish_times():
         logger.error(f"Error getting publish times: {e}")
     return ["09:00", "13:00", "17:00"]
 
-# ==================== توليد المحتوى ====================
-def generate_post_content(custom_prompt=None):
-    if custom_prompt:
+# ==================== توليد المحتوى (حسب البرومبت من admin) ====================
+def generate_post_content(content_id=None, custom_prompt=None):
+    """توليد محتوى باستخدام البرومبت المخزن في قاعدة البيانات"""
+    prompt = None
+    
+    if content_id:
+        with get_db() as cur:
+            cur.execute("SELECT prompt FROM content_templates WHERE id = %s", (content_id,))
+            row = cur.fetchone()
+            if row and row['prompt']:
+                prompt = row['prompt']
+    
+    if not prompt and custom_prompt:
         prompt = custom_prompt
-    else:
+    
+    if not prompt:
+        # برومبت افتراضي إذا لم يوجد أي برومبت
         prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
     
     headers = {
@@ -308,7 +319,7 @@ def schedule_content_templates(channel_id):
     """جدولة المحتويات التي لها وقت نشر محدد لهذه القناة"""
     with get_db() as cur:
         cur.execute("""
-            SELECT ct.id, ct.content, ct.publish_time 
+            SELECT ct.id, ct.content, ct.prompt, ct.publish_time 
             FROM content_templates ct
             LEFT JOIN scheduled_content sc ON sc.content_id = ct.id AND sc.channel_id = %s
             WHERE ct.publish_time IS NOT NULL 
@@ -340,7 +351,7 @@ def schedule_content_templates(channel_id):
             logger.info(f"Scheduled content {content['id']} for channel {channel_id} at {scheduled_time}")
 
 def publish_scheduled_post(channel_id):
-    """النشر اليومي الثابت - يولد محتوى جديداً في كل مرة"""
+    """النشر اليومي الثابت - يولد محتوى جديداً في كل مرة حسب البرومبت من admin"""
     with get_db() as cur:
         cur.execute("SELECT is_paused, is_active FROM channels WHERE channel_id = %s", (channel_id,))
         row = cur.fetchone()
@@ -348,7 +359,15 @@ def publish_scheduled_post(channel_id):
             logger.info(f"Channel {channel_id} is paused or inactive, skipping daily post")
             return
     
-    content = generate_post_content()
+    # جلب برومبت عشوائي من المحتويات الموجودة
+    with get_db() as cur:
+        cur.execute("SELECT id, prompt FROM content_templates WHERE prompt IS NOT NULL AND prompt != '' ORDER BY RANDOM() LIMIT 1")
+        template = cur.fetchone()
+        if template:
+            content = generate_post_content(content_id=template['id'])
+        else:
+            content = generate_post_content()
+    
     if not content:
         with get_db() as cur:
             cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)", (channel_id, 'فشل توليد المحتوى اليومي'))
@@ -406,8 +425,7 @@ def schedule_all_channels():
 @app.route('/')
 def index():
     telegram_id = session.get('telegram_id')
-    if telegram_id:
-        update_user_activity(telegram_id)
+    # الدردشة متاحة بدون ID
     try:
         with get_db() as cur:
             cur.execute('SELECT * FROM characters ORDER BY id')
@@ -439,7 +457,6 @@ def publish():
         if not channel:
             return render_template('register.html')
         
-        # جلب المحتويات المتاحة (التي لم تُنشر بعد)
         cur.execute("""
             SELECT ct.*, 
                    CASE WHEN sc.id IS NOT NULL THEN 'scheduled' ELSE 'available' END as status
@@ -450,7 +467,6 @@ def publish():
         """, (channel['channel_id'],))
         content_templates = cur.fetchall()
         
-        # جلب المحتويات المجدولة
         cur.execute("""
             SELECT ct.*, sc.scheduled_time
             FROM scheduled_content sc
@@ -460,7 +476,6 @@ def publish():
         """, (channel['channel_id'],))
         scheduled_contents = cur.fetchall()
         
-        # إحصائيات النشر
         cur.execute("SELECT COUNT(*) FROM published_posts WHERE channel_id = %s", (channel['channel_id'],))
         posts_count = cur.fetchone()['count']
         
@@ -598,7 +613,15 @@ def force_publish():
                 return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
             channel_id = row['channel_id']
         
-        content = generate_post_content()
+        # جلب برومبت عشوائي من المحتويات الموجودة
+        with get_db() as cur:
+            cur.execute("SELECT id, prompt FROM content_templates WHERE prompt IS NOT NULL AND prompt != '' ORDER BY RANDOM() LIMIT 1")
+            template = cur.fetchone()
+            if template:
+                content = generate_post_content(content_id=template['id'])
+            else:
+                content = generate_post_content()
+        
         if not content:
             return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
         
@@ -619,11 +642,13 @@ def force_publish():
 @app.route('/admin/content/generate', methods=['POST'])
 @admin_required
 def generate_content_ai():
+    """توليد محتوى باستخدام برومبت مخصص"""
     prompt = request.form.get('prompt', '').strip()
     if not prompt:
         return jsonify({'success': False, 'message': 'البرومبت مطلوب'}), 400
     
-    content = generate_post_content(prompt)
+    # حفظ البرومبت مؤقتاً في session أو استخدامه مباشرة
+    content = generate_post_content(custom_prompt=prompt)
     if content:
         return jsonify({'success': True, 'content': content})
     else:

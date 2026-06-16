@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل القناة - EVILE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .register-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .register-card i.bi-telegram { font-size: 64px; color: #0088cc; margin-bottom: 16px; }
+        .register-card h1 { font-size: 24px; margin-bottom: 8px; }
+        .register-card p { color: #666; font-size: 14px; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; text-align: right; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        input {
+            width: 100%; padding: 12px 16px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 14px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #aaa; }
+        .btn {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #ddd, #bbb);
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .toast {
+            position: fixed; bottom: 20px; left: 20px; right: 20px;
+            background: rgba(0,0,0,0.85); color: #fff;
+            padding: 14px; border-radius: 16px; text-align: center;
+            z-index: 1000; display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <i class="bi bi-telegram"></i>
+        <h1>سجّل قناتك</h1>
+        <p>أدخل معرف قناتك لبدء النشر التلقائي</p>
+        <form id="registerForm">
+            <div class="form-group">
+                <label>معرف القناة (رقمي)</label>
+                <input type="text" id="channelId" placeholder="مثال: -1001234567890" required>
+            </div>
+            <div class="form-group">
+                <label>اسم المستخدم (اختياري)</label>
+                <input type="text" id="channelUsername" placeholder="@example">
+            </div>
+            <button type="submit" class="btn">تسجيل القناة</button>
+        </form>
+        <div style="margin-top:16px; font-size:12px; color:#888;">
+            <i class="bi bi-info-circle"></i> تأكد من إضافة البوت @eV7Ile_bot كمشرف في قناتك.
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const channelId = document.getElementById('channelId').value.trim();
+            const channelUsername = document.getElementById('channelUsername').value.trim();
+            if (!channelId) {
+                showToast('معرف القناة مطلوب');
+                return;
+            }
+            const btn = this.querySelector('.btn');
+            btn.disabled = true;
+            btn.textContent = 'جاري التسجيل...';
+            try {
+                const formData = new FormData();
+                formData.append('channel_id', channelId);
+                formData.append('channel_username', channelUsername);
+                const res = await fetch('/publish/register_channel', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('تم تسجيل القناة بنجاح! سيتم توجيهك إلى لوحة التحكم...', 3000);
+                    setTimeout(() => { window.location.href = '/publish'; }, 2000);
+                } else {
+                    showToast(data.message || 'حدث خطأ');
+                    btn.disabled = false;
+                    btn.textContent = 'تسجيل القناة';
+                }
+            } catch (err) {
+                showToast('خطأ في الاتصال');
+                btn.disabled = false;
+                btn.textContent = 'تسجيل القناة';
+            }
+        });
+
+        function showToast(msg, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+    </script>
+</body>
+</html>

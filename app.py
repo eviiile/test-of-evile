@@ -153,7 +153,7 @@ def index():
 
 @app.route('/publish')
 def publish():
-    """صفحة النشر التلقائي (المعالج متعدد الخطوات)"""
+    """صفحة النشر التلقائي"""
     return render_template('publish.html')
 
 @app.route('/register', methods=['POST'])

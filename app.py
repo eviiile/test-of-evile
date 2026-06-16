@@ -205,8 +205,10 @@ def get_publish_times():
     return ["09:00", "13:00", "17:00"]
 
 # ==================== توليد المحتوى ====================
-def generate_post_content():
-    prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
+def generate_post_content(prompt=None):
+    """توليد محتوى باستخدام الذكاء الاصطناعي"""
+    if not prompt:
+        prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
     
     headers = {
         'Authorization': f'Bearer {OPENROUTER_API_KEY}',
@@ -238,6 +240,7 @@ def generate_post_content():
                 logger.debug("Content generated successfully")
                 return content.strip()
             else:
+                # محاولة استخدام نموذج بديل
                 logger.warning("First model returned no content, trying fallback model")
                 payload['model'] = 'openai/gpt-3.5-turbo'
                 response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
@@ -339,7 +342,6 @@ def publish_scheduled_post(channel_id, admin_id):
             cur.execute("UPDATE scheduled_posts SET status = 'published', published_at = NOW() WHERE id = %s", (post_id,))
             cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
             cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
-            # حذف المنشورات المجدولة التي تم نشرها بنجاح (باستثناء السجل في published_posts)
             cur.execute("DELETE FROM scheduled_posts WHERE channel_id = %s AND status = 'published'", (channel_id,))
         logger.info(f"Published post to channel {channel_id}")
     else:
@@ -587,7 +589,6 @@ def force_publish():
             with get_db() as cur:
                 cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)", (channel_id, content, message_id))
                 cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
-                # حذف أي منشورات مجدولة قديمة لهذه القناة
                 cur.execute("DELETE FROM scheduled_posts WHERE channel_id = %s AND status = 'pending'", (channel_id,))
             logger.info(f"Forced publish to channel {channel_id}")
             return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
@@ -704,7 +705,7 @@ def admin_panel():
                          publish_times=publish_times,
                          content_templates=content_templates)
 
-# ==================== إدارة المحتوى ====================
+# ==================== إدارة المحتوى (مع توليد AI) ====================
 @app.route('/admin/content/add', methods=['POST'])
 @admin_required
 def add_content():
@@ -712,8 +713,22 @@ def add_content():
     prompt = request.form.get('prompt', '').strip()
     content = request.form.get('content', '').strip()
     
-    if not name or not content:
-        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
+    if not name:
+        flash('اسم المحتوى مطلوب', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    # إذا كان البرومبت موجوداً والمحتوى فارغاً، نقوم بتوليد المحتوى باستخدام AI
+    if prompt and not content:
+        logger.info(f"Generating content using AI with prompt: {prompt[:100]}...")
+        generated_content = generate_post_content(prompt)
+        if generated_content:
+            content = generated_content
+            flash('تم توليد المحتوى باستخدام الذكاء الاصطناعي', 'success')
+        else:
+            flash('فشل توليد المحتوى باستخدام الذكاء الاصطناعي. يرجى كتابة المحتوى يدوياً.', 'error')
+            return redirect(url_for('admin_panel'))
+    elif not content:
+        flash('المحتوى مطلوب (أو استخدم البرومبت لتوليده تلقائياً)', 'error')
         return redirect(url_for('admin_panel'))
     
     try:
@@ -735,8 +750,22 @@ def edit_content(content_id):
     prompt = request.form.get('prompt', '').strip()
     content = request.form.get('content', '').strip()
     
-    if not name or not content:
-        flash('اسم المحتوى والمحتوى نفسه مطلوبان', 'error')
+    if not name:
+        flash('اسم المحتوى مطلوب', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    # إذا كان البرومبت موجوداً والمحتوى فارغاً، نقوم بتوليد المحتوى
+    if prompt and not content:
+        logger.info(f"Regenerating content using AI with prompt: {prompt[:100]}...")
+        generated_content = generate_post_content(prompt)
+        if generated_content:
+            content = generated_content
+            flash('تم إعادة توليد المحتوى باستخدام الذكاء الاصطناعي', 'success')
+        else:
+            flash('فشل توليد المحتوى باستخدام الذكاء الاصطناعي. يرجى كتابة المحتوى يدوياً.', 'error')
+            return redirect(url_for('admin_panel'))
+    elif not content:
+        flash('المحتوى مطلوب (أو استخدم البرومبت لتوليده تلقائياً)', 'error')
         return redirect(url_for('admin_panel'))
     
     try:

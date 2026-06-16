@@ -39,7 +39,6 @@
             padding: 20px 16px 20px;
         }
 
-        /* شريط التقدم - 4 خطوات */
         .progress-steps {
             display: flex;
             justify-content: space-between;
@@ -69,7 +68,7 @@
         .step-circle {
             width: 28px;
             height: 28px;
-            border-radius: 6px; /* زوايا حادة قليلاً */
+            border-radius: 6px;
             background: #fff;
             border: 2px solid rgba(0,0,0,0.15);
             display: flex;
@@ -104,13 +103,12 @@
             font-weight: 700;
         }
 
-        /* بطاقات الخطوات */
         .step-card {
             display: none;
             background: rgba(255,255,255,0.75);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 16px; /* زوايا أقل انحناءً */
+            border-radius: 16px;
             padding: 20px 18px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.05);
             animation: fadeSlide 0.4s ease;
@@ -143,7 +141,6 @@
             border-right: 2px solid #ddd;
         }
 
-        /* صفحة الترحيب */
         .welcome-icon {
             text-align: center;
             margin: 6px 0 16px;
@@ -167,7 +164,6 @@
             color: #1a1a1a;
         }
 
-        /* حقول الإدخال */
         .form-group {
             margin-bottom: 14px;
         }
@@ -190,7 +186,7 @@
             padding: 10px 14px;
             background: rgba(255,255,255,0.8);
             border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 10px; /* زوايا أقل انحناءً */
+            border-radius: 10px;
             font-family: 'Tajawal', sans-serif;
             font-size: 13px;
             color: #1a1a1a;
@@ -207,7 +203,6 @@
             font-size: 11px;
         }
 
-        /* زر رفع البوت - سيصبح رابطاً لفتح القناة */
         .upload-zone {
             border: 2px dashed rgba(0,0,0,0.15);
             border-radius: 14px;
@@ -216,6 +211,9 @@
             cursor: pointer;
             transition: all 0.3s;
             background: rgba(255,255,255,0.5);
+            text-decoration: none;
+            display: block;
+            color: inherit;
         }
         .upload-zone:hover {
             border-color: #888;
@@ -236,7 +234,6 @@
             color: #777;
         }
 
-        /* زر التحقق */
         .verify-btn {
             display: inline-flex;
             align-items: center;
@@ -269,7 +266,6 @@
             font-size: 16px;
         }
 
-        /* مربع اختيار الشروط */
         .checkbox-large {
             display: flex;
             align-items: flex-start;
@@ -294,7 +290,6 @@
             cursor: pointer;
         }
 
-        /* الأزرار - مصغرة وحادة قليلاً */
         .btn-primary {
             width: 100%;
             padding: 8px 14px;
@@ -322,7 +317,6 @@
             font-size: 15px;
         }
 
-        /* شريط التنقل السفلي */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -377,7 +371,6 @@
             transform: scale(0.95);
         }
 
-        /* تنبيهات */
         .toast {
             position: fixed;
             bottom: 84px;
@@ -418,7 +411,6 @@
     <div class="bg-animation"></div>
 
     <div class="publish-container" id="publishContainer">
-        <!-- مؤشر التقدم (4 خطوات) -->
         <div class="progress-steps" id="progressSteps">
             <div class="step-item" data-step="0">
                 <div class="step-circle active" id="circle0">1</div>
@@ -438,7 +430,6 @@
             </div>
         </div>
 
-        <!-- الخطوة 0: الترحيب -->
         <div class="step-card active" id="step0">
             <div class="welcome-icon">
                 <i class="bi bi-telegram"></i>
@@ -460,17 +451,14 @@
             </button>
         </div>
 
-        <!-- الخطوة 1: ربط البوت -->
         <div class="step-card" id="step1">
             <div class="step-title"><i class="bi bi-robot"></i> ربط بوت تيليجرام</div>
             <div class="step-desc">قم بربط البوت <strong>@eV7Ile_bot</strong> بالضغط على الزر أدناه.</div>
-            <!-- زر يفتح رابط إضافة البوت كمشرف في القناة -->
-            <a href="https://t.me/eV7Ile_bot?start=add" target="_blank" style="text-decoration:none;">
-                <div class="upload-zone" id="uploadZone">
-                    <i class="bi bi-telegram"></i>
-                    <div class="title">@eV7Ile_bot</div>
-                    <div class="sub">انقر لإضافة البوت كمشرف في قناتك</div>
-                </div>
+            <!-- زر يفتح رابط إضافة البوت كمشرف في القناة مع اختيار القناة -->
+            <a href="tg://resolve?domain=eV7Ile_bot&start=add" class="upload-zone" id="uploadZone" target="_blank">
+                <i class="bi bi-telegram"></i>
+                <div class="title">@eV7Ile_bot</div>
+                <div class="sub">انقر لفتح تيليجرام واختيار قناة لإضافة البوت كمشرف</div>
             </a>
             <div style="margin-top: 14px; font-size: 11px; color: #666; text-align: center;">
                 <i class="bi bi-info-circle"></i> تأكد من منح البوت صلاحية النشر كمشرف.
@@ -480,7 +468,6 @@
             </button>
         </div>
 
-        <!-- الخطوة 2: إعدادات القناة -->
         <div class="step-card" id="step2">
             <div class="step-title"><i class="bi bi-gear"></i> إعدادات القناة والصلاحيات</div>
             <div class="step-desc">أدخل بيانات القناة والمشرف للتحقق من الصلاحيات.</div>
@@ -505,7 +492,6 @@
             </button>
         </div>
 
-        <!-- الخطوة 3: الشروط والنشر -->
         <div class="step-card" id="step3">
             <div class="step-title"><i class="bi bi-file-check"></i> الموافقة على الشروط</div>
             <div class="step-desc">راجع الشروط والأحكام قبل بدء النشر التلقائي.</div>
@@ -524,7 +510,6 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي -->
     <nav class="bottom-nav" id="bottomNav">
         <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
@@ -536,7 +521,6 @@
         </button>
     </nav>
 
-    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
     <script>
@@ -618,7 +602,6 @@
                 }
             }
 
-            // الترحيب
             step0Next.addEventListener('click', function() {
                 showToast('مرحباً بك في خدمة النشر التلقائي! 🚀', 2000);
                 setTimeout(() => {
@@ -626,7 +609,6 @@
                 }, 600);
             });
 
-            // ربط البوت (تم تنفيذه عبر الرابط، لكن نضيف تأكيد)
             step1Next.addEventListener('click', function() {
                 showToast('تم ربط البوت @eV7Ile_bot بنجاح ✅', 2000);
                 setTimeout(() => {
@@ -634,7 +616,6 @@
                 }, 600);
             });
 
-            // إعدادات القناة
             step2Next.addEventListener('click', function() {
                 const channel = document.getElementById('channelLink').value.trim();
                 const admin = document.getElementById('adminId').value.trim();
@@ -655,7 +636,6 @@
                 }, 1500);
             });
 
-            // زر التحقق اليدوي
             verifyBtn.addEventListener('click', function() {
                 const channel = document.getElementById('channelLink').value.trim();
                 const admin = document.getElementById('adminId').value.trim();
@@ -674,12 +654,10 @@
                 }, 2000);
             });
 
-            // تفعيل زر النشر
             termsCheck.addEventListener('change', function() {
                 publishBtn.disabled = !this.checked;
             });
 
-            // النشر النهائي
             publishBtn.addEventListener('click', function() {
                 if (!termsCheck.checked) {
                     showToast('يجب الموافقة على الشروط أولاً', 2000);
@@ -697,7 +675,6 @@
                 }, 2500);
             });
 
-            // بدء التشغيل
             goToStep(0);
         })();
     </script>

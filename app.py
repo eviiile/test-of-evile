@@ -23,7 +23,6 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-...')  # ضع مفتاحك هنا
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# ===== تم تضمين DATABASE_URL مباشرة =====
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
 
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
@@ -107,6 +106,19 @@ def init_db():
         cur.execute("SELECT COUNT(*) FROM publish_settings")
         if cur.fetchone()['count'] == 0:
             cur.execute("INSERT INTO publish_settings (publish_times) VALUES ('12:00')")
+        else:
+            # تحديث أي قيمة JSON قديمة إلى نص بسيط
+            cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
+            row = cur.fetchone()
+            if row:
+                val = row['publish_times']
+                if val and val.startswith('['):
+                    try:
+                        times = json.loads(val)
+                        if times and isinstance(times, list):
+                            cur.execute("UPDATE publish_settings SET publish_times = %s", (times[0],))
+                    except:
+                        pass
     logger.info("Database initialized")
 
 # ==================== دوال مساعدة ====================
@@ -118,7 +130,17 @@ def get_publish_time():
     with get_db() as cur:
         cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
         row = cur.fetchone()
-        return row['publish_times'] if row else '12:00'
+        if not row:
+            return '12:00'
+        val = row['publish_times']
+        if val and val.startswith('['):
+            try:
+                times = json.loads(val)
+                if times and isinstance(times, list):
+                    return times[0]
+            except:
+                pass
+        return val if val else '12:00'
 
 def generate_post_content(content_id=None, custom_prompt=None):
     prompt = None
@@ -190,10 +212,14 @@ def schedule_daily_job():
         if job.id == 'daily_publish':
             scheduler.remove_job(job.id)
     time_str = get_publish_time()
-    hour, minute = map(int, time_str.split(':'))
+    try:
+        hour, minute = map(int, time_str.split(':'))
+    except ValueError:
+        # إذا كان التنسيق غير صحيح، استخدم 12:00
+        hour, minute = 12, 0
     trigger = CronTrigger(hour=hour, minute=minute, timezone=TIMEZONE)
     scheduler.add_job(publish_daily_job, trigger, id='daily_publish', replace_existing=True)
-    logger.info(f"Scheduled daily publish at {time_str}")
+    logger.info(f"Scheduled daily publish at {hour:02d}:{minute:02d}")
 
 # ==================== Routes ====================
 @app.route('/')
@@ -357,6 +383,14 @@ def admin_panel():
         cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
         setting = cur.fetchone()
         publish_time = setting['publish_times'] if setting else '12:00'
+        # إذا كانت JSON، استخرج الوقت الأول
+        if publish_time and publish_time.startswith('['):
+            try:
+                times = json.loads(publish_time)
+                if times and isinstance(times, list):
+                    publish_time = times[0]
+            except:
+                pass
         cur.execute("SELECT * FROM notifications ORDER BY id DESC")
         notifications = cur.fetchall()
     return render_template('admin.html', users=users, channels=channels,
@@ -383,6 +417,14 @@ def update_publish_time():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     new_time = request.form.get('publish_time', '12:00')
+    # تأكد من أن الوقت بتنسيق HH:MM
+    try:
+        hour, minute = map(int, new_time.split(':'))
+        if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+            raise ValueError
+    except:
+        flash('تنسيق الوقت غير صحيح، استخدم HH:MM', 'error')
+        return redirect(url_for('admin_panel'))
     with get_db() as cur:
         cur.execute("UPDATE publish_settings SET publish_times = %s", (new_time,))
     schedule_daily_job()

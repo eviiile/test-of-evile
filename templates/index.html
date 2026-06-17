@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,55 +7,93 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0b1428;
+            --text-primary: #f0f4fa;
+            --glass-bg: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.04);
+            --accent: #4a8fc4;
+            --shadow: rgba(0,0,0,0.3);
+            --text-muted: rgba(255,255,255,0.4);
+            --card-hover: rgba(255,255,255,0.06);
+        }
+        [data-theme="light"] {
+            --bg-primary: #f0f4fa;
+            --text-primary: #0b1428;
+            --glass-bg: rgba(255,255,255,0.6);
+            --glass-border: rgba(0,0,0,0.06);
+            --shadow: rgba(0,0,0,0.08);
+            --text-muted: rgba(0,0,0,0.4);
+            --card-hover: rgba(0,0,0,0.04);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #0b1428;
-            color: #f0f4fa;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 16px 12px 80px;
+            transition: background 0.3s, color 0.3s;
         }
-        .container { max-width: 700px; margin: 0 auto; }
+        .container { max-width:700px; margin:0 auto; }
 
         .floating-header {
-            position: sticky; top: 0; z-index: 50;
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 10px 16px;
-            background: rgba(11,20,40,0.6);
+            background: var(--glass-bg);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
             margin-bottom: 16px;
+            transition: background 0.3s, border 0.3s;
         }
         .floating-header .logo {
-            font-size: 18px; font-weight: 900;
-            background: linear-gradient(135deg, #f0f4fa, #4a8fc4);
+            font-size: 18px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
         .floating-header .user-badge {
             font-size: 11px;
-            color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
+            background: var(--glass-bg);
             padding: 4px 12px;
             border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
             cursor: pointer;
             transition: all 0.3s;
         }
-        .floating-header .user-badge:hover { background: rgba(74,143,196,0.05); border-color: rgba(74,143,196,0.1); }
+        .floating-header .user-badge:hover { background: var(--card-hover); border-color: var(--accent); }
+        .header-actions { display: flex; gap: 8px; align-items:center; }
+        .theme-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 4px 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle:hover { background: var(--card-hover); }
 
         .chat-container {
-            background: rgba(255,255,255,0.02);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
             border-radius: 16px;
             padding: 16px;
             min-height: 60vh;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s, border 0.3s;
         }
         .messages {
             flex: 1;
@@ -72,11 +110,11 @@
             max-width: 80%;
             font-size: 13px;
             line-height: 1.5;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.02);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
         }
         .message.own .bubble { background: rgba(74,143,196,0.08); border-color: rgba(74,143,196,0.1); }
-        .message .time { font-size: 9px; color: rgba(255,255,255,0.2); margin-top: 2px; }
+        .message .time { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
 
         .input-area {
             display: flex;
@@ -86,18 +124,19 @@
         .input-area input {
             flex: 1;
             padding: 10px 14px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 30px;
-            color: #f0f4fa;
+            color: var(--text-primary);
             font-family: 'Tajawal', sans-serif;
             font-size: 13px;
             outline: none;
+            transition: border 0.3s;
         }
-        .input-area input:focus { border-color: rgba(74,143,196,0.3); }
+        .input-area input:focus { border-color: var(--accent); }
         .input-area button {
             padding: 10px 18px;
-            background: linear-gradient(135deg, #0d2847, #1a3a5c);
+            background: linear-gradient(135deg, #0d2847, var(--accent));
             border: none;
             border-radius: 30px;
             color: #fff;
@@ -107,42 +146,52 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            font-family: 'Tajawal', sans-serif;
         }
         .input-area button:active { transform: scale(0.95); }
         .input-area button:disabled { opacity: 0.4; pointer-events: none; }
+        .input-area .stop-btn {
+            background: rgba(235,87,87,0.2);
+            color: #eb5757;
+        }
 
         .toast {
             position: fixed; bottom: 80px; left: 20px; right: 20px;
             background: rgba(11,20,40,0.92);
             backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
             color: #f0f4fa;
             padding: 14px 20px;
             border-radius: 14px;
             text-align: center;
-            z-index: 1000;
+            z-index: 2000;
             display: none;
             font-size: 13px;
             border: 1px solid rgba(255,255,255,0.04);
             max-width: 400px;
             margin: 0 auto;
         }
+        [data-theme="light"] .toast {
+            background: rgba(240,244,250,0.92);
+            color: #0b1428;
+            border-color: rgba(0,0,0,0.06);
+        }
 
         .bottom-nav {
-            position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 1000;
-            background: rgba(255,255,255,0.04);
+            position: fixed; bottom: 12px; left: 12px; right: 12px; z-index:1000;
+            background: var(--glass-bg);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
-            border: 1px solid rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
             border-radius: 14px;
             padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 40px var(--shadow);
             height: 44px;
             max-width: 400px;
             margin: 0 auto;
+            transition: background 0.3s, border 0.3s;
         }
         .nav-item {
             display: flex;
@@ -151,7 +200,7 @@
             justify-content: center;
             gap: 1px;
             text-decoration: none;
-            color: rgba(255,255,255,0.25);
+            color: var(--text-muted);
             font-size: 8px;
             font-weight: 500;
             transition: all 0.3s;
@@ -165,7 +214,7 @@
         }
         .nav-item i { font-size: 16px; transition: all 0.3s; }
         .nav-item span { font-size: 7px; opacity: 0.6; }
-        .nav-item.active { color: #4a8fc4; background: rgba(74,143,196,0.06); }
+        .nav-item.active { color: var(--accent); background: rgba(74,143,196,0.06); }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
@@ -173,30 +222,32 @@
             display: inline-block;
             width: 16px; height: 16px;
             border: 2px solid rgba(255,255,255,0.1);
-            border-top-color: #4a8fc4;
+            border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         @media (min-width:768px){ .bottom-nav{left:20px;right:20px} .toast{left:20px;right:20px} }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- الهيدر -->
         <div class="floating-header">
             <span class="logo">EVILE</span>
-            {% if user_code %}
-            <span class="user-badge" id="userCodeBadge" title="انقر 3 مرات لنسخ الرقم">
-                <i class="bi bi-person-badge"></i> {{ user_code }}
-            </span>
-            {% else %}
-            <a href="/publish" style="color:rgba(255,255,255,0.3); text-decoration:none; font-size:13px;">تسجيل الدخول</a>
-            {% endif %}
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="bi bi-moon-fill" id="themeIcon"></i>
+                </button>
+                {% if user_code %}
+                <span class="user-badge" id="userCodeBadge" title="انقر 3 مرات لنسخ الرقم">
+                    <i class="bi bi-person-badge"></i> {{ user_code }}
+                </span>
+                {% else %}
+                <a href="/publish" style="color:var(--text-muted); text-decoration:none; font-size:13px;">تسجيل الدخول</a>
+                {% endif %}
+            </div>
         </div>
 
-        <!-- واجهة الدردشة -->
         <div class="chat-container">
             <div class="messages" id="messagesContainer">
                 <div class="message"><div class="bubble">مرحباً! أنا مساعد EVILE. كيف يمكنني مساعدتك؟</div><div class="time">الآن</div></div>
@@ -204,18 +255,17 @@
             <div class="input-area">
                 <input type="text" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
                 <button id="sendBtn" onclick="sendMessage()"><i class="bi bi-send"></i> إرسال</button>
-                <button id="stopBtn" style="display:none; background:rgba(235,87,87,0.2); color:#eb5757;" onclick="stopResponse()"><i class="bi bi-stop-fill"></i></button>
+                <button id="stopBtn" class="stop-btn" style="display:none;" onclick="stopResponse()"><i class="bi bi-stop-fill"></i></button>
             </div>
         </div>
     </div>
 
-    <!-- شريط التنقل -->
     <nav class="bottom-nav">
-        <button class="nav-item active" id="navChat">
+        <button class="nav-item active">
             <i class="bi bi-chat-dots"></i>
             <span>دردشة</span>
         </button>
-        <a href="/publish" class="nav-item" id="navPublish" style="text-decoration:none;">
+        <a href="/publish" class="nav-item" style="text-decoration:none;">
             <i class="bi bi-megaphone"></i>
             <span>نشر</span>
         </a>
@@ -224,12 +274,10 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        let isProcessing = false;
-        let abortController = null;
+        let isProcessing = false, abortController = null;
 
-        // ===== نسخ user_code بالنقر 3 مرات =====
-        let clickCount = 0;
-        let clickTimer = null;
+        // ===== النسخ بثلاث نقرات =====
+        let clickCount = 0, clickTimer = null;
         const badge = document.getElementById('userCodeBadge');
         if (badge) {
             badge.addEventListener('click', function() {
@@ -239,12 +287,12 @@
                     navigator.clipboard.writeText(code).then(() => {
                         showToast('تم نسخ الرقم: ' + code);
                     }).catch(() => {
-                        const textarea = document.createElement('textarea');
-                        textarea.value = code;
-                        document.body.appendChild(textarea);
-                        textarea.select();
+                        const ta = document.createElement('textarea');
+                        ta.value = code;
+                        document.body.appendChild(ta);
+                        ta.select();
                         document.execCommand('copy');
-                        textarea.remove();
+                        ta.remove();
                         showToast('تم نسخ الرقم: ' + code);
                     });
                     clickCount = 0;
@@ -254,6 +302,25 @@
                     clickTimer = setTimeout(() => { clickCount = 0; }, 800);
                 }
             });
+        }
+
+        // ===== الوضع الليلي/النهاري =====
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                icon.className = 'bi bi-sun-fill';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'bi bi-moon-fill';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.getElementById('themeIcon').className = 'bi bi-sun-fill';
         }
 
         // ===== إرسال رسالة =====
@@ -270,7 +337,6 @@
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('stopBtn').style.display = 'inline-flex';
 
-            // عرض مؤشر تحميل
             const loadDiv = document.createElement('div');
             loadDiv.id = 'loadingMsg';
             loadDiv.className = 'message';

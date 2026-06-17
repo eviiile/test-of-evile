@@ -23,7 +23,7 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-...')  # ضع مفتاحك هنا
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# ===== تم تضمين DATABASE_URL مباشرة هنا =====
+# ===== تم تضمين DATABASE_URL مباشرة =====
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
 
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
@@ -96,7 +96,7 @@ def init_db():
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS publish_settings (
             id SERIAL PRIMARY KEY,
-            publish_time TEXT DEFAULT '12:00'
+            publish_times TEXT DEFAULT '12:00'
         )''')
         cur.execute('''CREATE TABLE IF NOT EXISTS notifications (
             id SERIAL PRIMARY KEY,
@@ -106,7 +106,7 @@ def init_db():
         )''')
         cur.execute("SELECT COUNT(*) FROM publish_settings")
         if cur.fetchone()['count'] == 0:
-            cur.execute("INSERT INTO publish_settings (publish_time) VALUES ('12:00')")
+            cur.execute("INSERT INTO publish_settings (publish_times) VALUES ('12:00')")
     logger.info("Database initialized")
 
 # ==================== دوال مساعدة ====================
@@ -116,9 +116,9 @@ def generate_user_code():
 
 def get_publish_time():
     with get_db() as cur:
-        cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
+        cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
         row = cur.fetchone()
-        return row['publish_time'] if row else '12:00'
+        return row['publish_times'] if row else '12:00'
 
 def generate_post_content(content_id=None, custom_prompt=None):
     prompt = None
@@ -354,9 +354,9 @@ def admin_panel():
         channels = cur.fetchall()
         cur.execute("SELECT * FROM content_templates ORDER BY id")
         templates = cur.fetchall()
-        cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
+        cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
         setting = cur.fetchone()
-        publish_time = setting['publish_time'] if setting else '12:00'
+        publish_time = setting['publish_times'] if setting else '12:00'
         cur.execute("SELECT * FROM notifications ORDER BY id DESC")
         notifications = cur.fetchall()
     return render_template('admin.html', users=users, channels=channels,
@@ -384,7 +384,7 @@ def update_publish_time():
         return redirect(url_for('login'))
     new_time = request.form.get('publish_time', '12:00')
     with get_db() as cur:
-        cur.execute("UPDATE publish_settings SET publish_time = %s", (new_time,))
+        cur.execute("UPDATE publish_settings SET publish_times = %s", (new_time,))
     schedule_daily_job()
     flash('تم تحديث وقت النشر', 'success')
     return redirect(url_for('admin_panel'))

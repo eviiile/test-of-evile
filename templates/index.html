@@ -61,7 +61,6 @@
             background-clip: text;
             color: transparent;
         }
-        /* لون سماوي */
         .sky-blue-btn {
             background: linear-gradient(135deg, #0088cc, #00aaff) !important;
             color: #fff !important;
@@ -159,7 +158,6 @@
         }
         .active-users-box i { font-size: 14px; }
 
-        /* شريط التنقل - يظهر فقط في الواجهة الرئيسية */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -218,7 +216,6 @@
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
-        /* باقي الأنماط من index السابق */
         .splash-section {
             flex: 1;
             display: none;
@@ -378,7 +375,6 @@
         .send-btn:disabled { opacity: 0.5; }
         .send-btn:active:not(:disabled) { transform: scale(0.94); }
         .send-btn i { font-size: 18px; }
-        /* زر الإرسال باللون السماوي */
         .send-btn.sky-blue {
             background: linear-gradient(135deg, #0088cc, #00aaff) !important;
             color: #fff !important;
@@ -694,22 +690,8 @@
     </header>
 
     <div class="main-container">
-        <div class="splash-section" id="splashSection">
-            <div class="splash-icon">
-                <i class="bi bi-chat-dots"></i>
-            </div>
-            <div class="splash-title">مرحباً بك في EVILE</div>
-            <div class="splash-text">أدخل معرف تيليجرام الخاص بك لبدء المحادثة</div>
-            <div class="splash-input-wrapper">
-                <input type="text" id="splashTelegramId" class="splash-input" placeholder="معرف تيليجرام (أرقام فقط)" autocomplete="off">
-                <button id="splashRegisterBtn" class="splash-btn">
-                    <i class="bi bi-arrow-left"></i>
-                </button>
-            </div>
-            <div id="splashError" class="splash-error" style="display: none;"></div>
-        </div>
-
-        <div class="welcome-section" id="welcomeSection">
+        <!-- تم إزالة splash section لأن الدردشة متاحة بدون ID -->
+        <div class="welcome-section active" id="welcomeSection">
             <div id="welcomeLogo">
                 <div class="sparkle-icon">
                     <i class="bi bi-stars"></i>
@@ -775,7 +757,7 @@
         </div>
     </div>
 
-    <!-- شريط التنقل السفلي - يظهر فقط في الواجهة الرئيسية -->
+    <!-- شريط التنقل السفلي -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" id="navChat" onclick="goHome()">
             <i class="bi bi-chat-dots"></i>
@@ -802,7 +784,6 @@
         const charScrollWrapper = document.getElementById('charScrollWrapper');
         const bottomNav = document.getElementById('bottomNav');
 
-        // التحكم في ظهور شريط التنقل
         function updateNavVisibility() {
             if (chatSection.classList.contains('active')) {
                 bottomNav.classList.add('hidden');
@@ -811,15 +792,12 @@
             }
         }
 
-        // مراقبة تغييرات القسم
         const observer = new MutationObserver(() => {
             updateNavVisibility();
         });
         observer.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
         observer.observe(welcomeSection, { attributes: true, attributeFilter: ['class'] });
 
-        // تعديل دالة goHome
-        const originalGoHome = window.goHome;
         window.goHome = function() {
             chatSection.classList.remove('active');
             welcomeSection.classList.add('active');
@@ -828,8 +806,6 @@
             updateNavVisibility();
         };
 
-        // تعديل دالة sendWelcomeMessage
-        const originalSendWelcome = window.sendWelcomeMessage;
         window.sendWelcomeMessage = async function() {
             if (isProcessing) return;
             const input = document.getElementById('welcomeInput');
@@ -844,7 +820,6 @@
             await actuallySendMessage(msg);
         };
 
-        // باقي الدوال كما هي...
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('themeIcon');
@@ -871,21 +846,13 @@
         }
 
         function initScreen() {
-            if (telegramId) {
-                splashSection.classList.remove('active');
-                welcomeSection.classList.add('active');
-                chatSection.classList.remove('active');
-                document.getElementById('welcomeInput').placeholder = 'اكتب رسالتك...';
-                if (latestNotification && latestNotification.show_in_chat) {
-                    showToastNotification(latestNotification.title + ': ' + latestNotification.text, 10000);
-                }
-                updateNavVisibility();
-            } else {
-                splashSection.classList.add('active');
-                welcomeSection.classList.remove('active');
-                chatSection.classList.remove('active');
-                updateNavVisibility();
+            welcomeSection.classList.add('active');
+            chatSection.classList.remove('active');
+            document.getElementById('welcomeInput').placeholder = 'اكتب رسالتك...';
+            if (latestNotification && latestNotification.show_in_chat) {
+                showToastNotification(latestNotification.title + ': ' + latestNotification.text, 10000);
             }
+            updateNavVisibility();
         }
 
         function showToastNotification(message, duration = 10000) {
@@ -1047,41 +1014,6 @@
             } else {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-send"></i>';
-            }
-        }
-
-        function showSplashError(msg) {
-            const errDiv = document.getElementById('splashError');
-            errDiv.textContent = msg;
-            errDiv.style.display = 'block';
-            setTimeout(() => errDiv.style.display = 'none', 4000);
-        }
-
-        async function performSplashRegister() {
-            const idInput = document.getElementById('splashTelegramId');
-            const id = idInput.value.trim();
-            if (!/^\d+$/.test(id)) {
-                showSplashError('المعرف يجب أن يحتوي على أرقام فقط');
-                return;
-            }
-            const btn = document.getElementById('splashRegisterBtn');
-            setButtonLoading(btn, true);
-            try {
-                let res = await fetch('/register', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: `telegram_id=${id}`
-                });
-                let data = await res.json();
-                setButtonLoading(btn, false);
-                if (data.success) {
-                    location.reload();
-                } else {
-                    showSplashError(data.message || 'فشل التسجيل');
-                }
-            } catch (err) {
-                setButtonLoading(btn, false);
-                showSplashError('خطأ في الاتصال');
             }
         }
 
@@ -1269,10 +1201,6 @@
             renderCharSelector();
             renderNotificationsSheet();
             updateWelcomeDisplay();
-            document.getElementById('splashRegisterBtn').onclick = performSplashRegister;
-            document.getElementById('splashTelegramId').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') performSplashRegister();
-            });
         });
     </script>
 </body>

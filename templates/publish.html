@@ -17,86 +17,215 @@
         }
         .container { max-width: 700px; margin: 0 auto; }
 
-        .glass { background: rgba(255,255,255,0.06); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 40px rgba(0,0,0,0.3); }
-        .glass-dark { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
-        .glass-blue { background: rgba(26,58,92,0.25); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(74,143,196,0.15); box-shadow: 0 8px 32px rgba(0,40,80,0.15); }
+        .glass-blue {
+            background: rgba(26,58,92,0.25);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(74,143,196,0.15);
+            box-shadow: 0 8px 32px rgba(0,40,80,0.15);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+        .glass-dark {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
 
-        .dashboard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-        .dashboard-header h1 { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 6px; color: #fff; }
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .dashboard-header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+        }
         .dashboard-header h1 i { color: #4a8fc4; font-size: 20px; }
         .dashboard-header a { font-size: 18px; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.3s; }
         .dashboard-header a:hover { color: #fff; }
 
-        .channel-card { border-radius: 14px; padding: 14px 18px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
-        .channel-card .channel-id { font-size: 13px; font-weight: 600; color: #4a8fc4; }
-        .channel-card .channel-username { font-size: 12px; color: rgba(255,255,255,0.5); }
-        .channel-card .channel-status { font-size: 11px; padding: 3px 14px; border-radius: 30px; display: inline-block; width: fit-content; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.04); font-weight: 600; margin-top: 2px; }
-        .channel-card .channel-status.active { color: #6fcf97; border-color: rgba(111,207,151,0.15); background: rgba(111,207,151,0.05); }
-        .channel-card .channel-status.paused { color: #f2c94a; border-color: rgba(242,201,74,0.15); background: rgba(242,201,74,0.05); }
-        .channel-card .channel-status.inactive { color: #eb5757; border-color: rgba(235,87,87,0.15); background: rgba(235,87,87,0.05); }
+        .user-code-box {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.02);
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.02);
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+        .user-code-box:hover { background: rgba(74,143,196,0.05); border-color: rgba(74,143,196,0.1); }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
-        .stat-card { border-radius: 12px; padding: 12px 8px; text-align: center; background: rgba(255,255,255,0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.04); transition: all 0.3s; }
-        .stat-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(74,143,196,0.1); }
+        .channel-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .channel-item:last-child { border-bottom: none; }
+        .channel-info { flex: 1; }
+        .channel-info .id { font-size: 13px; font-weight: 600; color: #4a8fc4; }
+        .channel-info .username { font-size: 11px; color: rgba(255,255,255,0.4); }
+        .channel-status {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 30px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+        .channel-status.active { color: #6fcf97; border-color: rgba(111,207,151,0.1); }
+        .channel-status.inactive { color: #eb5757; border-color: rgba(235,87,87,0.1); }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .btn-primary { background: linear-gradient(135deg, #0d2847, #1a3a5c); color: #fff; }
+        .btn-success { background: rgba(111,207,151,0.1); color: #6fcf97; }
+        .btn-danger { background: rgba(235,87,87,0.1); color: #eb5757; }
+        .btn-warning { background: rgba(242,201,74,0.1); color: #f2c94a; }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { opacity: 0.4; pointer-events: none; }
+
+        .add-channel-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .add-channel-form input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            color: #f0f4fa;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 12px;
+            outline: none;
+            min-width: 120px;
+        }
+        .add-channel-form input:focus { border-color: rgba(74,143,196,0.3); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .stat-card {
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.02);
+        }
         .stat-card .number { font-size: 22px; font-weight: 900; color: #fff; }
         .stat-card .label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
         .stat-card i { font-size: 18px; display: block; margin-bottom: 4px; color: #4a8fc4; }
 
-        .icon-center { text-align: center; margin: 8px 0 12px; }
-        .icon-center i { font-size: 52px; color: rgba(74,143,196,0.12); }
+        .publish-time-box {
+            text-align: center;
+            padding: 8px;
+            background: rgba(74,143,196,0.04);
+            border-radius: 30px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 14px;
+        }
+        .publish-time-box i { color: #4a8fc4; margin-left: 6px; }
 
-        .times-box { border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; background: rgba(255,255,255,0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.04); }
-        .times-box h3 { font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.8); }
-        .times-box h3 i { color: #4a8fc4; }
-        .times-box .times-list { display: flex; gap: 8px; flex-wrap: wrap; }
-        .times-box .time-badge { background: rgba(255,255,255,0.04); padding: 4px 14px; border-radius: 30px; font-size: 11px; border: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); transition: all 0.3s; }
-        .times-box .time-badge:hover { background: rgba(74,143,196,0.08); border-color: rgba(74,143,196,0.1); color: #fff; }
-
-        .content-selector { border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; background: rgba(255,255,255,0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.04); }
-        .content-selector h3 { font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.8); }
-        .content-selector h3 i { color: #4a8fc4; }
-        .content-selector .selector-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .content-selector select { flex: 1; padding: 8px 12px; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; font-family: 'Tajawal', sans-serif; font-size: 12px; background: rgba(255,255,255,0.04); color: #f0f4fa; min-width: 120px; outline: none; transition: border-color 0.3s; }
-        .content-selector select:focus { border-color: rgba(74,143,196,0.3); }
-        .content-selector select option { background: #0b1428; color: #f0f4fa; }
-        .content-selector .btn-select { padding: 8px 18px; background: linear-gradient(135deg, #0d2847, #1a3a5c); border: none; border-radius: 10px; color: #fff; font-weight: 600; font-size: 11px; cursor: pointer; transition: all 0.3s; white-space: nowrap; box-shadow: 0 4px 20px rgba(13,40,71,0.2); }
-        .content-selector .btn-select:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(13,40,71,0.3); }
-        .content-selector .btn-select:active { transform: scale(0.96); }
-        .content-selector .btn-select:disabled { opacity: 0.4; pointer-events: none; }
-        .content-selector .current-content { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 8px; padding: 8px 12px; background: rgba(74,143,196,0.04); border-radius: 10px; border-right: 3px solid #4a8fc4; }
-        .content-selector .current-content strong { color: #fff; }
-        .content-selector .content-preview { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; line-height: 1.4; }
-
-        .actions { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
-        .actions .btn { padding: 10px 12px; border: none; border-radius: 10px; font-weight: 600; font-size: 11px; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; text-align: center; font-family: 'Tajawal', sans-serif; }
-        .actions .btn:active { transform: scale(0.95); }
-        .actions .btn:disabled { opacity: 0.3; pointer-events: none; }
-        .btn-pause { background: rgba(242,201,74,0.10); color: #f2c94a; border: 1px solid rgba(242,201,74,0.08); }
-        .btn-pause:hover { background: rgba(242,201,74,0.18); }
-        .btn-stop { background: rgba(235,87,87,0.10); color: #eb5757; border: 1px solid rgba(235,87,87,0.08); }
-        .btn-stop:hover { background: rgba(235,87,87,0.18); }
-        .btn-publish { background: rgba(111,207,151,0.10); color: #6fcf97; border: 1px solid rgba(111,207,151,0.08); }
-        .btn-publish:hover { background: rgba(111,207,151,0.18); }
-
-        .recent-posts { border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,0.04); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.04); }
-        .recent-posts h3 { font-size: 13px; margin-bottom: 8px; color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 6px; }
-        .recent-posts h3 i { color: #4a8fc4; }
-        .post-item { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.6); }
+        .recent-posts { margin-top: 14px; }
+        .post-item {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-size: 12px;
+            line-height: 1.5;
+            color: rgba(255,255,255,0.6);
+        }
         .post-item .time { font-size: 10px; color: rgba(255,255,255,0.2); display: block; margin-bottom: 2px; }
-        .post-item:last-child { border-bottom: none; }
-        .post-item:hover { color: rgba(255,255,255,0.8); }
 
-        .toast { position: fixed; bottom: 80px; left: 20px; right: 20px; background: rgba(11,20,40,0.92); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); color: #f0f4fa; padding: 14px 20px; border-radius: 14px; text-align: center; z-index: 1000; display: none; font-size: 13px; border: 1px solid rgba(255,255,255,0.04); max-width: 400px; margin: 0 auto; }
+        .toast {
+            position: fixed; bottom: 80px; left: 20px; right: 20px;
+            background: rgba(11,20,40,0.92);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            color: #f0f4fa;
+            padding: 14px 20px;
+            border-radius: 14px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.04);
+            max-width: 400px;
+            margin: 0 auto;
+        }
 
-        .bottom-nav { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,0.04); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.04); border-radius: 14px; padding: 4px 8px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 8px 40px rgba(0,0,0,0.3); height: 44px; max-width: 400px; margin: 0 auto; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; text-decoration: none; color: rgba(255,255,255,0.25); font-size: 8px; font-weight: 500; transition: all 0.3s; padding: 3px 10px; border-radius: 20px; background: transparent; border: none; cursor: pointer; flex: 1; max-width: 70px; }
+        .bottom-nav {
+            position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 1000;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 14px;
+            padding: 4px 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+            height: 44px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.25);
+            font-size: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            max-width: 70px;
+        }
         .nav-item i { font-size: 16px; transition: all 0.3s; }
         .nav-item span { font-size: 7px; opacity: 0.6; }
         .nav-item.active { color: #4a8fc4; background: rgba(74,143,196,0.06); }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
-        @media (max-width:480px){ .stats-grid{grid-template-columns:1fr 1fr 1fr} .actions{grid-template-columns:1fr 1fr} .actions .btn:nth-child(3){grid-column:span 2} }
+        @media (max-width:480px){ .stats-grid{grid-template-columns:1fr 1fr 1fr} }
         @media (min-width:768px){ .bottom-nav{left:20px;right:20px} .toast{left:20px;right:20px} }
     </style>
 </head>
@@ -104,114 +233,93 @@
     <div class="container">
         <div class="dashboard-header">
             <h1><i class="bi bi-megaphone"></i> النشر</h1>
-            <a href="/" style="color:rgba(255,255,255,0.3); text-decoration:none; transition:color 0.3s;"><i class="bi bi-house"></i></a>
-        </div>
-
-        <div class="channel-card glass-blue">
-            <div class="channel-id"><i class="bi bi-hash"></i> {{ channel.channel_id }}</div>
-            {% if channel.channel_username %}
-            <div class="channel-username"><i class="bi bi-at"></i> {{ channel.channel_username }}</div>
-            {% endif %}
-            <div class="channel-status 
-                {% if channel.is_active %}
-                    {% if is_paused %}paused{% else %}active{% endif %}
-                {% else %}inactive{% endif %}">
-                {% if channel.is_active %}
-                {% if is_paused %}موقّت مؤقت{% else %}نشط{% endif %}
-                {% else %}
-                متوقف
-                {% endif %}
+            <div class="user-code-box" id="userCodeBox" title="انقر 3 مرات لنسخ الرقم">
+                <i class="bi bi-person-badge"></i> {{ user_code }}
             </div>
         </div>
 
+        <!-- معلومات القنوات -->
+        <div class="glass-blue">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:14px; font-weight:700;">قنواتي</span>
+                <span style="font-size:11px; color:rgba(255,255,255,0.3);">{{ channels|length }} / {% if is_premium %}不限{% else %}3{% endif %}</span>
+            </div>
+            {% for ch in channels %}
+            <div class="channel-item">
+                <div class="channel-info">
+                    <div class="id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
+                    {% if ch.channel_username %}<div class="username"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <span class="channel-status {% if ch.is_active %}active{% else %}inactive{% endif %}">
+                        {% if ch.is_active %}نشط{% else %}موقوف{% endif %}
+                    </span>
+                    <button class="btn btn-warning" onclick="toggleChannel({{ ch.id }})">
+                        <i class="bi bi-{% if ch.is_active %}pause{% else %}play{% endif %}"></i>
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <p style="text-align:center; color:rgba(255,255,255,0.2); padding:10px 0;">لا توجد قنوات مسجلة</p>
+            {% endfor %}
+
+            <!-- إضافة قناة جديدة -->
+            <div style="margin-top:12px;">
+                <form id="addChannelForm" class="add-channel-form">
+                    <input type="text" name="channel_id" placeholder="معرف القناة (مثال: -100123)" required>
+                    <input type="text" name="channel_username" placeholder="@username" required>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> إضافة</button>
+                </form>
+                <div id="addChannelMessage" style="font-size:11px; margin-top:6px; color:rgba(255,255,255,0.3);"></div>
+            </div>
+        </div>
+
+        <!-- إحصائيات عامة -->
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="bi bi-people"></i>
-                <div class="number">{{ members_count }}</div>
-                <div class="label">الأعضاء</div>
+                <div class="number">{{ channels|length }}</div>
+                <div class="label">قنوات</div>
             </div>
             <div class="stat-card">
                 <i class="bi bi-file-text"></i>
-                <div class="number">{{ posts_count }}</div>
-                <div class="label">منشورات</div>
+                <div class="number">{{ recent_posts|length }}</div>
+                <div class="label">منشورات (آخر)</div>
             </div>
             <div class="stat-card">
                 <i class="bi bi-clock"></i>
-                <div class="number">{{ times|length }}</div>
+                <div class="number">1</div>
                 <div class="label">نشر يومي</div>
             </div>
         </div>
 
-        <div class="icon-center">
-            <i class="bi bi-robot"></i>
+        <!-- وقت النشر -->
+        <div class="publish-time-box">
+            <i class="bi bi-clock"></i> وقت النشر اليومي: <strong>{{ publish_time }}</strong> (بتوقيت صنعاء)
         </div>
 
-        <div class="times-box">
-            <h3><i class="bi bi-clock-history"></i> أوقات النشر (صنعاء)</h3>
-            <div class="times-list">
-                {% for t in times %}
-                <span class="time-badge">{{ t }}</span>
-                {% endfor %}
-            </div>
+        <!-- أزرار التحكم السريع -->
+        <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+            <button class="btn btn-success" id="forcePublishBtn"><i class="bi bi-send-fill"></i> نشر الآن (لأول قناة)</button>
         </div>
 
-        <div class="content-selector">
-            <h3><i class="bi bi-file-text"></i> المحتوى المراد نشره</h3>
-            <form id="selectContentForm">
-                <div class="selector-row">
-                    <select name="content_id" id="contentSelect">
-                        {% for item in content_templates %}
-                        <option value="{{ item.id }}" {% if selected_content_id == item.id %}selected{% endif %}>
-                            {{ item.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn-select"><i class="bi bi-check-lg"></i> اختيار</button>
-                </div>
-            </form>
-            {% if selected_content_id %}
-            {% for item in content_templates %}
-            {% if item.id == selected_content_id %}
-            <div class="current-content">
-                <strong>المحتوى الحالي:</strong> {{ item.name }}
-                <div class="content-preview">{{ item.content[:100] }}{% if item.content|length > 100 %}...{% endif %}</div>
-            </div>
-            {% endif %}
-            {% endfor %}
-            {% else %}
-            <div class="current-content" style="color:rgba(255,255,255,0.3);">
-                <i class="bi bi-info-circle"></i> سيتم توليد محتوى تلقائياً عند النشر
-            </div>
-            {% endif %}
-        </div>
-
-        <div class="actions">
-            {% if channel.is_active %}
-            <button class="btn btn-pause" id="pauseBtn">
-                {% if is_paused %}<i class="bi bi-play-fill"></i> استئناف{% else %}<i class="bi bi-pause-fill"></i> إيقاف{% endif %}
-            </button>
-            <button class="btn btn-stop" id="stopBtn"><i class="bi bi-stop-fill"></i> إيقاف نهائي</button>
-            <button class="btn btn-publish" id="publishNowBtn"><i class="bi bi-send-fill"></i> نشر الآن</button>
-            {% else %}
-            <button class="btn btn-publish" disabled style="grid-column:span 3;">القناة غير نشطة</button>
-            {% endif %}
-        </div>
-
-        <div class="recent-posts">
-            <h3><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
+        <!-- آخر المنشورات -->
+        <div class="glass-dark recent-posts">
+            <h3 style="font-size:13px; margin-bottom:8px; color:rgba(255,255,255,0.8);"><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
             {% if recent_posts %}
-            {% for post in recent_posts %}
-            <div class="post-item">
-                <span class="time">{{ post.published_at }}</span>
-                {{ post.content[:120] }}{% if post.content|length > 120 %}...{% endif %}
-            </div>
-            {% endfor %}
+                {% for post in recent_posts %}
+                <div class="post-item">
+                    <span class="time">{{ post.published_at }}</span>
+                    {{ post.content[:120] }}{% if post.content|length > 120 %}...{% endif %}
+                </div>
+                {% endfor %}
             {% else %}
-            <p style="color:rgba(255,255,255,0.2); text-align:center; font-size:12px;">لا توجد منشورات بعد</p>
+                <p style="text-align:center; color:rgba(255,255,255,0.2);">لا توجد منشورات بعد</p>
             {% endif %}
         </div>
     </div>
 
+    <!-- شريط التنقل -->
     <nav class="bottom-nav" id="bottomNav">
         <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
@@ -226,71 +334,76 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        function showToast(msg, duration) {
-            duration = duration || 3000;
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.display = 'block';
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(function() {
-                toast.style.display = 'none';
-            }, duration);
-        }
-
-        document.getElementById('selectContentForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const btn = this.querySelector('.btn-select');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-
-            try {
-                const res = await fetch('/publish/select_content', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('تم اختيار المحتوى بنجاح');
-                    setTimeout(function() { location.reload(); }, 1000);
-                } else {
-                    showToast(data.message || 'حدث خطأ');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="bi bi-check-lg"></i> اختيار';
-                }
-            } catch (e) {
-                console.error('Error:', e);
-                showToast('خطأ في الاتصال بالخادم');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-check-lg"></i> اختيار';
+        // ===== نسخ user_code بالنقر 3 مرات =====
+        let clickCount = 0;
+        let clickTimer = null;
+        document.getElementById('userCodeBox').addEventListener('click', function() {
+            clickCount++;
+            if (clickCount === 3) {
+                const code = this.innerText.trim();
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast('تم نسخ الرقم: ' + code);
+                }).catch(() => {
+                    // الطريقة البديلة
+                    const textarea = document.createElement('textarea');
+                    textarea.value = code;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    textarea.remove();
+                    showToast('تم نسخ الرقم: ' + code);
+                });
+                clickCount = 0;
+                clearTimeout(clickTimer);
+            } else {
+                clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 800);
             }
         });
 
-        document.getElementById('pauseBtn').addEventListener('click', async function() {
+        // ===== إضافة قناة =====
+        document.getElementById('addChannelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
             try {
-                const res = await fetch('/publish/toggle_pause');
+                const res = await fetch('/publish/add_channel', { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(data.is_paused ? 'تم الإيقاف المؤقت' : 'تم الاستئناف');
-                    setTimeout(function() { location.reload(); }, 1000);
+                    showToast('تمت إضافة القناة بنجاح');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-plus-lg"></i> إضافة';
+                }
+            } catch (e) {
+                showToast('خطأ في الاتصال');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-lg"></i> إضافة';
+            }
+        });
+
+        // ===== تبديل حالة القناة =====
+        async function toggleChannel(id) {
+            try {
+                const res = await fetch('/publish/toggle_channel/' + id);
+                const data = await res.json();
+                if (data.success) {
+                    showToast('تم تحديث حالة القناة');
+                    setTimeout(() => location.reload(), 800);
                 } else {
                     showToast(data.message || 'حدث خطأ');
                 }
-            } catch (e) { showToast('خطأ في الاتصال'); }
-        });
+            } catch (e) {
+                showToast('خطأ في الاتصال');
+            }
+        }
 
-        document.getElementById('stopBtn').addEventListener('click', async function() {
-            if (!confirm('هل أنت متأكد من إيقاف النشر نهائياً؟')) return;
-            try {
-                const res = await fetch('/publish/stop');
-                const data = await res.json();
-                if (data.success) {
-                    showToast('تم إيقاف النشر نهائياً');
-                    setTimeout(function() { location.reload(); }, 1000);
-                } else {
-                    showToast(data.message || 'حدث خطأ');
-                }
-            } catch (e) { showToast('خطأ في الاتصال'); }
-        });
-
-        document.getElementById('publishNowBtn').addEventListener('click', async function() {
+        // ===== نشر الآن =====
+        document.getElementById('forcePublishBtn').addEventListener('click', async function() {
             this.disabled = true;
             this.textContent = 'جاري النشر...';
             try {
@@ -298,18 +411,27 @@
                 const data = await res.json();
                 if (data.success) {
                     showToast('تم النشر بنجاح');
-                    setTimeout(function() { location.reload(); }, 1500);
+                    setTimeout(() => location.reload(), 1500);
                 } else {
                     showToast(data.message || 'فشل النشر');
                     this.disabled = false;
-                    this.innerHTML = '<i class="bi bi-send-fill"></i> نشر الآن';
+                    this.innerHTML = '<i class="bi bi-send-fill"></i> نشر الآن (لأول قناة)';
                 }
             } catch (e) {
                 showToast('خطأ في الاتصال');
                 this.disabled = false;
-                this.innerHTML = '<i class="bi bi-send-fill"></i> نشر الآن';
+                this.innerHTML = '<i class="bi bi-send-fill"></i> نشر الآن (لأول قناة)';
             }
         });
+
+        function showToast(msg, duration) {
+            duration = duration || 3000;
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
     </script>
 </body>
 </html>

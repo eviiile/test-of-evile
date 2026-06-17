@@ -3,697 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - EVILE</title>
+    <title>لوحة المدير - EVILE</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            color: #1a1a1a;
+            background: #0b1428;
+            color: #f0f4fa;
             padding: 20px;
+            min-height: 100vh;
         }
         .admin-container { max-width: 1200px; margin: 0 auto; }
-        .admin-tabs {
+        .admin-header {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 24px;
-            background: rgba(255,255,255,0.75);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 18px;
-            padding: 8px 12px;
-        }
-        .tab-btn {
-            padding: 8px 16px;
-            background: rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 40px;
-            color: #333;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
-        }
-        .tab-btn i { font-size: 14px; }
-        .tab-btn.active {
-            background: rgba(0,0,0,0.1);
-            border-color: #aaa;
-            color: #000;
-        }
-        .tab-btn:active { transform: scale(0.96); }
-        .tab-content {
-            display: none;
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 20px;
-            padding: 20px;
-        }
-        .tab-content.active { display: block; }
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            padding-right: 12px;
-            border-right: 3px solid #aaa;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section-title i { font-size: 18px; color: #888; }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
             margin-bottom: 20px;
         }
-        .form-group { margin-bottom: 12px; }
-        label {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 12px;
-            color: #555;
+        .admin-header h1 { font-size: 22px; font-weight: 900; color: #f0f4fa; }
+        .admin-header a { color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.3s; }
+        .admin-header a:hover { color: #fff; }
+
+        .glass-card {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.02);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
         }
-        input, textarea, select {
+        .glass-card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            border-right: 3px solid #4a8fc4;
+            padding-right: 12px;
+        }
+        .table-wrap { overflow-x: auto; }
+        table {
             width: 100%;
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 12px;
-            color: #1a1a1a;
-            font-family: 'Tajawal', sans-serif;
+            border-collapse: collapse;
             font-size: 13px;
         }
-        input[type="datetime-local"] {
-            direction: ltr;
+        th, td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
         }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #aaa;
-        }
-        textarea { min-height: 80px; resize: vertical; }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        .checkbox-group input {
-            width: auto;
-            margin: 0;
-        }
+        th { color: rgba(255,255,255,0.4); font-weight: 600; }
+        td { color: rgba(255,255,255,0.8); }
         .btn {
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #ddd, #bbb);
+            padding: 4px 12px;
             border: none;
-            border-radius: 40px;
-            color: #333;
+            border-radius: 30px;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            font-family: 'Tajawal', sans-serif;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #0088cc, #00aaff);
-            color: #fff;
-        }
-        .btn-primary i { color: #fff; }
-        .btn-danger {
-            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-            color: #721c24;
-        }
-        .btn-success {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            color: #155724;
-        }
-        .btn:active { transform: scale(0.96); }
-        .characters-grid, .channels-grid, .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-        .character-card, .channel-card, .content-card {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 16px;
-            padding: 12px;
-        }
-        .content-card .content-preview {
-            background: rgba(0,0,0,0.03);
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            max-height: 60px;
-            overflow-y: auto;
-            margin: 6px 0 10px;
-            color: #444;
-        }
-        .content-card .publish-time {
-            font-size: 11px;
-            color: #0088cc;
-            margin: 4px 0;
-        }
-        .channel-card .channel-id {
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 4px;
-        }
-        .channel-card .admin-id {
-            font-size: 11px;
-            color: #777;
-        }
-        .card-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .character-header {
+        .btn-primary { background: linear-gradient(135deg, #0d2847, #1a3a5c); color: #fff; }
+        .btn-success { background: rgba(111,207,151,0.1); color: #6fcf97; }
+        .btn-danger { background: rgba(235,87,87,0.1); color: #eb5757; }
+        .btn-warning { background: rgba(242,201,74,0.1); color: #f2c94a; }
+        .btn:active { transform: scale(0.95); }
+
+        .form-inline {
             display: flex;
-            align-items: center;
             gap: 10px;
-            margin-bottom: 8px;
-        }
-        .character-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.05);
-            display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            justify-content: center;
-            font-size: 20px;
         }
-        .character-name {
-            font-size: 15px;
-            font-weight: 700;
-        }
-        .character-desc {
-            font-size: 11px;
-            color: #555;
-            margin-bottom: 8px;
-        }
-        .character-prompt {
-            background: rgba(0,0,0,0.03);
-            padding: 6px;
+        .form-inline input, .form-inline textarea {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
             border-radius: 10px;
-            font-size: 10px;
-            color: #444;
-            max-height: 60px;
-            overflow-y: auto;
-            margin-bottom: 12px;
-        }
-        .notification-item {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        .notification-title {
-            font-weight: 700;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-        .notification-text {
-            font-size: 11px;
-            color: #555;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: white;
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 20px;
-            padding: 20px;
-            max-width: 500px;
-            width: 100%;
-        }
-        .time-input-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .time-input-group input[type="time"] {
+            color: #f0f4fa;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 12px;
+            outline: none;
             flex: 1;
+            min-width: 150px;
         }
-        .time-input-group .remove-time {
-            background: none;
-            border: none;
-            color: #dc3545;
-            cursor: pointer;
-            font-size: 18px;
+        .form-inline input:focus { border-color: rgba(74,143,196,0.3); }
+        .form-inline textarea { min-height: 60px; }
+
+        .toast {
+            position: fixed; bottom: 80px; left: 20px; right: 20px;
+            background: rgba(11,20,40,0.92);
+            backdrop-filter: blur(28px);
+            color: #f0f4fa;
+            padding: 14px 20px;
+            border-radius: 14px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.04);
+            max-width: 400px;
+            margin: 0 auto;
         }
-        .add-time-btn {
-            margin-top: 8px;
-        }
-        .generate-btn {
-            margin-top: 8px;
-            width: 100%;
-        }
-        .spinner-small {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 640px) {
-            body { padding: 12px; }
-            .admin-tabs { gap: 6px; }
-            .tab-btn { padding: 6px 12px; font-size: 11px; }
-        }
+        @media (max-width:640px){ body{padding:12px} .form-inline{flex-direction:column} .form-inline input{width:100%} }
     </style>
 </head>
 <body>
     <div class="admin-container">
-        <div class="admin-tabs">
-            <button class="tab-btn active" data-tab="characters"><i class="bi bi-people"></i> الشخصيات</button>
-            <button class="tab-btn" data-tab="notifications"><i class="bi bi-bell"></i> الإشعارات</button>
-            <button class="tab-btn" data-tab="channels"><i class="bi bi-megaphone"></i> القنوات</button>
-            <button class="tab-btn" data-tab="failures"><i class="bi bi-exclamation-triangle"></i> فشل النشر</button>
-            <button class="tab-btn" data-tab="publish"><i class="bi bi-clock"></i> إعدادات النشر</button>
-            <button class="tab-btn" data-tab="content"><i class="bi bi-file-text"></i> المحتوى</button>
+        <div class="admin-header">
+            <h1><i class="bi bi-shield-lock"></i> لوحة المدير</h1>
+            <a href="/admin/logout"><i class="bi bi-box-arrow-right"></i> خروج</a>
         </div>
 
-        <!-- تبويب الشخصيات -->
-        <div id="tab-characters" class="tab-content active">
-            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة شخصية جديدة</div>
-            <form method="POST" action="/admin/character/add">
-                <div class="form-grid">
-                    <div class="form-group"><label>اسم الشخصية</label><input type="text" name="name" required></div>
-                    <div class="form-group"><label>رابط الصورة</label><input type="url" name="logo_url" placeholder="اختياري"></div>
-                    <div class="form-group"><label>وصف مختصر</label><input type="text" name="description" required></div>
-                    <div class="form-group"><label>البرومبت</label><textarea name="prompt" required></textarea></div>
-                    <div class="form-group"><label>مفتاح الاستدعاء</label><input type="text" name="callback_key" placeholder="مثال: logo_maker"></div>
-                </div>
-                <button type="submit" class="btn"><i class="bi bi-save"></i> إضافة شخصية</button>
-            </form>
-
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> قائمة الشخصيات</div>
-            <div class="characters-grid">
-                {% for char in characters %}
-                <div class="character-card">
-                    <div class="character-header">
-                        <div class="character-avatar">
-                            {% if char.logo_url %}<img src="{{ char.logo_url }}" width="40" height="40" style="border-radius:12px; object-fit:cover;">{% else %}<i class="bi bi-robot"></i>{% endif %}
-                        </div>
-                        <div class="character-name">{{ char.name }}</div>
-                    </div>
-                    <div class="character-desc">{{ char.description }}</div>
-                    <div class="character-prompt">{{ char.prompt[:80] }}{% if char.prompt|length > 80 %}...{% endif %}</div>
-                    <div class="card-actions">
-                        <button class="btn" onclick="openEditModal({{ char.id }}, '{{ char.name }}', '{{ char.description }}', `{{ char.prompt|replace('`', '\\`') }}`, '{{ char.logo_url }}')"><i class="bi bi-pencil-square"></i> تعديل</button>
-                        <button class="btn btn-danger" onclick="if(confirm('حذف الشخصية؟')) location.href='/admin/character/{{ char.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- تبويب الإشعارات -->
-        <div id="tab-notifications" class="tab-content">
-            <div class="section-title"><i class="bi bi-send"></i> إرسال إشعار جديد</div>
-            <form method="POST" action="/admin/notification/add">
-                <div class="form-group"><label>العنوان</label><input type="text" name="title" required></div>
-                <div class="form-group"><label>النص</label><textarea name="text" required></textarea></div>
-                <div class="form-group"><label>مدة الظهور (ساعات)</label><input type="number" name="duration_hours" value="1" min="1" step="1"></div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="show_in_chat" id="show_in_chat">
-                    <label for="show_in_chat">ظهور إجباري في واجهة الدردشة (لمدة 10 ثوانٍ)</label>
-                </div>
-                <button type="submit" class="btn"><i class="bi bi-bell"></i> إرسال الإشعار</button>
-            </form>
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-clock-history"></i> الإشعارات المرسلة</div>
-            {% for notif in notifications %}
-            <div class="notification-item">
-                <div class="notification-title"><i class="bi bi-bell"></i> {{ notif.title }} <span style="font-size: 10px; color:#888;">({{ notif.created_at }})</span></div>
-                <div class="notification-text">{{ notif.text }}</div>
-                <div class="notification-meta" style="font-size: 10px; color:#888; margin-top: 5px;">
-                    المدة: {{ notif.duration_hours }} ساعة | ظهور إجباري: {{ 'نعم' if notif.show_in_chat else 'لا' }}
-                </div>
-            </div>
-            {% else %}
-            <p style="text-align:center; color:#888;">لا توجد إشعارات بعد</p>
-            {% endfor %}
-        </div>
-
-        <!-- تبويب القنوات -->
-        <div id="tab-channels" class="tab-content">
-            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة قناة جديدة</div>
-            <form method="POST" action="/admin/channel/add">
-                <div class="form-grid">
-                    <div class="form-group"><label>معرف القناة (رقمي)</label><input type="text" name="channel_id" placeholder="مثال: -1001234567890" required></div>
-                    <div class="form-group"><label>اسم المستخدم (اختياري)</label><input type="text" name="channel_username" placeholder="@example"></div>
-                    <div class="form-group"><label>معرف المشرف (Admin ID)</label><input type="text" name="admin_id" placeholder="أرقام فقط" required></div>
-                </div>
-                <button type="submit" class="btn"><i class="bi bi-plus-circle"></i> إضافة قناة</button>
-            </form>
-
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-check-circle"></i> القنوات النشطة</div>
-            <div class="channels-grid">
-                {% for ch in all_channels %}
-                <div class="channel-card">
-                    <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
-                    {% if ch.channel_username %}<div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
-                    <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.admin_id }}</div>
-                    <div style="font-size:10px; color:#888; margin-top:4px;">تمت الإضافة: {{ ch.created_at }}</div>
-                    <div class="card-actions">
-                        <button class="btn btn-danger" onclick="if(confirm('إيقاف النشر في هذه القناة؟')) location.href='/admin/channel/toggle/{{ ch.id }}'"><i class="bi bi-pause-circle"></i> {% if ch.is_active %}إيقاف{% else %}تفعيل{% endif %}</button>
-                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/delete/{{ ch.id }}'"><i class="bi bi-trash3"></i> حذف</button>
-                    </div>
-                </div>
-                {% else %}
-                <p style="color:#888; grid-column:1/-1; text-align:center;">لا توجد قنوات</p>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- تبويب فشل النشر -->
-        <div id="tab-failures" class="tab-content">
-            <div class="section-title"><i class="bi bi-exclamation-triangle"></i> سجل فشل النشر</div>
-            {% if failures %}
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                {% for fail in failures %}
-                <div style="background:rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.1); border-radius:14px; padding:12px;">
-                    <div><strong>معرف القناة:</strong> {{ fail.channel_id }}</div>
-                    {% if fail.channel_username %}<div><strong>اسم المستخدم:</strong> {{ fail.channel_username }}</div>{% endif %}
-                    <div><strong>السبب:</strong> {{ fail.reason or 'غير محدد' }}</div>
-                    <div><strong>التاريخ:</strong> {{ fail.failed_at }}</div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p style="text-align:center; color:#888;">لا توجد حالات فشل</p>
-            {% endif %}
-        </div>
-
-        <!-- تبويب إعدادات النشر -->
-        <div id="tab-publish" class="tab-content">
-            <div class="section-title"><i class="bi bi-clock"></i> إعدادات النشر التلقائي</div>
-            <form method="POST" action="/admin/publish/settings" id="publishSettingsForm">
-                <div class="form-group">
-                    <label>عدد مرات النشر في اليوم</label>
-                    <input type="number" name="publish_count" id="publishCount" value="{{ publish_count }}" min="1" max="10" step="1" required>
-                </div>
-                <div class="form-group">
-                    <label>أوقات النشر (بالنظام 24 ساعة)</label>
-                    <div id="timesContainer">
-                        {% for time in publish_times %}
-                        <div class="time-input-group">
-                            <input type="time" name="publish_time[]" value="{{ time }}" required>
-                            <button type="button" class="remove-time" onclick="removeTime(this)" {% if loop.index0 == 0 %}style="display:none;"{% endif %}><i class="bi bi-x-circle"></i></button>
-                        </div>
+        <!-- المستخدمون و Premium -->
+        <div class="glass-card">
+            <h2><i class="bi bi-people"></i> المستخدمون</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>الرقم المميز</th><th>Premium</th><th>تاريخ التسجيل</th><th>إجراء</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><code>{{ user.user_code }}</code></td>
+                            <td>{% if user.is_premium %}نعم{% else %}لا{% endif %}</td>
+                            <td>{{ user.created_at }}</td>
+                            <td>
+                                <a href="/admin/user/toggle_premium/{{ user.user_code }}" class="btn btn-warning">
+                                    <i class="bi bi-star{% if user.is_premium %}-fill{% endif %}"></i>
+                                    {% if user.is_premium %}إلغاء Premium{% else %}تفعيل Premium{% endif %}
+                                </a>
+                            </td>
+                        </tr>
                         {% endfor %}
-                    </div>
-                    <button type="button" class="btn add-time-btn" onclick="addTime()"><i class="bi bi-plus-circle"></i> إضافة وقت</button>
-                </div>
-                <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ الإعدادات</button>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- القنوات -->
+        <div class="glass-card">
+            <h2><i class="bi bi-megaphone"></i> القنوات المسجلة</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>المعرف</th><th>اسم المستخدم</th><th>المالك (user_code)</th><th>الحالة</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for ch in channels %}
+                        <tr>
+                            <td>{{ ch.channel_id }}</td>
+                            <td>{{ ch.channel_username or '—' }}</td>
+                            <td>{{ ch.user_code }}</td>
+                            <td>{% if ch.is_active %}نشط{% else %}موقوف{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- إعدادات النشر -->
+        <div class="glass-card">
+            <h2><i class="bi bi-clock"></i> وقت النشر اليومي</h2>
+            <form method="POST" action="/admin/update_publish_time" class="form-inline">
+                <input type="time" name="publish_time" value="{{ publish_time }}" required>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> تحديث الوقت</button>
             </form>
         </div>
 
-        <!-- تبويب المحتوى (مع وقت نشر) -->
-        <div id="tab-content" class="tab-content">
-            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة محتوى جديد</div>
-            <form method="POST" action="/admin/content/add" id="contentAddForm">
-                <div class="form-group">
-                    <label>اسم المحتوى</label>
-                    <input type="text" name="name" id="contentName" required>
-                </div>
-                <div class="form-group">
-                    <label>البرومبت (وصف أو تعليمات التوليد)</label>
-                    <textarea name="prompt" id="contentPrompt" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>نص المحتوى</label>
-                    <textarea name="content" id="contentText" rows="5" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>وقت النشر (اختياري - اترك فارغاً للنشر الفوري)</label>
-                    <input type="datetime-local" name="publish_time" id="publishTime">
-                </div>
-                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-                    <button type="button" class="btn btn-primary" id="generateContentBtn">
-                        <i class="bi bi-wand"></i> توليد باستخدام الذكاء الاصطناعي
-                    </button>
-                    <button type="submit" class="btn"><i class="bi bi-save"></i> إضافة المحتوى</button>
-                </div>
+        <!-- إدارة المحتوى (البرومبتات) -->
+        <div class="glass-card">
+            <h2><i class="bi bi-file-text"></i> قوالب المحتوى (البرومبتات)</h2>
+            <form method="POST" action="/admin/content/add" class="form-inline" style="margin-bottom:16px;">
+                <input type="text" name="name" placeholder="اسم القالب" required>
+                <textarea name="prompt" placeholder="البرومبت (التعليمات)" rows="2"></textarea>
+                <textarea name="content" placeholder="المحتوى النموذجي (اختياري)" rows="2"></textarea>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> إضافة</button>
             </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>الاسم</th><th>البرومبت</th><th>تاريخ الإضافة</th><th>حذف</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for tpl in templates %}
+                        <tr>
+                            <td>{{ tpl.name }}</td>
+                            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ tpl.prompt or '—' }}</td>
+                            <td>{{ tpl.created_at }}</td>
+                            <td><a href="/admin/content/{{ tpl.id }}/delete" class="btn btn-danger"><i class="bi bi-trash3"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> المحتويات المتاحة</div>
-            <div class="content-grid">
-                {% for item in content_templates %}
-                <div class="content-card">
-                    <div style="font-weight:700; font-size:14px;">{{ item.name }}</div>
-                    {% if item.prompt %}<div style="font-size:11px; color:#555; margin:4px 0;">{{ item.prompt }}</div>{% endif %}
-                    {% if item.publish_time %}
-                        <div class="publish-time"><i class="bi bi-clock"></i> وقت النشر: {{ item.publish_time }}</div>
-                    {% endif %}
-                    <div class="content-preview">{{ item.content[:120] }}{% if item.content|length > 120 %}...{% endif %}</div>
-                    <div class="card-actions">
-                        <button class="btn" onclick="openContentEditModal({{ item.id }}, '{{ item.name }}', `{{ item.prompt|replace('`', '\\`') }}`, `{{ item.content|replace('`', '\\`') }}`, '{{ item.publish_time }}')"><i class="bi bi-pencil-square"></i> تعديل</button>
-                        <button class="btn btn-danger" onclick="if(confirm('حذف المحتوى؟')) location.href='/admin/content/{{ item.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
-                    </div>
-                </div>
-                {% else %}
-                <p style="color:#888; grid-column:1/-1; text-align:center;">لا يوجد محتوى مضاف</p>
-                {% endfor %}
+        <!-- الإشعارات -->
+        <div class="glass-card">
+            <h2><i class="bi bi-bell"></i> الإشعارات</h2>
+            <form method="POST" action="/admin/notification/add" class="form-inline" style="margin-bottom:16px;">
+                <input type="text" name="title" placeholder="العنوان" required>
+                <textarea name="text" placeholder="نص الإشعار" rows="2" required></textarea>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> إرسال</button>
+            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>العنوان</th><th>النص</th><th>التاريخ</th><th>حذف</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for notif in notifications %}
+                        <tr>
+                            <td>{{ notif.title }}</td>
+                            <td>{{ notif.text }}</td>
+                            <td>{{ notif.created_at }}</td>
+                            <td><a href="/admin/notification/{{ notif.id }}/delete" class="btn btn-danger"><i class="bi bi-trash3"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- مودال تعديل الشخصية -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-                <h3><i class="bi bi-pencil-square"></i> تعديل الشخصية</h3>
-                <button onclick="closeEditModal()" style="background:none; border:none; font-size:20px;"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <form method="POST" id="editForm">
-                <div class="form-group"><label>اسم الشخصية</label><input type="text" name="name" id="editName" required></div>
-                <div class="form-group"><label>رابط الصورة</label><input type="url" name="logo_url" id="editImage"></div>
-                <div class="form-group"><label>وصف مختصر</label><input type="text" name="description" id="editDesc" required></div>
-                <div class="form-group"><label>البرومبت</label><textarea name="prompt" id="editPrompt" required></textarea></div>
-                <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ التعديلات</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- مودال تعديل المحتوى -->
-    <div id="contentEditModal" class="modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-                <h3><i class="bi bi-pencil-square"></i> تعديل المحتوى</h3>
-                <button onclick="closeContentEditModal()" style="background:none; border:none; font-size:20px;"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <form method="POST" id="contentEditForm">
-                <div class="form-group"><label>اسم المحتوى</label><input type="text" name="name" id="contentEditName" required></div>
-                <div class="form-group"><label>البرومبت (وصف)</label><textarea name="prompt" id="contentEditPrompt" rows="3"></textarea></div>
-                <div class="form-group"><label>نص المحتوى</label><textarea name="content" id="contentEditContent" rows="5" required></textarea></div>
-                <div class="form-group">
-                    <label>وقت النشر</label>
-                    <input type="datetime-local" name="publish_time" id="contentEditTime">
-                </div>
-                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px;">
-                    <button type="button" class="btn btn-primary" id="editGenerateContentBtn">
-                        <i class="bi bi-wand"></i> توليد باستخدام الذكاء الاصطناعي
-                    </button>
-                    <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ التعديلات</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div class="toast" id="toast"></div>
 
     <script>
-        // تبديل التبويبات
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tabId = btn.getAttribute('data-tab');
-                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                document.getElementById(`tab-${tabId}`).classList.add('active');
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
+        // عرض رسائل فلاش من الخادم
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    showToast('{{ message }}', 4000);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        // مودال تعديل الشخصية
-        function openEditModal(id, name, desc, prompt, image) {
-            document.getElementById('editForm').action = `/admin/character/${id}/edit`;
-            document.getElementById('editName').value = name;
-            document.getElementById('editDesc').value = desc;
-            document.getElementById('editPrompt').value = prompt;
-            document.getElementById('editImage').value = image;
-            document.getElementById('editModal').classList.add('active');
+        function showToast(msg, duration) {
+            duration = duration || 3000;
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
         }
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-        }
-
-        // مودال تعديل المحتوى
-        function openContentEditModal(id, name, prompt, content, publishTime) {
-            document.getElementById('contentEditForm').action = `/admin/content/${id}/edit`;
-            document.getElementById('contentEditName').value = name;
-            document.getElementById('contentEditPrompt').value = prompt;
-            document.getElementById('contentEditContent').value = content;
-            if (publishTime) {
-                document.getElementById('contentEditTime').value = publishTime.replace(' ', 'T');
-            }
-            document.getElementById('contentEditModal').classList.add('active');
-        }
-        function closeContentEditModal() {
-            document.getElementById('contentEditModal').classList.remove('active');
-        }
-
-        // إغلاق المودالات عند النقر على الخلفية
-        window.onclick = function(e) {
-            const modal1 = document.getElementById('editModal');
-            if (e.target === modal1) closeEditModal();
-            const modal2 = document.getElementById('contentEditModal');
-            if (e.target === modal2) closeContentEditModal();
-        }
-
-        // توليد المحتوى باستخدام AI (للإضافة)
-        document.getElementById('generateContentBtn').addEventListener('click', async function() {
-            const prompt = document.getElementById('contentPrompt').value.trim();
-            if (!prompt) {
-                alert('الرجاء كتابة برومبت (وصف) لتوليد المحتوى');
-                return;
-            }
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-small"></span> جاري التوليد...';
-            btn.disabled = true;
-            try {
-                const formData = new FormData();
-                formData.append('prompt', prompt);
-                const res = await fetch('/admin/content/generate', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('contentText').value = data.content;
-                } else {
-                    alert('فشل توليد المحتوى: ' + (data.message || 'خطأ غير معروف'));
-                }
-            } catch (err) {
-                alert('خطأ في الاتصال بالخادم');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
-
-        // توليد المحتوى باستخدام AI (للتعديل)
-        document.getElementById('editGenerateContentBtn').addEventListener('click', async function() {
-            const prompt = document.getElementById('contentEditPrompt').value.trim();
-            if (!prompt) {
-                alert('الرجاء كتابة برومبت (وصف) لتوليد المحتوى');
-                return;
-            }
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-small"></span> جاري التوليد...';
-            btn.disabled = true;
-            try {
-                const formData = new FormData();
-                formData.append('prompt', prompt);
-                const res = await fetch('/admin/content/generate', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('contentEditContent').value = data.content;
-                } else {
-                    alert('فشل توليد المحتوى: ' + (data.message || 'خطأ غير معروف'));
-                }
-            } catch (err) {
-                alert('خطأ في الاتصال بالخادم');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
-
-        // إدارة أوقات النشر
-        function addTime() {
-            const container = document.getElementById('timesContainer');
-            const newDiv = document.createElement('div');
-            newDiv.className = 'time-input-group';
-            newDiv.innerHTML = `
-                <input type="time" name="publish_time[]" value="12:00" required>
-                <button type="button" class="remove-time" onclick="removeTime(this)"><i class="bi bi-x-circle"></i></button>
-            `;
-            container.appendChild(newDiv);
-            const firstRemove = container.querySelector('.time-input-group:first-child .remove-time');
-            if (firstRemove) firstRemove.style.display = 'inline';
-        }
-
-        function removeTime(btn) {
-            const group = btn.closest('.time-input-group');
-            const container = document.getElementById('timesContainer');
-            if (container.children.length > 1) {
-                group.remove();
-                if (container.children.length === 1) {
-                    const firstRemove = container.querySelector('.time-input-group:first-child .remove-time');
-                    if (firstRemove) firstRemove.style.display = 'none';
-                }
-            }
-        }
-
-        document.getElementById('publishCount').addEventListener('change', function() {
-            const count = parseInt(this.value) || 1;
-            const container = document.getElementById('timesContainer');
-            const currentCount = container.children.length;
-            if (currentCount < count) {
-                for (let i = currentCount; i < count; i++) {
-                    const newDiv = document.createElement('div');
-                    newDiv.className = 'time-input-group';
-                    newDiv.innerHTML = `
-                        <input type="time" name="publish_time[]" value="12:00" required>
-                        <button type="button" class="remove-time" onclick="removeTime(this)"><i class="bi bi-x-circle"></i></button>
-                    `;
-                    container.appendChild(newDiv);
-                }
-            } else if (currentCount > count) {
-                for (let i = currentCount - 1; i >= count; i--) {
-                    container.children[i].remove();
-                }
-            }
-            const removeBtns = container.querySelectorAll('.remove-time');
-            removeBtns.forEach((btn, index) => {
-                if (index === 0 && removeBtns.length === 1) {
-                    btn.style.display = 'none';
-                } else {
-                    btn.style.display = 'inline';
-                }
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('timesContainer');
-            const removeBtns = container.querySelectorAll('.remove-time');
-            if (removeBtns.length === 1) {
-                removeBtns[0].style.display = 'none';
-            } else {
-                removeBtns.forEach(btn => btn.style.display = 'inline');
-            }
-        });
     </script>
 </body>
 </html>

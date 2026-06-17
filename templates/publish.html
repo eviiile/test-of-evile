@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,34 +7,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0b1428;
+            --bg-secondary: #f0f4fa;
+            --text-primary: #f0f4fa;
+            --text-secondary: #0b1428;
+            --glass-bg: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.04);
+            --glass-blue-bg: rgba(26,58,92,0.25);
+            --glass-blue-border: rgba(74,143,196,0.15);
+            --accent: #4a8fc4;
+            --accent-dark: #0d2847;
+            --shadow: rgba(0,0,0,0.3);
+            --text-muted: rgba(255,255,255,0.4);
+            --card-hover: rgba(255,255,255,0.06);
+            --modal-bg: #0b1428;
+        }
+        [data-theme="light"] {
+            --bg-primary: #f0f4fa;
+            --text-primary: #0b1428;
+            --glass-bg: rgba(255,255,255,0.6);
+            --glass-border: rgba(0,0,0,0.06);
+            --glass-blue-bg: rgba(74,143,196,0.10);
+            --glass-blue-border: rgba(74,143,196,0.20);
+            --shadow: rgba(0,0,0,0.08);
+            --text-muted: rgba(0,0,0,0.4);
+            --card-hover: rgba(0,0,0,0.04);
+            --modal-bg: #f0f4fa;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #0b1428;
-            color: #f0f4fa;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 16px 12px 80px;
+            transition: background 0.3s, color 0.3s;
         }
-        .container { max-width: 700px; margin: 0 auto; }
+        .container { max-width:700px; margin:0 auto; }
 
         .glass-blue {
-            background: rgba(26,58,92,0.25);
+            background: var(--glass-blue-bg);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(74,143,196,0.15);
-            box-shadow: 0 8px 32px rgba(0,40,80,0.15);
+            border: 1px solid var(--glass-blue-border);
+            box-shadow: 0 8px 32px var(--shadow);
             border-radius: 14px;
             padding: 14px 18px;
             margin-bottom: 14px;
+            transition: background 0.3s, border 0.3s;
         }
         .glass-dark {
-            background: rgba(255,255,255,0.04);
+            background: var(--glass-bg);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
             border-radius: 14px;
             padding: 14px 16px;
             margin-bottom: 14px;
+            transition: background 0.3s, border 0.3s;
         }
 
         .dashboard-header {
@@ -42,6 +73,8 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .dashboard-header h1 {
             font-size: 18px;
@@ -49,85 +82,141 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            color: #fff;
+            color: var(--text-primary);
         }
-        .dashboard-header h1 i { color: #4a8fc4; font-size: 20px; }
-        .dashboard-header a { font-size: 18px; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.3s; }
-        .dashboard-header a:hover { color: #fff; }
-
+        .dashboard-header h1 i { color: var(--accent); font-size: 20px; }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .theme-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 4px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .theme-toggle:hover { background: var(--card-hover); }
         .user-code-box {
             font-size: 12px;
-            color: rgba(255,255,255,0.4);
-            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
+            background: var(--glass-bg);
             padding: 6px 12px;
             border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
             cursor: pointer;
             transition: all 0.3s;
             user-select: none;
         }
-        .user-code-box:hover { background: rgba(74,143,196,0.05); border-color: rgba(74,143,196,0.1); }
+        .user-code-box:hover { background: var(--card-hover); border-color: var(--accent); }
 
+        .channels-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
         .channel-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.02);
-        }
-        .channel-item:last-child { border-bottom: none; }
-        .channel-info { flex: 1; }
-        .channel-info .id { font-size: 13px; font-weight: 600; color: #4a8fc4; }
-        .channel-info .username { font-size: 11px; color: rgba(255,255,255,0.4); }
-        .channel-status {
-            font-size: 10px;
-            padding: 2px 10px;
-            border-radius: 30px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-        .channel-status.active { color: #6fcf97; border-color: rgba(111,207,151,0.1); }
-        .channel-status.inactive { color: #eb5757; border-color: rgba(235,87,87,0.1); }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 11px;
+            padding: 12px 14px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-family: 'Tajawal', sans-serif;
         }
-        .btn-primary { background: linear-gradient(135deg, #0d2847, #1a3a5c); color: #fff; }
-        .btn-success { background: rgba(111,207,151,0.1); color: #6fcf97; }
-        .btn-danger { background: rgba(235,87,87,0.1); color: #eb5757; }
-        .btn-warning { background: rgba(242,201,74,0.1); color: #f2c94a; }
-        .btn:active { transform: scale(0.95); }
-        .btn:disabled { opacity: 0.4; pointer-events: none; }
+        .channel-item:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+            transform: translateX(-4px);
+        }
+        .channel-item .info { flex:1; }
+        .channel-item .info .username {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .channel-item .info .id-muted {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .channel-item .status-badge {
+            font-size: 10px;
+            padding: 3px 12px;
+            border-radius: 30px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+        }
+        .channel-item .status-badge.active { color: #6fcf97; border-color: rgba(111,207,151,0.2); }
+        .channel-item .status-badge.inactive { color: #eb5757; border-color: rgba(235,87,87,0.2); }
 
+        .add-channel-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-muted);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .add-channel-card:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--card-hover);
+        }
         .add-channel-form {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--glass-border);
+        }
+        .add-channel-form.show { display: flex; }
+        .add-channel-form .row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            margin-top: 10px;
         }
         .add-channel-form input {
             flex: 1;
             padding: 8px 12px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 10px;
-            color: #f0f4fa;
+            color: var(--text-primary);
             font-family: 'Tajawal', sans-serif;
             font-size: 12px;
             outline: none;
             min-width: 120px;
+            transition: border 0.3s;
         }
-        .add-channel-form input:focus { border-color: rgba(74,143,196,0.3); }
+        .add-channel-form input:focus { border-color: var(--accent); }
+        .add-channel-form .btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .add-channel-form .btn:active { transform: scale(0.95); }
+        .add-channel-form .btn:disabled { opacity: 0.4; pointer-events: none; }
 
         .stats-grid {
             display: grid;
@@ -139,66 +228,138 @@
             border-radius: 12px;
             padding: 12px 8px;
             text-align: center;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.02);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            transition: background 0.3s;
         }
-        .stat-card .number { font-size: 22px; font-weight: 900; color: #fff; }
-        .stat-card .label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-        .stat-card i { font-size: 18px; display: block; margin-bottom: 4px; color: #4a8fc4; }
+        .stat-card .number { font-size: 22px; font-weight: 900; color: var(--text-primary); }
+        .stat-card .label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .stat-card i { font-size: 18px; display: block; margin-bottom: 4px; color: var(--accent); }
 
         .publish-time-box {
             text-align: center;
             padding: 8px;
-            background: rgba(74,143,196,0.04);
+            background: var(--glass-bg);
             border-radius: 30px;
             font-size: 13px;
-            color: rgba(255,255,255,0.7);
+            color: var(--text-muted);
             margin-bottom: 14px;
+            border: 1px solid var(--glass-border);
         }
-        .publish-time-box i { color: #4a8fc4; margin-left: 6px; }
+        .publish-time-box i { color: var(--accent); margin-left: 6px; }
 
         .recent-posts { margin-top: 14px; }
         .post-item {
             padding: 6px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--glass-border);
             font-size: 12px;
             line-height: 1.5;
-            color: rgba(255,255,255,0.6);
+            color: var(--text-muted);
         }
-        .post-item .time { font-size: 10px; color: rgba(255,255,255,0.2); display: block; margin-bottom: 2px; }
+        .post-item .time { font-size: 10px; color: var(--text-muted); opacity:0.5; display: block; margin-bottom: 2px; }
+
+        .btn-action {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-action:disabled { opacity: 0.4; pointer-events: none; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            z-index:1000;
+            align-items: center;
+            justify-content: center;
+            padding:20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--modal-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 40px var(--shadow);
+            transition: background 0.3s;
+        }
+        .modal-box h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .modal-box .detail {
+            padding: 6px 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .modal-box .detail strong { color: var(--text-primary); }
+        .modal-close {
+            margin-top: 16px;
+            padding: 8px 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .modal-close:hover { background: var(--card-hover); }
 
         .toast {
             position: fixed; bottom: 80px; left: 20px; right: 20px;
             background: rgba(11,20,40,0.92);
             backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
             color: #f0f4fa;
             padding: 14px 20px;
             border-radius: 14px;
             text-align: center;
-            z-index: 1000;
+            z-index: 2000;
             display: none;
             font-size: 13px;
             border: 1px solid rgba(255,255,255,0.04);
             max-width: 400px;
             margin: 0 auto;
         }
+        [data-theme="light"] .toast {
+            background: rgba(240,244,250,0.92);
+            color: #0b1428;
+            border-color: rgba(0,0,0,0.06);
+        }
 
         .bottom-nav {
-            position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 1000;
-            background: rgba(255,255,255,0.04);
+            position: fixed; bottom: 12px; left: 12px; right: 12px; z-index:1000;
+            background: var(--glass-bg);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
-            border: 1px solid rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
             border-radius: 14px;
             padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 40px var(--shadow);
             height: 44px;
             max-width: 400px;
             margin: 0 auto;
+            transition: background 0.3s, border 0.3s;
         }
         .nav-item {
             display: flex;
@@ -207,7 +368,7 @@
             justify-content: center;
             gap: 1px;
             text-decoration: none;
-            color: rgba(255,255,255,0.25);
+            color: var(--text-muted);
             font-size: 8px;
             font-weight: 500;
             transition: all 0.3s;
@@ -221,7 +382,7 @@
         }
         .nav-item i { font-size: 16px; transition: all 0.3s; }
         .nav-item span { font-size: 7px; opacity: 0.6; }
-        .nav-item.active { color: #4a8fc4; background: rgba(74,143,196,0.06); }
+        .nav-item.active { color: var(--accent); background: rgba(74,143,196,0.06); }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
@@ -233,48 +394,59 @@
     <div class="container">
         <div class="dashboard-header">
             <h1><i class="bi bi-megaphone"></i> النشر</h1>
-            <div class="user-code-box" id="userCodeBox" title="انقر 3 مرات لنسخ الرقم">
-                <i class="bi bi-person-badge"></i> {{ user_code }}
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                    <i class="bi bi-moon-fill" id="themeIcon"></i>
+                </button>
+                <div class="user-code-box" id="userCodeBox" title="انقر 3 مرات لنسخ الرقم">
+                    <i class="bi bi-person-badge"></i> {{ user_code }}
+                </div>
             </div>
         </div>
 
-        <!-- معلومات القنوات -->
         <div class="glass-blue">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="font-size:14px; font-weight:700;">قنواتي</span>
-                <span style="font-size:11px; color:rgba(255,255,255,0.3);">{{ channels|length }} / {% if is_premium %}不限{% else %}3{% endif %}</span>
+                <span style="font-size:11px; color:var(--text-muted);">
+                    {{ channels|length }} / {% if is_premium %}3{% else %}1{% endif %}
+                    {% if is_premium %}<i class="bi bi-star-fill" style="color:#f2c94a;"></i> Premium{% endif %}
+                </span>
             </div>
-            {% for ch in channels %}
-            <div class="channel-item">
-                <div class="channel-info">
-                    <div class="id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
-                    {% if ch.channel_username %}<div class="username"><i class="bi bi-at"></i> {{ ch.channel_username }}</div>{% endif %}
+            <div class="channels-list">
+                {% for ch in channels %}
+                <div class="channel-item" onclick="showChannelDetails('{{ ch.id }}', '{{ ch.channel_id }}', '{{ ch.channel_username }}', '{{ ch.created_at }}', {{ ch.is_active|lower }})">
+                    <div class="info">
+                        <div class="username">{{ ch.channel_username or ch.channel_id }}</div>
+                        <div class="id-muted"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
+                    </div>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span class="status-badge {% if ch.is_active %}active{% else %}inactive{% endif %}">
+                            {% if ch.is_active %}نشط{% else %}موقوف{% endif %}
+                        </span>
+                        <button class="btn-action" style="padding:4px 10px; font-size:10px; background:rgba(74,143,196,0.1); color:var(--accent);" onclick="event.stopPropagation(); toggleChannel({{ ch.id }})">
+                            <i class="bi bi-{% if ch.is_active %}pause{% else %}play{% endif %}"></i>
+                        </button>
+                    </div>
                 </div>
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <span class="channel-status {% if ch.is_active %}active{% else %}inactive{% endif %}">
-                        {% if ch.is_active %}نشط{% else %}موقوف{% endif %}
-                    </span>
-                    <button class="btn btn-warning" onclick="toggleChannel({{ ch.id }})">
-                        <i class="bi bi-{% if ch.is_active %}pause{% else %}play{% endif %}"></i>
-                    </button>
-                </div>
+                {% else %}
+                <p style="text-align:center; color:var(--text-muted); padding:10px 0;">لا توجد قنوات مسجلة</p>
+                {% endfor %}
             </div>
-            {% else %}
-            <p style="text-align:center; color:rgba(255,255,255,0.2); padding:10px 0;">لا توجد قنوات مسجلة</p>
-            {% endfor %}
 
-            <!-- إضافة قناة جديدة -->
-            <div style="margin-top:12px;">
-                <form id="addChannelForm" class="add-channel-form">
-                    <input type="text" name="channel_id" placeholder="معرف القناة (مثال: -100123)" required>
-                    <input type="text" name="channel_username" placeholder="@username" required>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> إضافة</button>
-                </form>
-                <div id="addChannelMessage" style="font-size:11px; margin-top:6px; color:rgba(255,255,255,0.3);"></div>
+            <!-- إضافة قناة أخرى -->
+            <div class="add-channel-card" id="addChannelToggle" onclick="toggleAddForm()">
+                <i class="bi bi-plus-circle"></i> <span>إضافة قناة أخرى</span>
+            </div>
+            <div class="add-channel-form" id="addChannelForm">
+                <div class="row">
+                    <input type="text" id="newChannelId" placeholder="معرف القناة (مثال: -100123)" required>
+                    <input type="text" id="newChannelUsername" placeholder="@username" required>
+                </div>
+                <button class="btn" id="addChannelBtn" onclick="addChannel()"><i class="bi bi-plus-lg"></i> إضافة القناة</button>
+                <div id="addChannelMsg" style="font-size:11px; color:var(--text-muted);"></div>
             </div>
         </div>
 
-        <!-- إحصائيات عامة -->
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="bi bi-people"></i>
@@ -293,19 +465,16 @@
             </div>
         </div>
 
-        <!-- وقت النشر -->
         <div class="publish-time-box">
             <i class="bi bi-clock"></i> وقت النشر اليومي: <strong>{{ publish_time }}</strong> (بتوقيت صنعاء)
         </div>
 
-        <!-- أزرار التحكم السريع -->
         <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
-            <button class="btn btn-success" id="forcePublishBtn"><i class="bi bi-send-fill"></i> نشر الآن (لأول قناة)</button>
+            <button class="btn-action" id="forcePublishBtn"><i class="bi bi-send-fill"></i> نشر الآن (لأول قناة)</button>
         </div>
 
-        <!-- آخر المنشورات -->
-        <div class="glass-dark recent-posts">
-            <h3 style="font-size:13px; margin-bottom:8px; color:rgba(255,255,255,0.8);"><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
+        <div class="glass-dark">
+            <h3 style="font-size:13px; margin-bottom:8px; color:var(--text-primary);"><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
             {% if recent_posts %}
                 {% for post in recent_posts %}
                 <div class="post-item">
@@ -314,18 +483,30 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="text-align:center; color:rgba(255,255,255,0.2);">لا توجد منشورات بعد</p>
+                <p style="text-align:center; color:var(--text-muted);">لا توجد منشورات بعد</p>
             {% endif %}
         </div>
     </div>
 
+    <!-- مودال تفاصيل القناة -->
+    <div class="modal-overlay" id="channelModal">
+        <div class="modal-box">
+            <h3><i class="bi bi-info-circle"></i> تفاصيل القناة</h3>
+            <div class="detail"><strong>المعرف:</strong> <span id="modalChannelId"></span></div>
+            <div class="detail"><strong>اسم المستخدم:</strong> <span id="modalUsername"></span></div>
+            <div class="detail"><strong>تاريخ الإضافة:</strong> <span id="modalCreated"></span></div>
+            <div class="detail"><strong>الحالة:</strong> <span id="modalStatus"></span></div>
+            <button class="modal-close" onclick="closeModal()">إغلاق</button>
+        </div>
+    </div>
+
     <!-- شريط التنقل -->
-    <nav class="bottom-nav" id="bottomNav">
-        <a href="/" class="nav-item" id="navChat" style="text-decoration:none;">
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item" style="text-decoration:none;">
             <i class="bi bi-chat-dots"></i>
             <span>دردشة</span>
         </a>
-        <button class="nav-item active" id="navPublish">
+        <button class="nav-item active">
             <i class="bi bi-megaphone"></i>
             <span>نشر</span>
         </button>
@@ -334,23 +515,21 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // ===== نسخ user_code بالنقر 3 مرات =====
-        let clickCount = 0;
-        let clickTimer = null;
+        // ===== النسخ بثلاث نقرات =====
+        let clickCount = 0, clickTimer = null;
         document.getElementById('userCodeBox').addEventListener('click', function() {
             clickCount++;
             if (clickCount === 3) {
-                const code = this.innerText.trim();
+                const code = this.innerText.trim().replace(/[^\w\d]/g, '');
                 navigator.clipboard.writeText(code).then(() => {
                     showToast('تم نسخ الرقم: ' + code);
                 }).catch(() => {
-                    // الطريقة البديلة
-                    const textarea = document.createElement('textarea');
-                    textarea.value = code;
-                    document.body.appendChild(textarea);
-                    textarea.select();
+                    const ta = document.createElement('textarea');
+                    ta.value = code;
+                    document.body.appendChild(ta);
+                    ta.select();
                     document.execCommand('copy');
-                    textarea.remove();
+                    ta.remove();
                     showToast('تم نسخ الرقم: ' + code);
                 });
                 clickCount = 0;
@@ -361,30 +540,68 @@
             }
         });
 
+        // ===== الوضع الليلي/النهاري =====
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                icon.className = 'bi bi-sun-fill';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'bi bi-moon-fill';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        // استعادة الإعدادات المحفوظة
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.getElementById('themeIcon').className = 'bi bi-sun-fill';
+        }
+
+        // ===== إظهار / إخفاء نموذج الإضافة =====
+        function toggleAddForm() {
+            const form = document.getElementById('addChannelForm');
+            form.classList.toggle('show');
+        }
+
         // ===== إضافة قناة =====
-        document.getElementById('addChannelForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const btn = this.querySelector('button[type="submit"]');
+        async function addChannel() {
+            const id = document.getElementById('newChannelId').value.trim();
+            const username = document.getElementById('newChannelUsername').value.trim();
+            if (!id || !username) {
+                document.getElementById('addChannelMsg').textContent = 'الرجاء ملء جميع الحقول';
+                return;
+            }
+            if (!username.startsWith('@')) {
+                document.getElementById('addChannelMsg').textContent = 'اسم المستخدم يجب أن يبدأ بـ @';
+                return;
+            }
+            const btn = document.getElementById('addChannelBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
             try {
+                const formData = new FormData();
+                formData.append('channel_id', id);
+                formData.append('channel_username', username);
                 const res = await fetch('/publish/add_channel', { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success) {
                     showToast('تمت إضافة القناة بنجاح');
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showToast(data.message);
+                    document.getElementById('addChannelMsg').textContent = data.message;
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="bi bi-plus-lg"></i> إضافة';
+                    btn.innerHTML = '<i class="bi bi-plus-lg"></i> إضافة القناة';
                 }
             } catch (e) {
-                showToast('خطأ في الاتصال');
+                document.getElementById('addChannelMsg').textContent = 'خطأ في الاتصال';
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-plus-lg"></i> إضافة';
+                btn.innerHTML = '<i class="bi bi-plus-lg"></i> إضافة القناة';
             }
-        });
+        }
 
         // ===== تبديل حالة القناة =====
         async function toggleChannel(id) {
@@ -402,10 +619,28 @@
             }
         }
 
+        // ===== عرض تفاصيل القناة في مودال =====
+        function showChannelDetails(id, channelId, username, created, isActive) {
+            document.getElementById('modalChannelId').textContent = channelId;
+            document.getElementById('modalUsername').textContent = username || '—';
+            document.getElementById('modalCreated').textContent = created;
+            document.getElementById('modalStatus').textContent = isActive ? 'نشط' : 'موقوف';
+            document.getElementById('modalStatus').style.color = isActive ? '#6fcf97' : '#eb5757';
+            document.getElementById('channelModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('channelModal').classList.remove('active');
+        }
+        // إغلاق المودال بالنقر على الخلفية
+        document.getElementById('channelModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
         // ===== نشر الآن =====
         document.getElementById('forcePublishBtn').addEventListener('click', async function() {
             this.disabled = true;
-            this.textContent = 'جاري النشر...';
+            this.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري النشر...';
             try {
                 const res = await fetch('/publish/force_publish');
                 const data = await res.json();

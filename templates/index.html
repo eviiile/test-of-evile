@@ -2,83 +2,134 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>EVILE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EVILE - الدردشة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
             background: #0b1428;
             color: #f0f4fa;
-            overflow: hidden;
-            touch-action: manipulation;
-            height: 100vh;
-            height: 100dvh;
+            min-height: 100vh;
+            padding: 16px 12px 80px;
         }
-        .bg-animation {
-            position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1;
-            filter: blur(80px);
-            background: radial-gradient(circle at 20% 80%, rgba(26,58,92,0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(13,40,71,0.10) 0%, transparent 50%);
-        }
-        .main-container { width: 100%; height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 12px; padding-top: 70px; }
+        .container { max-width: 700px; margin: 0 auto; }
 
         .floating-header {
-            position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
-            display: flex; align-items: center; justify-content: space-between; padding: 6px;
-            border-radius: 18px; gap: 6px;
-            background: rgba(255,255,255,0.04);
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(11,20,40,0.6);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
-            border: 1px solid rgba(255,255,255,0.04);
-            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
-        }
-        .header-circle {
-            width: 40px; height: 40px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.3s; flex-shrink: 0; position: relative;
-            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.02);
+            margin-bottom: 16px;
         }
-        .header-circle:active { transform: scale(0.9); }
-        .header-circle i { font-size: 20px; color: rgba(255,255,255,0.5); }
-        .header-circle .notif-badge {
-            position: absolute; top: -3px; right: -3px; width: 16px; height: 16px; background: #eb5757;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: bold; color: #fff; border: 2px solid #0b1428;
-        }
-        .logo-wrapper { flex: 1; display: flex; align-items: center; gap: 6px; }
-        .logo-center {
-            flex: 1; height: 40px; background: transparent;
-            border: 1px solid rgba(255,255,255,0.04); border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .logo-text {
-            font-size: 20px; font-weight: 900;
-            letter-spacing: 3px;
+        .floating-header .logo {
+            font-size: 18px; font-weight: 900;
             background: linear-gradient(135deg, #f0f4fa, #4a8fc4);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
-        .active-users-box {
-            height: 40px; padding: 0 10px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; gap: 4px;
-            font-size: 11px; font-weight: 700; white-space: nowrap;
+        .floating-header .user-badge {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.02);
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.02);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .floating-header .user-badge:hover { background: rgba(74,143,196,0.05); border-color: rgba(74,143,196,0.1); }
+
+        .chat-container {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.02);
+            border-radius: 16px;
+            padding: 16px;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .messages {
+            flex: 1;
+            max-height: 55vh;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+        .message { margin-bottom: 10px; }
+        .message.own { text-align: left; }
+        .message .bubble {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 16px;
+            max-width: 80%;
+            font-size: 13px;
+            line-height: 1.5;
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.02);
         }
-        .active-users-box i, .active-users-box span { color: rgba(255,255,255,0.4); }
+        .message.own .bubble { background: rgba(74,143,196,0.08); border-color: rgba(74,143,196,0.1); }
+        .message .time { font-size: 9px; color: rgba(255,255,255,0.2); margin-top: 2px; }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 30px;
+            color: #f0f4fa;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 13px;
+            outline: none;
+        }
+        .input-area input:focus { border-color: rgba(74,143,196,0.3); }
+        .input-area button {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #0d2847, #1a3a5c);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .input-area button:active { transform: scale(0.95); }
+        .input-area button:disabled { opacity: 0.4; pointer-events: none; }
+
+        .toast {
+            position: fixed; bottom: 80px; left: 20px; right: 20px;
+            background: rgba(11,20,40,0.92);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            color: #f0f4fa;
+            padding: 14px 20px;
+            border-radius: 14px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.04);
+            max-width: 400px;
+            margin: 0 auto;
+        }
 
         .bottom-nav {
-            position: fixed;
-            bottom: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 1000;
+            position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 1000;
             background: rgba(255,255,255,0.04);
             backdrop-filter: blur(28px);
             -webkit-backdrop-filter: blur(28px);
@@ -92,9 +143,7 @@
             height: 44px;
             max-width: 400px;
             margin: 0 auto;
-            transition: opacity 0.3s, transform 0.3s;
         }
-        .bottom-nav.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -120,91 +169,9 @@
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
-        .welcome-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            text-align: center;
-            overflow-y: auto;
-        }
-        .welcome-section.hidden { display: none; }
-        .character-logo {
-            width: 100px;
-            height: 100px;
-            border-radius: 28px;
-            object-fit: cover;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.04);
-            background: rgba(255,255,255,0.02);
-        }
-        .sparkle-icon { width: 60px; height: 60px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
-        .sparkle-icon i { font-size: 60px; color: rgba(74,143,196,0.15); }
-        .welcome-title {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 6px;
-            background: linear-gradient(135deg, #f0f4fa, #4a8fc4);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .welcome-subtitle {
-            font-size: 12px;
-            max-width: 260px;
-            line-height: 1.4;
-            margin-bottom: 16px;
-            color: rgba(255,255,255,0.4);
-        }
-        .welcome-input-card { width: 100%; max-width: 320px; margin-bottom: 8px; }
-        .input-card {
-            border-radius: 18px;
-            padding: 6px 6px 6px 12px;
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.04);
-            transition: all 0.3s;
-        }
-        .input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .message-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 8px 0;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 13px;
-            outline: none;
-            color: #f0f4fa;
-        }
-        .message-input::placeholder { color: rgba(255,255,255,0.2); }
-        .send-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: linear-gradient(135deg, #0d2847, #1a3a5c);
-            color: #fff;
-            transition: all 0.3s;
-        }
-        .send-btn:disabled { opacity: 0.4; }
-        .send-btn:active:not(:disabled) { transform: scale(0.94); }
-        .send-btn i { font-size: 18px; color: #fff; }
-        .send-btn.stop-btn { background: rgba(235,87,87,0.3); color: #eb5757; }
-
         .spinner {
-            width: 16px;
-            height: 16px;
+            display: inline-block;
+            width: 16px; height: 16px;
             border: 2px solid rgba(255,255,255,0.1);
             border-top-color: #4a8fc4;
             border-radius: 50%;
@@ -212,379 +179,39 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .char-scroll-container {
-            position: relative;
-            width: 100%;
-            max-width: 320px;
-            margin: 8px auto 12px;
-        }
-        .char-scroll-wrapper {
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        }
-        .char-scroll-wrapper:not(.overflowing) { display: flex; justify-content: center; }
-        .char-selector {
-            display: flex;
-            gap: 8px;
-            padding: 6px 0;
-            width: max-content;
-        }
-        .char-selector-btn {
-            scroll-snap-align: center;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            font-size: 11px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.02);
-            color: rgba(255,255,255,0.4);
-        }
-        .char-selector-btn.active {
-            background: rgba(74,143,196,0.08);
-            border-color: rgba(74,143,196,0.15);
-            color: #fff;
-        }
-        .char-selector-btn i { font-size: 14px; }
-        .char-selector-name { font-size: 11px; font-weight: 500; }
-
-        .chat-section {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .chat-section.active { display: flex; }
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 20px;
-        }
-        .message { margin-bottom: 10px; animation: messageSlide 0.3s ease; }
-        @keyframes messageSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message-time { font-size: 9px; color: rgba(255,255,255,0.2); margin-bottom: 3px; }
-        .message-content {
-            border: 1px solid rgba(255,255,255,0.04);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            max-width: 85%;
-            background: rgba(255,255,255,0.02);
-        }
-        .message.own { text-align: left; }
-        .message.own .message-content { margin-right: auto; margin-left: 0; background: rgba(74,143,196,0.08); border-color: rgba(74,143,196,0.1); }
-        .ai-bubble {
-            border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 12px;
-            overflow: hidden;
-            max-width: 85%;
-            background: rgba(255,255,255,0.02);
-        }
-        .ai-bubble-label {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 10px 0;
-            font-size: 9px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.3);
-        }
-        .ai-bubble-label i { font-size: 11px; color: #4a8fc4; }
-        .ai-bubble-text { padding: 4px 10px 8px; font-size: 12px; line-height: 1.5; word-wrap: break-word; color: rgba(255,255,255,0.8); }
-        .ai-bubble-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 4px 10px 6px;
-            border-top: 1px solid rgba(255,255,255,0.02);
-        }
-        .ai-social-icons { display: flex; gap: 8px; }
-        .ai-social-icons a { text-decoration: none; font-size: 14px; transition: transform 0.2s; }
-        .ai-social-icons a:active { transform: scale(0.9); }
-        .ai-social-icons .bi-telegram { color: #4a8fc4; }
-        .ai-social-icons .bi-instagram { color: #e4405f; }
-        .ai-bubble-copy {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: rgba(255,255,255,0.2);
-            transition: color 0.3s;
-        }
-        .ai-bubble-copy:hover { color: rgba(255,255,255,0.6); }
-        .ai-bubble-copy i { font-size: 12px; }
-        .ai-bubble-copy span { font-size: 10px; }
-        .ai-bubble-copy:active { opacity: 0.6; }
-
-        .input-section { padding: 6px 0; flex-shrink: 0; }
-        .chat-section .input-card { padding: 8px 10px; }
-        .home-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: rgba(255,255,255,0.02);
-            border: none;
-            color: rgba(255,255,255,0.3);
-            transition: all 0.3s;
-        }
-        .home-btn:active { transform: scale(0.9); }
-        .home-btn i { font-size: 18px; }
-
-        .toast-notification {
-            position: fixed;
-            bottom: 80px;
-            left: 20px;
-            right: 20px;
-            background: rgba(11,20,40,0.92);
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-            color: #f0f4fa;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 13px;
-            z-index: 200;
-            animation: fadeInUp 0.3s ease;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-
-        .bottom-sheet-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 70px;
-        }
-        .bottom-sheet-overlay.active { display: flex; }
-        .bottom-sheet {
-            width: 100%;
-            max-width: 600px;
-            max-height: 70vh;
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            animation: slideUp 0.4s ease;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            background: rgba(11,20,40,0.92);
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        @keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
-        .sheet-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.02);
-        }
-        .sheet-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #f0f4fa; }
-        .sheet-title i { font-size: 18px; color: #4a8fc4; }
-        .sheet-close {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: rgba(255,255,255,0.02);
-            border: none;
-            color: rgba(255,255,255,0.3);
-        }
-        .sheet-close i { font-size: 16px; }
-        .sheet-instruction {
-            font-size: 11px;
-            text-align: center;
-            margin-bottom: 16px;
-            padding: 6px;
-            border-radius: 30px;
-            color: rgba(255,255,255,0.3);
-        }
-        .characters-list, .notifications-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            max-height: 50vh;
-        }
-        .char-list-item, .notif-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            border-radius: 16px;
-            width: 100%;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.02);
-            transition: all 0.3s;
-        }
-        .char-list-item.active { border-color: rgba(74,143,196,0.15); background: rgba(74,143,196,0.04); }
-        .char-list-icon, .notif-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            background: rgba(255,255,255,0.02);
-        }
-        .char-list-icon i, .notif-icon i { font-size: 20px; color: #4a8fc4; }
-        .char-list-info, .notif-content { flex: 1; text-align: right; }
-        .char-list-name, .notif-title { font-size: 13px; font-weight: 700; color: #f0f4fa; margin-bottom: 2px; }
-        .char-list-desc, .notif-text { font-size: 10px; color: rgba(255,255,255,0.4); line-height: 1.3; }
-        .char-list-check {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            background: #4a8fc4;
-        }
-        .char-list-item.active .char-list-check { opacity: 1; }
-        .char-list-check i { font-size: 12px; color: #fff; }
-        .notif-delete {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.2);
-            cursor: pointer;
-            font-size: 16px;
-            transition: color 0.3s;
-            padding: 4px;
-        }
-        .notif-delete:hover { color: #eb5757; }
-
-        @media (min-width:768px) {
-            .main-container { max-width: 700px; margin: 0 auto; padding: 20px; padding-top: 80px; }
-            .floating-header { left: 20px; right: 20px; top: 20px; }
-            .bottom-nav { left: 20px; right: 20px; }
-        }
+        @media (min-width:768px){ .bottom-nav{left:20px;right:20px} .toast{left:20px;right:20px} }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-
-    <header class="floating-header">
-        <div style="display: flex; gap: 6px;">
-            <div class="header-circle" onclick="openCharactersSheet()">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="header-circle" onclick="toggleTheme()">
-                <i class="bi bi-brightness-high-fill" id="themeIcon"></i>
-            </div>
-        </div>
-        <div class="logo-wrapper">
-            <div class="logo-center"><span class="logo-text">EVILE</span></div>
-            <div class="active-users-box">
-                <i class="bi bi-person-friends"></i>
-                <span id="activeCount">0</span>
-            </div>
-        </div>
-        <div class="header-circle" onclick="openNotificationsSheet()">
-            <i class="bi bi-bell"></i>
-            <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <div class="welcome-section" id="welcomeSection">
-            <div id="welcomeLogo">
-                <div class="sparkle-icon"><i class="bi bi-stars"></i></div>
-            </div>
-            <h1 class="welcome-title" id="welcomeTitle">ابنِ أفكارك مع EVILE</h1>
-            <p class="welcome-subtitle" id="welcomeSubtitle">اختر شخصية وابدأ محادثة إبداعية</p>
-
-            <div class="welcome-input-card">
-                <div class="input-card">
-                    <div class="input-wrapper">
-                        <input type="text" class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." onkeypress="handleWelcomeKey(event)">
-                        <button class="send-btn" id="welcomeSendBtn" onclick="sendWelcomeMessage()">
-                            <i class="bi bi-send"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="char-scroll-container">
-                <div class="char-scroll-wrapper" id="charScrollWrapper">
-                    <div class="char-selector" id="charSelector"></div>
-                </div>
-            </div>
+    <div class="container">
+        <!-- الهيدر -->
+        <div class="floating-header">
+            <span class="logo">EVILE</span>
+            {% if user_code %}
+            <span class="user-badge" id="userCodeBadge" title="انقر 3 مرات لنسخ الرقم">
+                <i class="bi bi-person-badge"></i> {{ user_code }}
+            </span>
+            {% else %}
+            <a href="/publish" style="color:rgba(255,255,255,0.3); text-decoration:none; font-size:13px;">تسجيل الدخول</a>
+            {% endif %}
         </div>
 
-        <div class="chat-section" id="chatSection">
-            <div class="messages-container" id="messagesContainer"></div>
-            <div class="input-section">
-                <div class="input-card">
-                    <div class="input-wrapper">
-                        <button class="home-btn" onclick="goHome()" title="العودة للقائمة الرئيسية">
-                            <i class="bi bi-house-door"></i>
-                        </button>
-                        <input type="text" class="message-input" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKey(event)">
-                        <button class="send-btn" id="sendBtn" onclick="sendChatMessage()">
-                            <i class="bi bi-send"></i>
-                        </button>
-                        <button class="send-btn stop-btn" id="stopResponseBtn" style="display:none;" onclick="stopResponse()">
-                            <i class="bi bi-stop-fill"></i>
-                        </button>
-                    </div>
-                </div>
+        <!-- واجهة الدردشة -->
+        <div class="chat-container">
+            <div class="messages" id="messagesContainer">
+                <div class="message"><div class="bubble">مرحباً! أنا مساعد EVILE. كيف يمكنني مساعدتك؟</div><div class="time">الآن</div></div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button id="sendBtn" onclick="sendMessage()"><i class="bi bi-send"></i> إرسال</button>
+                <button id="stopBtn" style="display:none; background:rgba(235,87,87,0.2); color:#eb5757;" onclick="stopResponse()"><i class="bi bi-stop-fill"></i></button>
             </div>
         </div>
     </div>
 
-    <div class="bottom-sheet-overlay" id="charactersSheet" onclick="closeSheetOnBackdrop(event, 'charactersSheet')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()">
-            <div class="sheet-header">
-                <div class="sheet-title"><i class="bi bi-people"></i> الشخصيات</div>
-                <button class="sheet-close" onclick="closeSheet('charactersSheet')"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="sheet-instruction">اختر الشخصية المناسبة لمحادثتك</div>
-            <div id="charactersList" class="characters-list"></div>
-        </div>
-    </div>
-
-    <div class="bottom-sheet-overlay" id="notificationsSheet" onclick="closeSheetOnBackdrop(event, 'notificationsSheet')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()">
-            <div class="sheet-header">
-                <div class="sheet-title"><i class="bi bi-bell"></i> الإشعارات</div>
-                <button class="sheet-close" onclick="closeSheet('notificationsSheet')"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div id="notificationsList" class="notifications-list"></div>
-        </div>
-    </div>
-
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" id="navChat" onclick="goHome()">
+    <!-- شريط التنقل -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="navChat">
             <i class="bi bi-chat-dots"></i>
             <span>دردشة</span>
         </button>
@@ -594,282 +221,116 @@
         </a>
     </nav>
 
-    <script>
-        const characters = {{ characters|tojson }};
-        let telegramId = {{ telegram_id|tojson }};
-        const latestNotification = {{ latest_notification|tojson }};
+    <div class="toast" id="toast"></div>
 
-        let currentCharacter = characters.length > 0 ? characters[0].callback_key : 'logo_maker';
-        let isFirstMessage = true;
+    <script>
         let isProcessing = false;
         let abortController = null;
-        let responseInterval = null;
 
-        const welcomeSection = document.getElementById('welcomeSection');
-        const chatSection = document.getElementById('chatSection');
-        const bottomNav = document.getElementById('bottomNav');
-
-        function updateNavVisibility() {
-            if (chatSection.classList.contains('active')) {
-                bottomNav.classList.add('hidden');
-            } else {
-                bottomNav.classList.remove('hidden');
-            }
+        // ===== نسخ user_code بالنقر 3 مرات =====
+        let clickCount = 0;
+        let clickTimer = null;
+        const badge = document.getElementById('userCodeBadge');
+        if (badge) {
+            badge.addEventListener('click', function() {
+                clickCount++;
+                if (clickCount === 3) {
+                    const code = this.innerText.trim().replace(/[^\w\d]/g, '');
+                    navigator.clipboard.writeText(code).then(() => {
+                        showToast('تم نسخ الرقم: ' + code);
+                    }).catch(() => {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = code;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        textarea.remove();
+                        showToast('تم نسخ الرقم: ' + code);
+                    });
+                    clickCount = 0;
+                    clearTimeout(clickTimer);
+                } else {
+                    clearTimeout(clickTimer);
+                    clickTimer = setTimeout(() => { clickCount = 0; }, 800);
+                }
+            });
         }
-        const observer = new MutationObserver(() => updateNavVisibility());
-        observer.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
-        observer.observe(welcomeSection, { attributes: true, attributeFilter: ['class'] });
 
-        window.goHome = function() {
-            chatSection.classList.remove('active');
-            welcomeSection.classList.remove('hidden');
-            document.getElementById('messagesContainer').innerHTML = '';
-            isFirstMessage = true;
-            updateNavVisibility();
-            document.getElementById('stopResponseBtn').style.display = 'none';
-        };
-
-        window.sendWelcomeMessage = async function() {
-            if (isProcessing) return;
-            const input = document.getElementById('welcomeInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            if (isFirstMessage) {
-                welcomeSection.classList.add('hidden');
-                chatSection.classList.add('active');
-                isFirstMessage = false;
-                updateNavVisibility();
-            }
-            await actuallySendMessage(msg);
-        };
-
-        window.sendChatMessage = async function() {
+        // ===== إرسال رسالة =====
+        async function sendMessage() {
             if (isProcessing) return;
             const input = document.getElementById('chatInput');
             const msg = input.value.trim();
             if (!msg) return;
-            await actuallySendMessage(msg);
-        };
 
-        function toggleTheme() {
-            // بسيط: تغيير لون الخلفية بين الأزرق الداكن والفاتح
-            const body = document.body;
-            const icon = document.getElementById('themeIcon');
-            if (body.style.background === '#f0f4fa' || body.style.background === '') {
-                body.style.background = '#f0f4fa';
-                body.style.color = '#0b1428';
-                icon.className = 'bi bi-moon-fill';
-            } else {
-                body.style.background = '#0b1428';
-                body.style.color = '#f0f4fa';
-                icon.className = 'bi bi-brightness-high-fill';
-            }
-        }
+            const container = document.getElementById('messagesContainer');
+            addMessage(msg, true);
+            input.value = '';
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('stopBtn').style.display = 'inline-flex';
 
-        function initScreen() {
-            welcomeSection.classList.remove('hidden');
-            chatSection.classList.remove('active');
-            document.getElementById('welcomeInput').placeholder = 'اكتب رسالتك...';
-            if (latestNotification && latestNotification.show_in_chat) {
-                showToastNotification(latestNotification.title + ': ' + latestNotification.text, 10000);
-            }
-            updateNavVisibility();
-        }
+            // عرض مؤشر تحميل
+            const loadDiv = document.createElement('div');
+            loadDiv.id = 'loadingMsg';
+            loadDiv.className = 'message';
+            loadDiv.innerHTML = '<div class="bubble"><div class="spinner"></div></div>';
+            container.appendChild(loadDiv);
+            container.scrollTop = container.scrollHeight;
 
-        function showToastNotification(message, duration) {
-            duration = duration || 10000;
-            const toast = document.createElement('div');
-            toast.className = 'toast-notification';
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, duration);
-        }
-
-        function updateActiveUsers() {
-            fetch('/api/active_users')
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('activeCount').textContent = data.count;
-                })
-                .catch(() => {});
-        }
-
-        function renderCharSelector() {
-            const selector = document.getElementById('charSelector');
-            if (!characters || characters.length === 0) {
-                selector.innerHTML = '<div class="char-selector-btn" style="cursor:default;">لا توجد شخصيات</div>';
-                return;
-            }
-            selector.innerHTML = characters.map(char => `
-                <div class="char-selector-btn ${char.callback_key === currentCharacter ? 'active' : ''}" data-key="${char.callback_key}">
-                    <i class="bi bi-robot"></i>
-                    <span class="char-selector-name">${escapeHtml(char.name)}</span>
-                </div>
-            `).join('');
-            const wrapper = document.getElementById('charScrollWrapper');
-            const isOverflowing = selector.scrollWidth > wrapper.clientWidth;
-            if (isOverflowing) {
-                wrapper.classList.add('overflowing');
-                wrapper.style.display = 'block';
-            } else {
-                wrapper.classList.remove('overflowing');
-                wrapper.style.display = 'flex';
-                wrapper.style.justifyContent = 'center';
-            }
-            document.querySelectorAll('.char-selector-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const key = btn.getAttribute('data-key');
-                    if (key) selectCharacter(key);
+            abortController = new AbortController();
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg }),
+                    signal: abortController.signal
                 });
-            });
-            if (isOverflowing) {
-                wrapper.addEventListener('scrollend', () => snapToNearest());
-            }
-        }
-
-        function snapToNearest() {
-            const wrapper = document.getElementById('charScrollWrapper');
-            if (!wrapper.classList.contains('overflowing')) return;
-            const buttons = document.querySelectorAll('.char-selector-btn');
-            if (buttons.length === 0) return;
-            const containerCenter = wrapper.scrollLeft + wrapper.clientWidth / 2;
-            let nearest = null, minDist = Infinity;
-            buttons.forEach(btn => {
-                const center = btn.offsetLeft + btn.offsetWidth / 2;
-                const dist = Math.abs(center - containerCenter);
-                if (dist < minDist) { minDist = dist; nearest = btn; }
-            });
-            if (nearest) {
-                wrapper.scrollTo({ left: nearest.offsetLeft - (wrapper.clientWidth/2) + (nearest.offsetWidth/2), behavior: 'smooth' });
-            }
-        }
-
-        function updateWelcomeDisplay() {
-            const char = characters.find(c => c.callback_key === currentCharacter);
-            const logoContainer = document.getElementById('welcomeLogo');
-            const title = document.getElementById('welcomeTitle');
-            const subtitle = document.getElementById('welcomeSubtitle');
-            if (char) {
-                if (char.logo_url) {
-                    logoContainer.innerHTML = `<img src="${escapeHtml(char.logo_url)}" class="character-logo" alt="${escapeHtml(char.name)}">`;
+                const data = await res.json();
+                document.getElementById('loadingMsg').remove();
+                if (data.response) {
+                    addMessage(data.response, false);
                 } else {
-                    logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
+                    addMessage('حدث خطأ في المعالجة.', false);
                 }
-                title.textContent = char.name;
-                subtitle.textContent = char.description;
-            } else if (characters.length > 0) {
-                const first = characters[0];
-                if (first.logo_url) logoContainer.innerHTML = `<img src="${escapeHtml(first.logo_url)}" class="character-logo" alt="${escapeHtml(first.name)}">`;
-                else logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
-                title.textContent = first.name;
-                subtitle.textContent = first.description;
-            } else {
-                logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
-                title.textContent = "ابنِ أفكارك مع EVILE";
-                subtitle.textContent = "أضف شخصيات من لوحة التحكم";
-            }
-        }
-
-        function renderCharactersSheet() {
-            const list = document.getElementById('charactersList');
-            if (!characters || characters.length === 0) {
-                list.innerHTML = '<div class="char-list-item" style="justify-content:center;">لا توجد شخصيات بعد</div>';
-                return;
-            }
-            list.innerHTML = characters.map(char => `
-                <div class="char-list-item ${char.callback_key === currentCharacter ? 'active' : ''}" onclick="selectCharacter('${char.callback_key}')">
-                    <div class="char-list-icon"><i class="bi bi-robot"></i></div>
-                    <div class="char-list-info">
-                        <div class="char-list-name">${escapeHtml(char.name)}</div>
-                        <div class="char-list-desc">${escapeHtml(char.description)}</div>
-                    </div>
-                    <div class="char-list-check"><i class="bi bi-check-lg"></i></div>
-                </div>
-            `).join('');
-        }
-
-        async function renderNotificationsSheet() {
-            try {
-                const res = await fetch('/api/notifications');
-                const notifications = await res.json();
-                const list = document.getElementById('notificationsList');
-                const badge = document.getElementById('notifBadge');
-                if (notifications.length === 0) {
-                    list.innerHTML = '<div class="notif-item" style="justify-content:center; text-align:center;">لا توجد إشعارات</div>';
-                    badge.style.display = 'none';
-                    return;
-                }
-                badge.textContent = notifications.length;
-                badge.style.display = 'flex';
-                list.innerHTML = notifications.map(notif => `
-                    <div class="notif-item">
-                        <div class="notif-icon"><i class="bi bi-bell"></i></div>
-                        <div class="notif-content">
-                            <div class="notif-title">${escapeHtml(notif.title)}</div>
-                            <div class="notif-text">${escapeHtml(notif.text)}</div>
-                            <div style="font-size:9px; color:rgba(255,255,255,0.2);">${escapeHtml(notif.created_at)}</div>
-                        </div>
-                        <button class="notif-delete" onclick="deleteNotification(${notif.id})" title="حذف الإشعار"><i class="bi bi-trash3"></i></button>
-                    </div>
-                `).join('');
             } catch (err) {
-                console.error('Failed to load notifications', err);
-            }
-        }
-
-        async function deleteNotification(id) {
-            if (!confirm('هل تريد حذف هذا الإشعار؟')) return;
-            try {
-                const res = await fetch(`/api/notification/delete/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    renderNotificationsSheet();
-                    showToast('تم حذف الإشعار');
+                document.getElementById('loadingMsg').remove();
+                if (err.name !== 'AbortError') {
+                    addMessage('خطأ في الاتصال بالخادم.', false);
                 } else {
-                    showToast('فشل الحذف');
+                    addMessage('تم إيقاف الرد.', false);
                 }
-            } catch (e) {
-                showToast('خطأ في الاتصال');
             }
+            isProcessing = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('stopBtn').style.display = 'none';
+            abortController = null;
         }
 
-        function setButtonLoading(btn, loading) {
-            if (!btn) return;
-            if (loading) {
-                btn.disabled = true;
-                btn.innerHTML = '<div class="spinner"></div>';
-            } else {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-send"></i>';
+        function stopResponse() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
             }
+            isProcessing = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('stopBtn').style.display = 'none';
+            const load = document.getElementById('loadingMsg');
+            if (load) load.remove();
+            showToast('تم إيقاف الرد');
         }
 
         function addMessage(text, isOwn) {
             const container = document.getElementById('messagesContainer');
+            const div = document.createElement('div');
+            div.className = 'message' + (isOwn ? ' own' : '');
             const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-            const div = document.createElement('div');
-            div.className = `message ${isOwn ? 'own' : ''}`;
-            div.innerHTML = `<div class="message-time">${time}</div><div class="message-content">${escapeHtml(text)}</div>`;
+            div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div><div class="time">${time}</div>`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-        }
-
-        function showLoading() {
-            const container = document.getElementById('messagesContainer');
-            const div = document.createElement('div');
-            div.id = 'loadingMessage';
-            div.className = 'message';
-            div.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>';
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function removeLoading() {
-            const el = document.getElementById('loadingMessage');
-            if (el) el.remove();
         }
 
         function escapeHtml(str) {
-            if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
                 if (m === '<') return '&lt;';
@@ -878,154 +339,14 @@
             });
         }
 
-        function stopResponse() {
-            if (abortController) {
-                abortController.abort();
-                abortController = null;
-            }
-            if (responseInterval) {
-                clearInterval(responseInterval);
-                responseInterval = null;
-            }
-            isProcessing = false;
-            document.getElementById('stopResponseBtn').style.display = 'none';
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('welcomeSendBtn').disabled = false;
-            removeLoading();
-            showToast('تم إيقاف الرد');
+        function showToast(msg, duration) {
+            duration = duration || 3000;
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
         }
-
-        async function streamResponse(text, container) {
-            return new Promise((resolve, reject) => {
-                const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'message';
-                msgDiv.innerHTML = `<div class="message-time">${time}</div>`;
-                container.appendChild(msgDiv);
-                const bubble = document.createElement('div');
-                bubble.className = 'ai-bubble';
-                bubble.innerHTML = `
-                    <div class="ai-bubble-label"><i class="bi bi-cpu"></i> AI</div>
-                    <div class="ai-bubble-text"></div>
-                    <div class="ai-bubble-footer">
-                        <div class="ai-social-icons">
-                            <a href="https://t.me/Evile_Prompts" target="_blank" class="bi bi-telegram"></a>
-                            <a href="https://www.instagram.com/bla6c7" target="_blank" class="bi bi-instagram"></a>
-                        </div>
-                        <div class="ai-bubble-copy">
-                            <i class="bi bi-files"></i>
-                            <span>نسخ</span>
-                        </div>
-                    </div>
-                `;
-                msgDiv.appendChild(bubble);
-                const textEl = bubble.querySelector('.ai-bubble-text');
-                const copyBtn = bubble.querySelector('.ai-bubble-copy');
-                copyBtn.onclick = () => copyBubbleContent(copyBtn, textEl.innerText);
-                const cursor = document.createElement('span');
-                cursor.className = 'cursor';
-                textEl.appendChild(cursor);
-                let idx = 0;
-                responseInterval = setInterval(() => {
-                    if (idx < text.length) {
-                        const span = document.createElement('span');
-                        span.textContent = text.charAt(idx);
-                        textEl.insertBefore(span, cursor);
-                        idx++;
-                        container.scrollTop = container.scrollHeight;
-                    } else {
-                        clearInterval(responseInterval);
-                        responseInterval = null;
-                        cursor.remove();
-                        resolve();
-                    }
-                }, 20);
-            });
-        }
-
-        function copyBubbleContent(button, text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const original = button.innerHTML;
-                button.innerHTML = '<i class="bi bi-check-lg"></i><span>تم النسخ</span>';
-                setTimeout(() => { button.innerHTML = original; }, 1500);
-            }).catch(() => {
-                button.innerHTML = '<i class="bi bi-x-lg"></i><span>فشل</span>';
-                setTimeout(() => { button.innerHTML = '<i class="bi bi-files"></i><span>نسخ</span>'; }, 1500);
-            });
-        }
-
-        async function actuallySendMessage(message) {
-            if (isProcessing) return;
-            isProcessing = true;
-            const sendBtn = document.getElementById('sendBtn') || document.getElementById('welcomeSendBtn');
-            const stopBtn = document.getElementById('stopResponseBtn');
-            setButtonLoading(sendBtn, true);
-            stopBtn.style.display = 'flex';
-            addMessage(message, true);
-            document.getElementById('welcomeInput').value = '';
-            document.getElementById('chatInput').value = '';
-            showLoading();
-
-            abortController = new AbortController();
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ character: currentCharacter, message: message }),
-                    signal: abortController.signal
-                });
-                const data = await res.json();
-                removeLoading();
-                if (data.response) {
-                    const container = document.getElementById('messagesContainer');
-                    await streamResponse(data.response, container);
-                } else {
-                    addMessage('حدث خطأ في المعالجة. حاول مرة أخرى.', false);
-                }
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    removeLoading();
-                    addMessage('تم إيقاف الرد.', false);
-                } else {
-                    removeLoading();
-                    addMessage('خطأ في الاتصال بالخادم.', false);
-                    console.error(err);
-                }
-            }
-            isProcessing = false;
-            abortController = null;
-            stopBtn.style.display = 'none';
-            setButtonLoading(sendBtn, false);
-        }
-
-        function handleWelcomeKey(e) { if (e.key === 'Enter' && !isProcessing) sendWelcomeMessage(); }
-        function handleChatKey(e) { if (e.key === 'Enter' && !isProcessing) sendChatMessage(); }
-
-        function openCharactersSheet() { renderCharactersSheet(); document.getElementById('charactersSheet').classList.add('active'); }
-        async function openNotificationsSheet() { await renderNotificationsSheet(); document.getElementById('notificationsSheet').classList.add('active'); document.getElementById('notifBadge').style.display = 'none'; }
-        function closeSheet(id) { document.getElementById(id).classList.remove('active'); }
-        function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
-        function selectCharacter(key) {
-            currentCharacter = key;
-            renderCharSelector();
-            renderCharactersSheet();
-            updateWelcomeDisplay();
-            closeSheet('charactersSheet');
-            const char = characters.find(c => c.callback_key === key);
-            if (char) {
-                document.getElementById('welcomeInput').placeholder = `اكتب لـ ${char.name}...`;
-                document.getElementById('chatInput').placeholder = `اكتب لـ ${char.name}...`;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initScreen();
-            updateActiveUsers();
-            setInterval(updateActiveUsers, 30000);
-            renderCharSelector();
-            renderNotificationsSheet();
-            updateWelcomeDisplay();
-        });
     </script>
 </body>
 </html>

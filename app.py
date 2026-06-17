@@ -12,55 +12,34 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
-
-# محاولة استيراد psycopg2، وإلا استخدام sqlite3
-try:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
-    HAS_PSYCOPG2 = True
-except ImportError:
-    HAS_PSYCOPG2 = False
-    import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'evile-secret-key-2026')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
-OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-...')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-...')  # ضع مفتاحك
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-# استخدام DATABASE_URL من البيئة، أو SQLite محلي
-DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///evile.db')
+DATABASE_URL = os.getenv('DATABASE_URL')  # يجب أن يكون متغير بيئة PostgreSQL
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 TIMEZONE = pytz.timezone('Asia/Aden')
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required")
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # ==================== قاعدة البيانات ====================
-def get_db_connection():
-    """إرجاع اتصال بقاعدة البيانات (PostgreSQL أو SQLite)"""
-    if DATABASE_URL.startswith('postgresql'):
-        if not HAS_PSYCOPG2:
-            raise ImportError("psycopg2 غير مثبت، يرجى تثبيته: pip install psycopg2-binary")
-        return psycopg2.connect(DATABASE_URL)
-    else:
-        # SQLite
-        db_path = 'evile.db'
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
-
 @contextmanager
 def get_db():
     conn = None
     cur = None
     try:
-        conn = get_db_connection()
-        if DATABASE_URL.startswith('postgresql'):
-            cur = conn.cursor(cursor_factory=RealDictCursor)
-        else:
-            cur = conn.cursor()
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         yield cur
         conn.commit()
     except Exception as e:
@@ -76,108 +55,55 @@ def get_db():
 
 def init_db():
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            # PostgreSQL
-            cur.execute('''CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                user_code TEXT UNIQUE NOT NULL,
-                is_premium BOOLEAN DEFAULT FALSE,
-                last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS channels (
-                id SERIAL PRIMARY KEY,
-                channel_id TEXT UNIQUE NOT NULL,
-                channel_username TEXT,
-                user_code TEXT NOT NULL,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_post_at TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS content_templates (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                prompt TEXT,
-                content TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
-                id SERIAL PRIMARY KEY,
-                channel_id TEXT NOT NULL,
-                content TEXT NOT NULL,
-                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                message_id TEXT
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS channel_failures (
-                id SERIAL PRIMARY KEY,
-                channel_id TEXT NOT NULL,
-                reason TEXT,
-                failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS publish_settings (
-                id SERIAL PRIMARY KEY,
-                publish_time TEXT DEFAULT '12:00'
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS notifications (
-                id SERIAL PRIMARY KEY,
-                title TEXT NOT NULL,
-                text TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute("SELECT COUNT(*) FROM publish_settings")
-            if cur.fetchone()['count'] == 0:
-                cur.execute("INSERT INTO publish_settings (publish_time) VALUES ('12:00')")
-        else:
-            # SQLite
-            cur.execute('''CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_code TEXT UNIQUE NOT NULL,
-                is_premium INTEGER DEFAULT 0,
-                last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS channels (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                channel_id TEXT UNIQUE NOT NULL,
-                channel_username TEXT,
-                user_code TEXT NOT NULL,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_post_at TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS content_templates (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                prompt TEXT,
-                content TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                channel_id TEXT NOT NULL,
-                content TEXT NOT NULL,
-                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                message_id TEXT
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS channel_failures (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                channel_id TEXT NOT NULL,
-                reason TEXT,
-                failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS publish_settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                publish_time TEXT DEFAULT '12:00'
-            )''')
-            cur.execute('''CREATE TABLE IF NOT EXISTS notifications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                text TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
-            cur.execute("SELECT COUNT(*) FROM publish_settings")
-            if cur.fetchone()[0] == 0:
-                cur.execute("INSERT INTO publish_settings (publish_time) VALUES ('12:00')")
+        cur.execute('''CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            user_code TEXT UNIQUE NOT NULL,
+            is_premium BOOLEAN DEFAULT FALSE,
+            last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS channels (
+            id SERIAL PRIMARY KEY,
+            channel_id TEXT UNIQUE NOT NULL,
+            channel_username TEXT,
+            user_code TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_post_at TIMESTAMP
+        )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS content_templates (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            prompt TEXT,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
+            id SERIAL PRIMARY KEY,
+            channel_id TEXT NOT NULL,
+            content TEXT NOT NULL,
+            published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            message_id TEXT
+        )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS channel_failures (
+            id SERIAL PRIMARY KEY,
+            channel_id TEXT NOT NULL,
+            reason TEXT,
+            failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS publish_settings (
+            id SERIAL PRIMARY KEY,
+            publish_time TEXT DEFAULT '12:00'
+        )''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS notifications (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL,
+            text TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+        cur.execute("SELECT COUNT(*) FROM publish_settings")
+        if cur.fetchone()['count'] == 0:
+            cur.execute("INSERT INTO publish_settings (publish_time) VALUES ('12:00')")
     logger.info("Database initialized")
 
 # ==================== دوال مساعدة ====================
@@ -187,22 +113,15 @@ def generate_user_code():
 
 def get_publish_time():
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
-            row = cur.fetchone()
-        else:
-            cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
-            row = cur.fetchone()
+        cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
+        row = cur.fetchone()
         return row['publish_time'] if row else '12:00'
 
 def generate_post_content(content_id=None, custom_prompt=None):
     prompt = None
     if content_id:
         with get_db() as cur:
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("SELECT prompt FROM content_templates WHERE id = %s", (content_id,))
-            else:
-                cur.execute("SELECT prompt FROM content_templates WHERE id = ?", (content_id,))
+            cur.execute("SELECT prompt FROM content_templates WHERE id = %s", (content_id,))
             row = cur.fetchone()
             if row and row['prompt']:
                 prompt = row['prompt']
@@ -247,36 +166,21 @@ scheduler.start()
 
 def publish_daily_job():
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT channel_id FROM channels WHERE is_active = true")
-        else:
-            cur.execute("SELECT channel_id FROM channels WHERE is_active = 1")
+        cur.execute("SELECT channel_id FROM channels WHERE is_active = true")
         channels = cur.fetchall()
         for ch in channels:
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("SELECT id, prompt FROM content_templates ORDER BY RANDOM() LIMIT 1")
-            else:
-                cur.execute("SELECT id, prompt FROM content_templates ORDER BY RANDOM() LIMIT 1")
+            cur.execute("SELECT id, prompt FROM content_templates ORDER BY RANDOM() LIMIT 1")
             template = cur.fetchone()
             content = generate_post_content(content_id=template['id']) if template else generate_post_content()
             if content:
                 msg_id = send_telegram_message(ch['channel_id'], content)
                 if msg_id:
-                    if DATABASE_URL.startswith('postgresql'):
-                        cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)",
-                                    (ch['channel_id'], content, msg_id))
-                        cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (ch['channel_id'],))
-                    else:
-                        cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (?, ?, ?)",
-                                    (ch['channel_id'], content, msg_id))
-                        cur.execute("UPDATE channels SET last_post_at = CURRENT_TIMESTAMP WHERE channel_id = ?", (ch['channel_id'],))
+                    cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)",
+                                (ch['channel_id'], content, msg_id))
+                    cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (ch['channel_id'],))
                 else:
-                    if DATABASE_URL.startswith('postgresql'):
-                        cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)",
-                                    (ch['channel_id'], 'فشل الإرسال'))
-                    else:
-                        cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (?, ?)",
-                                    (ch['channel_id'], 'فشل الإرسال'))
+                    cur.execute("INSERT INTO channel_failures (channel_id, reason) VALUES (%s, %s)",
+                                (ch['channel_id'], 'فشل الإرسال'))
 
 def schedule_daily_job():
     for job in scheduler.get_jobs():
@@ -293,10 +197,7 @@ def schedule_daily_job():
 def index():
     user_code = session.get('user_code')
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT * FROM notifications ORDER BY id DESC LIMIT 1")
-        else:
-            cur.execute("SELECT * FROM notifications ORDER BY id DESC LIMIT 1")
+        cur.execute("SELECT * FROM notifications ORDER BY id DESC LIMIT 1")
         latest_notification = cur.fetchone()
     return render_template('index.html', user_code=user_code, latest_notification=latest_notification)
 
@@ -305,10 +206,7 @@ def register():
     user_code = generate_user_code()
     try:
         with get_db() as cur:
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("INSERT INTO users (user_code) VALUES (%s) ON CONFLICT DO NOTHING", (user_code,))
-            else:
-                cur.execute("INSERT OR IGNORE INTO users (user_code) VALUES (?)", (user_code,))
+            cur.execute("INSERT INTO users (user_code) VALUES (%s) ON CONFLICT DO NOTHING", (user_code,))
         session['user_code'] = user_code
         session.permanent = True
         return jsonify({'success': True, 'user_code': user_code})
@@ -323,30 +221,32 @@ def publish():
         return redirect(url_for('index'))
 
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT * FROM channels WHERE user_code = %s", (user_code,))
-        else:
-            cur.execute("SELECT * FROM channels WHERE user_code = ?", (user_code,))
+        cur.execute("SELECT * FROM channels WHERE user_code = %s", (user_code,))
         channels = cur.fetchall()
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT is_premium FROM users WHERE user_code = %s", (user_code,))
-        else:
-            cur.execute("SELECT is_premium FROM users WHERE user_code = ?", (user_code,))
+        cur.execute("SELECT is_premium FROM users WHERE user_code = %s", (user_code,))
         user = cur.fetchone()
         is_premium = user['is_premium'] if user else False
 
+        # جلب آخر المنشورات
         posts = []
         for ch in channels:
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("SELECT content, published_at FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 3", (ch['channel_id'],))
-            else:
-                cur.execute("SELECT content, published_at FROM published_posts WHERE channel_id = ? ORDER BY published_at DESC LIMIT 3", (ch['channel_id'],))
+            cur.execute("SELECT content, published_at FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 3", (ch['channel_id'],))
             posts.extend(cur.fetchall())
 
         publish_time = get_publish_time()
 
+        # تحديد القناة المحددة (إن وجدت)
+        selected_channel_id = request.args.get('channel_id')
+        selected_channel = None
+        if selected_channel_id:
+            for ch in channels:
+                if str(ch['id']) == selected_channel_id:
+                    selected_channel = ch
+                    break
+
         return render_template('publish.html', user_code=user_code, channels=channels,
-                               is_premium=is_premium, recent_posts=posts, publish_time=publish_time)
+                               is_premium=is_premium, recent_posts=posts, publish_time=publish_time,
+                               selected_channel=selected_channel)
 
 @app.route('/publish/add_channel', methods=['POST'])
 def add_channel():
@@ -363,18 +263,13 @@ def add_channel():
         return jsonify({'success': False, 'message': 'اسم المستخدم يجب أن يبدأ بـ @'}), 400
 
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT COUNT(*) FROM channels WHERE user_code = %s", (user_code,))
-        else:
-            cur.execute("SELECT COUNT(*) FROM channels WHERE user_code = ?", (user_code,))
-        count = cur.fetchone()[0] if not DATABASE_URL.startswith('postgresql') else cur.fetchone()['count']
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT is_premium FROM users WHERE user_code = %s", (user_code,))
-        else:
-            cur.execute("SELECT is_premium FROM users WHERE user_code = ?", (user_code,))
+        cur.execute("SELECT COUNT(*) FROM channels WHERE user_code = %s", (user_code,))
+        count = cur.fetchone()['count']
+        cur.execute("SELECT is_premium FROM users WHERE user_code = %s", (user_code,))
         user = cur.fetchone()
         is_premium = user['is_premium'] if user else False
 
+        # الحد: عادي = 1، مميز = 3
         if not is_premium and count >= 1:
             return jsonify({
                 'success': False,
@@ -386,19 +281,12 @@ def add_channel():
                 'message': 'لقد وصلت للحد الأقصى البالغ 3 قنوات'
             }), 403
 
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT id FROM channels WHERE channel_id = %s", (channel_id,))
-        else:
-            cur.execute("SELECT id FROM channels WHERE channel_id = ?", (channel_id,))
+        cur.execute("SELECT id FROM channels WHERE channel_id = %s", (channel_id,))
         if cur.fetchone():
             return jsonify({'success': False, 'message': 'هذه القناة مسجلة مسبقاً'}), 400
 
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("INSERT INTO channels (channel_id, channel_username, user_code, is_active) VALUES (%s, %s, %s, true)",
-                        (channel_id, channel_username, user_code))
-        else:
-            cur.execute("INSERT INTO channels (channel_id, channel_username, user_code, is_active) VALUES (?, ?, ?, 1)",
-                        (channel_id, channel_username, user_code))
+        cur.execute("INSERT INTO channels (channel_id, channel_username, user_code, is_active) VALUES (%s, %s, %s, true)",
+                    (channel_id, channel_username, user_code))
         return jsonify({'success': True, 'message': 'تمت إضافة القناة بنجاح'})
 
 @app.route('/publish/toggle_channel/<int:channel_id>')
@@ -407,18 +295,12 @@ def toggle_channel(channel_id):
     if not user_code:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT is_active FROM channels WHERE id = %s AND user_code = %s", (channel_id, user_code))
-        else:
-            cur.execute("SELECT is_active FROM channels WHERE id = ? AND user_code = ?", (channel_id, user_code))
+        cur.execute("SELECT is_active FROM channels WHERE id = %s AND user_code = %s", (channel_id, user_code))
         row = cur.fetchone()
         if not row:
             return jsonify({'success': False, 'message': 'القناة غير موجودة'}), 404
         new_status = not row['is_active']
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("UPDATE channels SET is_active = %s WHERE id = %s", (new_status, channel_id))
-        else:
-            cur.execute("UPDATE channels SET is_active = ? WHERE id = ?", (1 if new_status else 0, channel_id))
+        cur.execute("UPDATE channels SET is_active = %s WHERE id = %s", (new_status, channel_id))
         return jsonify({'success': True, 'is_active': new_status})
 
 @app.route('/publish/force_publish')
@@ -427,17 +309,11 @@ def force_publish():
     if not user_code:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT channel_id FROM channels WHERE user_code = %s AND is_active = true", (user_code,))
-        else:
-            cur.execute("SELECT channel_id FROM channels WHERE user_code = ? AND is_active = 1", (user_code,))
+        cur.execute("SELECT channel_id FROM channels WHERE user_code = %s AND is_active = true", (user_code,))
         channels = cur.fetchall()
         if not channels:
             return jsonify({'success': False, 'message': 'لا توجد قنوات نشطة'}), 400
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT id, prompt FROM content_templates ORDER BY RANDOM() LIMIT 1")
-        else:
-            cur.execute("SELECT id, prompt FROM content_templates ORDER BY RANDOM() LIMIT 1")
+        cur.execute("SELECT id, prompt FROM content_templates ORDER BY RANDOM() LIMIT 1")
         template = cur.fetchone()
         content = generate_post_content(content_id=template['id']) if template else generate_post_content()
         if not content:
@@ -445,14 +321,9 @@ def force_publish():
         ch_id = channels[0]['channel_id']
         msg_id = send_telegram_message(ch_id, content)
         if msg_id:
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)",
-                            (ch_id, content, msg_id))
-                cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (ch_id,))
-            else:
-                cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (?, ?, ?)",
-                            (ch_id, content, msg_id))
-                cur.execute("UPDATE channels SET last_post_at = CURRENT_TIMESTAMP WHERE channel_id = ?", (ch_id,))
+            cur.execute("INSERT INTO published_posts (channel_id, content, message_id) VALUES (%s, %s, %s)",
+                        (ch_id, content, msg_id))
+            cur.execute("UPDATE channels SET last_post_at = NOW() WHERE channel_id = %s", (ch_id,))
             return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
         else:
             return jsonify({'success': False, 'message': 'فشل النشر'}), 500
@@ -477,31 +348,16 @@ def admin_panel():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT * FROM users ORDER BY id")
-        else:
-            cur.execute("SELECT * FROM users ORDER BY id")
+        cur.execute("SELECT * FROM users ORDER BY id")
         users = cur.fetchall()
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT * FROM channels ORDER BY id")
-        else:
-            cur.execute("SELECT * FROM channels ORDER BY id")
+        cur.execute("SELECT * FROM channels ORDER BY id")
         channels = cur.fetchall()
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT * FROM content_templates ORDER BY id")
-        else:
-            cur.execute("SELECT * FROM content_templates ORDER BY id")
+        cur.execute("SELECT * FROM content_templates ORDER BY id")
         templates = cur.fetchall()
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
-        else:
-            cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
+        cur.execute("SELECT publish_time FROM publish_settings LIMIT 1")
         setting = cur.fetchone()
         publish_time = setting['publish_time'] if setting else '12:00'
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT * FROM notifications ORDER BY id DESC")
-        else:
-            cur.execute("SELECT * FROM notifications ORDER BY id DESC")
+        cur.execute("SELECT * FROM notifications ORDER BY id DESC")
         notifications = cur.fetchall()
     return render_template('admin.html', users=users, channels=channels,
                            templates=templates, publish_time=publish_time,
@@ -512,17 +368,11 @@ def toggle_premium(user_code):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT is_premium FROM users WHERE user_code = %s", (user_code,))
-        else:
-            cur.execute("SELECT is_premium FROM users WHERE user_code = ?", (user_code,))
+        cur.execute("SELECT is_premium FROM users WHERE user_code = %s", (user_code,))
         row = cur.fetchone()
         if row:
             new_status = not row['is_premium']
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("UPDATE users SET is_premium = %s WHERE user_code = %s", (new_status, user_code))
-            else:
-                cur.execute("UPDATE users SET is_premium = ? WHERE user_code = ?", (1 if new_status else 0, user_code))
+            cur.execute("UPDATE users SET is_premium = %s WHERE user_code = %s", (new_status, user_code))
             flash(f'تم تحديث حالة Premium للمستخدم {user_code}', 'success')
         else:
             flash('المستخدم غير موجود', 'error')
@@ -534,10 +384,7 @@ def update_publish_time():
         return redirect(url_for('login'))
     new_time = request.form.get('publish_time', '12:00')
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("UPDATE publish_settings SET publish_time = %s", (new_time,))
-        else:
-            cur.execute("UPDATE publish_settings SET publish_time = ?", (new_time,))
+        cur.execute("UPDATE publish_settings SET publish_time = %s", (new_time,))
     schedule_daily_job()
     flash('تم تحديث وقت النشر', 'success')
     return redirect(url_for('admin_panel'))
@@ -553,12 +400,8 @@ def add_content():
         flash('الاسم والمحتوى مطلوبان', 'error')
         return redirect(url_for('admin_panel'))
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("INSERT INTO content_templates (name, prompt, content) VALUES (%s, %s, %s)",
-                        (name, prompt, content))
-        else:
-            cur.execute("INSERT INTO content_templates (name, prompt, content) VALUES (?, ?, ?)",
-                        (name, prompt, content))
+        cur.execute("INSERT INTO content_templates (name, prompt, content) VALUES (%s, %s, %s)",
+                    (name, prompt, content))
     flash('تمت إضافة المحتوى', 'success')
     return redirect(url_for('admin_panel'))
 
@@ -567,10 +410,7 @@ def delete_content(id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("DELETE FROM content_templates WHERE id = %s", (id,))
-        else:
-            cur.execute("DELETE FROM content_templates WHERE id = ?", (id,))
+        cur.execute("DELETE FROM content_templates WHERE id = %s", (id,))
     flash('تم حذف المحتوى', 'success')
     return redirect(url_for('admin_panel'))
 
@@ -582,10 +422,7 @@ def add_notification():
     text = request.form.get('text')
     if title and text:
         with get_db() as cur:
-            if DATABASE_URL.startswith('postgresql'):
-                cur.execute("INSERT INTO notifications (title, text, created_at) VALUES (%s, %s, NOW())", (title, text))
-            else:
-                cur.execute("INSERT INTO notifications (title, text, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)", (title, text))
+            cur.execute("INSERT INTO notifications (title, text, created_at) VALUES (%s, %s, NOW())", (title, text))
         flash('تم إرسال الإشعار', 'success')
     else:
         flash('العنوان والنص مطلوبان', 'error')
@@ -596,10 +433,7 @@ def delete_notification(id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("DELETE FROM notifications WHERE id = %s", (id,))
-        else:
-            cur.execute("DELETE FROM notifications WHERE id = ?", (id,))
+        cur.execute("DELETE FROM notifications WHERE id = %s", (id,))
     flash('تم حذف الإشعار', 'success')
     return redirect(url_for('admin_panel'))
 
@@ -607,12 +441,8 @@ def delete_notification(id):
 @app.route('/api/active_users')
 def active_users():
     with get_db() as cur:
-        if DATABASE_URL.startswith('postgresql'):
-            cur.execute("SELECT COUNT(*) FROM users WHERE last_active > NOW() - INTERVAL '5 minutes'")
-            count = cur.fetchone()['count']
-        else:
-            cur.execute("SELECT COUNT(*) FROM users WHERE last_active > datetime('now', '-5 minutes')")
-            count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM users WHERE last_active > NOW() - INTERVAL '5 minutes'")
+        count = cur.fetchone()['count']
     return jsonify({'count': count})
 
 @app.route('/api/chat', methods=['POST'])

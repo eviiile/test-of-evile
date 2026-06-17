@@ -20,14 +20,17 @@ app.secret_key = os.getenv('SECRET_KEY', 'evile-secret-key-2026')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
-OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-...')  # ضع مفتاحك
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', 'sk-or-v1-...')  # ضع مفتاحك هنا
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-DATABASE_URL = os.getenv('DATABASE_URL')  # يجب أن يكون متغير بيئة PostgreSQL
+
+# ===== تم تضمين DATABASE_URL مباشرة هنا =====
+DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
+
 BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 TIMEZONE = pytz.timezone('Asia/Aden')
 
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is required")
+    raise ValueError("DATABASE_URL is required")
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -227,7 +230,6 @@ def publish():
         user = cur.fetchone()
         is_premium = user['is_premium'] if user else False
 
-        # جلب آخر المنشورات
         posts = []
         for ch in channels:
             cur.execute("SELECT content, published_at FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 3", (ch['channel_id'],))
@@ -235,7 +237,6 @@ def publish():
 
         publish_time = get_publish_time()
 
-        # تحديد القناة المحددة (إن وجدت)
         selected_channel_id = request.args.get('channel_id')
         selected_channel = None
         if selected_channel_id:
@@ -269,7 +270,6 @@ def add_channel():
         user = cur.fetchone()
         is_premium = user['is_premium'] if user else False
 
-        # الحد: عادي = 1، مميز = 3
         if not is_premium and count >= 1:
             return jsonify({
                 'success': False,

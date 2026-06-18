@@ -26,8 +26,6 @@
                         radial-gradient(circle at 80% 20%, rgba(255,240,217,0.05) 0%, transparent 50%),
                         #0a0a0a;
         }
-        
-        /* ====== عناصر زجاجية محسنة ====== */
         .glass {
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(24px);
@@ -49,7 +47,6 @@
             box-shadow: 0 8px 32px rgba(132, 148, 255, 0.05);
         }
         
-        /* ====== الهيدر ====== */
         .floating-header {
             position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
@@ -113,7 +110,6 @@
             .main-container { padding-top: 80px; }
         }
 
-        /* ====== الشريط السفلي ====== */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -169,7 +165,6 @@
         .nav-item:hover { color: #aaa; }
         .nav-item:active { transform: scale(0.94); }
 
-        /* ====== الدردشة ====== */
         .welcome-section {
             flex: 1; display: none; flex-direction: column; align-items: center;
             justify-content: center; padding: 16px; text-align: center;
@@ -295,7 +290,6 @@
         .home-btn:active { transform: scale(0.9); }
         .home-btn i { font-size: 18px; }
 
-        /* ====== النشر ====== */
         .publish-section {
             display: none; flex-direction: column; flex: 1; overflow-y: auto;
         }
@@ -397,7 +391,6 @@
         .publish-flash.success { background: rgba(40,167,69,0.1); color: #5ddb7a; }
         .publish-hint { margin-top: 8px; color: #555; font-size: 11px; }
 
-        /* ====== لوحة التحكم ====== */
         .dashboard-container {
             width: 100%; border-radius: 24px; padding: 20px;
             background: rgba(255,255,255,0.03);
@@ -437,32 +430,70 @@
         }
         .content-selector h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; color: #aaa; }
         .content-selector h3 i { color: #8494FF; }
-        .content-selector .selector-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .content-selector select {
-            flex: 1; padding: 10px 14px; border-radius: 12px;
-            font-family: 'Tajawal', sans-serif; font-size: 13px; min-width: 150px;
+        .content-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 8px 0;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .content-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+        .content-scroll::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.04);
+            border-radius: 4px;
+        }
+        .content-scroll::-webkit-scrollbar-thumb {
+            background: rgba(132, 148, 255, 0.3);
+            border-radius: 4px;
+        }
+        .content-item {
+            min-width: 130px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.06);
+        }
+        .content-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+        }
+        .content-item.active {
+            background: rgba(132, 148, 255, 0.12);
+            border: 1px solid rgba(132, 148, 255, 0.2);
+        }
+        .content-item .name {
+            font-weight: 700;
+            font-size: 13px;
             color: #e8e8e8;
         }
-        .content-selector select option { background: #1a1a1a; }
-        .content-selector select:focus { outline: none; border-color: rgba(132,148,255,0.2); }
-        .btn-select {
-            padding: 10px 20px; border-radius: 40px; font-weight: 600; font-size: 13px;
-            cursor: pointer; transition: all 0.25s ease; font-family: 'Tajawal', sans-serif;
-            background: rgba(132, 148, 255, 0.08);
-            border: 1px solid rgba(132, 148, 255, 0.1);
+        .content-item .channels {
+            font-size: 10px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .content-item .channels i {
+            color: #8494FF;
+            font-size: 10px;
+        }
+        .content-item .check {
+            margin-top: 6px;
+            font-size: 10px;
             color: #8494FF;
         }
-        .btn-select:hover { background: rgba(132, 148, 255, 0.15); }
-        .btn-select:disabled { opacity: 0.4; cursor: not-allowed; }
-        .selected-content-info {
-            margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 12px;
-            border-right: 3px solid #8494FF;
-            background: rgba(255,255,255,0.03);
-            color: #aaa;
+        .content-scroll-hint {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #666;
+            text-align: center;
         }
-        .selected-content-info strong { color: #e8e8e8; }
         
         .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .actions .btn {
@@ -575,6 +606,7 @@
             .actions .btn { flex: 1 1 45%; }
             .publish-overlay { padding: 20px; }
             .publish-overlay h2 { font-size: 20px; }
+            .content-item { min-width: 110px; padding: 10px 12px; }
         }
     </style>
 </head>
@@ -1167,29 +1199,19 @@
                     <div class="stat-card"><i class="bi bi-clock"></i><div class="number">${contents.length}</div><div class="label">محتوى متاح</div></div>
                 </div>
                 <div class="content-selector">
-                    <h3><i class="bi bi-file-text"></i> اختيار المحتوى</h3>
-                    <div class="selector-row">
-                        <select name="content_id" id="contentSelect" style="flex:1; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:#e8e8e8; font-family:'Tajawal',sans-serif; font-size:13px;">
-                            <option value="">-- اختر محتوى --</option>
-                            ${contents.map(c => `
-                                <option value="${c.id}" ${ch.selected_content_id == c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>
-                            `).join('')}
-                        </select>
-                        <button type="button" class="btn-select" id="selectContentBtn">
-                            <i class="bi bi-check"></i> اختيار
-                        </button>
-                    </div>
-                    ${ch.selected_content_id ? 
-                        contents.filter(c => c.id == ch.selected_content_id).map(c => `
-                            <div class="selected-content-info">
-                                <strong>${escapeHtml(c.name)}</strong>
-                                <div style="font-size:11px; color:#888; margin-top:4px;">${escapeHtml(c.description || 'لا يوجد وصف')}</div>
+                    <h3><i class="bi bi-file-text"></i> المحتوى المتاح</h3>
+                    <div class="content-scroll" id="contentScroll">
+                        ${contents.map(c => `
+                            <div class="content-item ${ch.selected_content_id == c.id ? 'active' : ''}" onclick="selectContent(${c.id})" data-id="${c.id}">
+                                <div class="name">${escapeHtml(c.name)}</div>
+                                <div class="channels"><i class="bi bi-hash"></i> ${c.channels_count || 0} قناة</div>
+                                ${ch.selected_content_id == c.id ? `<div class="check"><i class="bi bi-check-circle-fill"></i> مختار</div>` : ''}
                             </div>
-                        `).join('') :
-                        `<div class="selected-content-info" style="color:#666;">
-                            <i class="bi bi-info-circle"></i> لم يتم اختيار محتوى بعد
-                        </div>`
-                    }
+                        `).join('')}
+                    </div>
+                    <div class="content-scroll-hint">
+                        <i class="bi bi-arrow-left-right"></i> اسحب للتمرير بين المحتويات
+                    </div>
                 </div>
                 <div class="actions">
                     ${ch.is_active ? `
@@ -1209,17 +1231,14 @@
                 </div>
             `;
 
-            // زر اختيار المحتوى
-            document.getElementById('selectContentBtn')?.addEventListener('click', async function() {
-                const select = document.getElementById('contentSelect');
-                const contentId = select.value;
-                if (!contentId) {
-                    showToast('الرجاء اختيار محتوى');
-                    return;
-                }
-                const btn = this;
-                btn.disabled = true;
-                btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
+            // دالة اختيار المحتوى
+            window.selectContent = async function(contentId) {
+                const items = document.querySelectorAll('.content-item');
+                items.forEach(el => el.classList.remove('active'));
+                const selected = document.querySelector(`.content-item[data-id="${contentId}"]`);
+                if (selected) selected.classList.add('active');
+                
+                // إرسال طلب الاختيار
                 try {
                     const fd = new FormData();
                     fd.append('content_id', contentId);
@@ -1227,16 +1246,21 @@
                     const d = await res.json();
                     if (d.success) {
                         showToast('✅ تم اختيار المحتوى');
-                        setTimeout(() => loadPublishState(), 1000);
+                        // تحديث حالة الاختيار في الواجهة
+                        document.querySelectorAll('.content-item .check').forEach(el => el.remove());
+                        if (selected) {
+                            const check = document.createElement('div');
+                            check.className = 'check';
+                            check.innerHTML = '<i class="bi bi-check-circle-fill"></i> مختار';
+                            selected.appendChild(check);
+                        }
                     } else {
                         showToast(d.message || 'حدث خطأ');
                     }
                 } catch(e) {
                     showToast('خطأ في الاتصال');
                 }
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-check"></i> اختيار';
-            });
+            };
 
             // باقي الأحداث
             document.getElementById('pauseBtn')?.addEventListener('click', async function() {

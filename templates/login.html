@@ -10,7 +10,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #ffffff;
+            background: #f8f9fa;
+            background: radial-gradient(circle at 20% 30%, rgba(0,136,204,0.03) 0%, #f8f9fa 70%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -26,7 +27,7 @@
             height: 200%;
             top: -50%;
             left: -50%;
-            background: radial-gradient(circle at 30% 40%, rgba(0,136,204,0.05) 0%, transparent 60%);
+            background: radial-gradient(circle at 30% 40%, rgba(0,136,204,0.06) 0%, transparent 60%);
             animation: rotate 30s linear infinite;
             z-index: 0;
         }
@@ -37,10 +38,10 @@
         .login-card {
             position: relative;
             z-index: 1;
-            background: rgba(0, 136, 204, 0.08);
-            backdrop-filter: blur(12px);
+            background: rgba(0, 136, 204, 0.12);
+            backdrop-filter: blur(14px);
             border-radius: 32px;
-            border: 1px solid rgba(0, 136, 204, 0.2);
+            border: 1px solid rgba(0, 136, 204, 0.25);
             padding: 40px 32px;
             width: 100%;
             max-width: 420px;
@@ -71,7 +72,7 @@
         label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; font-size: 14px; }
         input {
             width: 100%; padding: 14px 18px;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             border: 1px solid rgba(0,136,204,0.3);
             border-radius: 16px;
             color: #1a1a1a;
@@ -82,7 +83,8 @@
         input:focus {
             outline: none;
             border-color: #0088cc;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 0 0 3px rgba(0,136,204,0.1);
         }
         .btn {
             width: 100%; padding: 14px;
@@ -94,6 +96,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0,136,204,0.3);
         }
         .btn:hover { transform: translateY(-2px); }
         .flash {

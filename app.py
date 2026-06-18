@@ -103,7 +103,7 @@ def fix_publish_settings():
             if row:
                 raw = row['publish_times']
                 try:
-                    json.loads(raw)  # محاولة التحقق من الصحة
+                    json.loads(raw)
                 except json.JSONDecodeError:
                     default = '["09:00","13:00","17:00"]'
                     cur.execute("UPDATE publish_settings SET publish_times = %s WHERE id = %s", (default, row['id']))
@@ -188,7 +188,7 @@ def init_db():
                 cur.execute("INSERT INTO publish_settings (publish_count, publish_times) VALUES (3, '[\"09:00\",\"13:00\",\"17:00\"]')")
             
             ensure_notification_columns(cur)
-            fix_publish_settings()  # إصلاح البيانات التالفة
+            fix_publish_settings()
             logger.info("Database initialized/updated successfully")
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
@@ -462,7 +462,6 @@ def index():
 @app.route('/publish')
 def publish():
     telegram_id = session.get('telegram_id')
-    # إذا لم يكن هناك جلسة، نعرض صفحة publish مع نموذج تسجيل الدخول
     if not telegram_id:
         return render_template('publish.html',
                              channel=None,
@@ -474,7 +473,7 @@ def publish():
                              content_templates=[],
                              selected_content_id=None,
                              telegram_id=None,
-                             show_login=True)  # متغير لعرض نموذج تسجيل الدخول
+                             show_login=True)
     
     with get_db() as cur:
         cur.execute("SELECT * FROM channels WHERE admin_id = %s", (telegram_id,))
@@ -538,9 +537,13 @@ def publish():
 
 @app.route('/publish/register_channel', methods=['POST'])
 def register_channel():
+    # الحصول على telegram_id من الجلسة أو من الطلب
     telegram_id = session.get('telegram_id')
     if not telegram_id:
-        return jsonify({'success': False, 'message': 'يجب تسجيل الدخول أولاً'}), 401
+        telegram_id = request.form.get('telegram_id', '').strip()
+    
+    if not telegram_id or not telegram_id.isdigit():
+        return jsonify({'success': False, 'message': 'معرف التلغرام مطلوب (أرقام فقط)'}), 400
     
     channel_id = request.form.get('channel_id', '').strip()
     channel_username = request.form.get('channel_username', '').strip()
@@ -553,6 +556,10 @@ def register_channel():
     
     try:
         with get_db() as cur:
+            # تسجيل المستخدم
+            cur.execute("INSERT INTO users (telegram_id) VALUES (%s) ON CONFLICT (telegram_id) DO UPDATE SET last_active = CURRENT_TIMESTAMP", (telegram_id,))
+            
+            # التحقق من وجود قناة مسجلة لهذا المستخدم
             cur.execute("SELECT id FROM channels WHERE admin_id = %s", (telegram_id,))
             if cur.fetchone():
                 return jsonify({'success': False, 'message': 'لديك قناة مسجلة مسبقاً'}), 400
@@ -566,6 +573,10 @@ def register_channel():
                 (channel_id, channel_username, telegram_id)
             )
             logger.info(f"Channel {channel_id} registered successfully for user {telegram_id}")
+        
+        # حفظ الجلسة لتسجيل الدخول التلقائي
+        session['telegram_id'] = telegram_id
+        session.permanent = True
         
         schedule_posts_for_channel(channel_id, telegram_id)
         return jsonify({'success': True, 'message': 'تم تسجيل القناة بنجاح'})

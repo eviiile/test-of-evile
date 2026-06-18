@@ -212,9 +212,7 @@
             margin-bottom: 8px;
         }
         .character-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 40px; height: 40px; border-radius: 12px;
             background: rgba(255,255,255,0.04);
             display: flex;
             align-items: center;
@@ -327,7 +325,6 @@
             .content-grid { grid-template-columns: 1fr; }
         }
 
-        /* ====== صفحة تسجيل الدخول المدمجة ====== */
         .login-wrapper {
             display: flex;
             align-items: center;
@@ -456,7 +453,6 @@
 <body>
     <div class="admin-container">
         {% if not logged_in %}
-        <!-- ====== صفحة تسجيل الدخول ====== -->
         <div class="login-wrapper">
             <div class="login-card">
                 <div class="logo">
@@ -481,7 +477,6 @@
             </div>
         </div>
         {% else %}
-        <!-- ====== لوحة التحكم (مسجل الدخول) ====== -->
         <div class="admin-header">
             <h2><i class="bi bi-speedometer2"></i> لوحة التحكم</h2>
             <a href="/admin/logout" class="logout-btn"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>

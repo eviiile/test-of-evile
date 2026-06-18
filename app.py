@@ -95,6 +95,23 @@ def ensure_content_columns(cur):
         cur.execute("ALTER TABLE content_templates ADD COLUMN publish_time TIMESTAMP DEFAULT NULL")
         logger.info("Added column publish_time to content_templates table")
 
+def fix_publish_settings():
+    """إصلاح بيانات JSON التالفة في publish_settings"""
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT id, publish_times FROM publish_settings LIMIT 1")
+            row = cur.fetchone()
+            if row:
+                raw = row['publish_times']
+                try:
+                    json.loads(raw)  # محاولة التحقق من الصحة
+                except json.JSONDecodeError:
+                    default = '["09:00","13:00","17:00"]'
+                    cur.execute("UPDATE publish_settings SET publish_times = %s WHERE id = %s", (default, row['id']))
+                    logger.warning(f"Fixed invalid publish_times: {raw[:50]}... -> {default}")
+    except Exception as e:
+        logger.error(f"Error fixing publish settings: {e}")
+
 def init_db():
     try:
         with get_db() as cur:
@@ -172,6 +189,7 @@ def init_db():
                 cur.execute("INSERT INTO publish_settings (publish_count, publish_times) VALUES (3, '[\"09:00\",\"13:00\",\"17:00\"]')")
             
             ensure_notification_columns(cur)
+            fix_publish_settings()  # إصلاح البيانات التالفة
             logger.info("Database initialized/updated successfully")
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
@@ -201,7 +219,12 @@ def get_publish_times():
             cur.execute("SELECT publish_times FROM publish_settings LIMIT 1")
             row = cur.fetchone()
             if row:
-                return json.loads(row['publish_times'])
+                try:
+                    times = json.loads(row['publish_times'])
+                    if isinstance(times, list) and times:
+                        return times
+                except json.JSONDecodeError:
+                    logger.error(f"Invalid JSON in publish_times: {row['publish_times']}")
     except Exception as e:
         logger.error(f"Error getting publish times: {e}")
     return ["09:00", "13:00", "17:00"]
@@ -416,10 +439,12 @@ def schedule_all_channels():
 @app.route('/')
 def index():
     telegram_id = session.get('telegram_id')
+    characters = []
+    latest_notification = None
     try:
         with get_db() as cur:
             cur.execute('SELECT * FROM characters ORDER BY id')
-            characters = cur.fetchall()
+            characters = cur.fetchall() or []
             cur.execute('SELECT * FROM notifications WHERE show_in_chat = true ORDER BY created_at DESC LIMIT 1')
             latest_notification = cur.fetchone()
     except Exception as e:
@@ -855,7 +880,10 @@ def admin_panel():
             settings = cur.fetchone()
             if settings:
                 publish_count = settings['publish_count']
-                publish_times = json.loads(settings['publish_times'])
+                try:
+                    publish_times = json.loads(settings['publish_times'])
+                except json.JSONDecodeError:
+                    publish_times = ["09:00", "13:00", "17:00"]
             else:
                 publish_count = 3
                 publish_times = ["09:00", "13:00", "17:00"]

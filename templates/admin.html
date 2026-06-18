@@ -12,7 +12,7 @@
             font-family: 'Tajawal', sans-serif;
             background: #0a0a0a;
             min-height: 100vh;
-            color: #e0e0e0;
+            color: #e8e8e8;
             padding: 20px;
         }
         .admin-container { max-width: 1200px; margin: 0 auto; }
@@ -21,22 +21,23 @@
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 24px;
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 18px;
             padding: 8px 12px;
         }
         .tab-btn {
             padding: 8px 16px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 40px;
             color: #888;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -44,16 +45,18 @@
         }
         .tab-btn i { font-size: 14px; }
         .tab-btn.active {
-            background: rgba(132, 148, 255, 0.1);
-            border-color: rgba(132, 148, 255, 0.15);
+            background: rgba(132, 148, 255, 0.12);
+            border-color: rgba(132, 148, 255, 0.2);
             color: #8494FF;
         }
+        .tab-btn:hover { background: rgba(255,255,255,0.06); }
         .tab-btn:active { transform: scale(0.96); }
         .tab-content {
             display: none;
-            background: rgba(255,255,255,0.02);
+            background: rgba(255,255,255,0.03);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 20px;
             padding: 20px;
         }
@@ -67,7 +70,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #e0e0e0;
+            color: #e8e8e8;
         }
         .section-title i { font-size: 18px; color: #8494FF; }
         .form-grid {
@@ -81,22 +84,24 @@
             display: block;
             margin-bottom: 4px;
             font-size: 12px;
-            color: #888;
+            color: #999;
             font-weight: 600;
         }
         input, textarea, select {
             width: 100%;
             padding: 8px 12px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 12px;
-            color: #e0e0e0;
+            color: #e8e8e8;
             font-family: 'Tajawal', sans-serif;
             font-size: 13px;
+            transition: border 0.25s ease, background 0.25s ease;
         }
         input:focus, textarea:focus {
             outline: none;
-            border-color: #8494FF;
+            border-color: rgba(132,148,255,0.3);
+            background: rgba(255,255,255,0.06);
         }
         textarea { min-height: 80px; resize: vertical; }
         .checkbox-group {
@@ -111,53 +116,59 @@
         }
         .btn {
             padding: 8px 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 40px;
             color: #ccc;
             font-weight: 600;
             font-size: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             font-family: 'Tajawal', sans-serif;
         }
+        .btn:hover { background: rgba(255,255,255,0.1); }
         .btn-primary {
-            background: rgba(132, 148, 255, 0.15);
-            border-color: rgba(132, 148, 255, 0.15);
+            background: rgba(132, 148, 255, 0.12);
+            border: 1px solid rgba(132, 148, 255, 0.15);
             color: #8494FF;
         }
+        .btn-primary:hover { background: rgba(132, 148, 255, 0.2); }
         .btn-primary i { color: #8494FF; }
-        .btn-primary:hover { background: rgba(132, 148, 255, 0.25); }
         .btn-danger {
-            background: rgba(220,53,69,0.1);
-            border-color: rgba(220,53,69,0.1);
+            background: rgba(220,53,69,0.08);
+            border: 1px solid rgba(220,53,69,0.08);
             color: #ff6b7a;
         }
-        .btn-danger:hover { background: rgba(220,53,69,0.2); }
+        .btn-danger:hover { background: rgba(220,53,69,0.15); }
         .btn-success {
-            background: rgba(40,167,69,0.1);
-            border-color: rgba(40,167,69,0.1);
+            background: rgba(40,167,69,0.08);
+            border: 1px solid rgba(40,167,69,0.08);
             color: #5ddb7a;
         }
-        .btn-success:hover { background: rgba(40,167,69,0.2); }
+        .btn-success:hover { background: rgba(40,167,69,0.15); }
         .btn:active { transform: scale(0.96); }
         .characters-grid, .channels-grid, .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 16px;
             margin-top: 16px;
         }
         .character-card, .channel-card, .content-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
             padding: 12px;
+            transition: background 0.25s ease, border 0.25s ease;
+        }
+        .character-card:hover, .channel-card:hover, .content-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.08);
         }
         .content-card .content-preview {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255,255,255,0.03);
             padding: 8px;
             border-radius: 8px;
             font-size: 11px;
@@ -177,7 +188,7 @@
         .content-card .content-name {
             font-weight: 700;
             font-size: 15px;
-            color: #e0e0e0;
+            color: #e8e8e8;
         }
         .content-card .content-desc {
             font-size: 12px;
@@ -186,12 +197,12 @@
         }
         .channel-card .channel-id {
             font-size: 12px;
-            color: #888;
+            color: #aaa;
             margin-bottom: 4px;
         }
         .channel-card .admin-id {
             font-size: 11px;
-            color: #666;
+            color: #777;
         }
         .card-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .character-header {
@@ -204,16 +215,17 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.04);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            color: #8494FF;
         }
         .character-name {
             font-size: 15px;
             font-weight: 700;
-            color: #e0e0e0;
+            color: #e8e8e8;
         }
         .character-desc {
             font-size: 11px;
@@ -221,18 +233,18 @@
             margin-bottom: 8px;
         }
         .character-prompt {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255,255,255,0.03);
             padding: 6px;
             border-radius: 10px;
             font-size: 10px;
-            color: #888;
+            color: #999;
             max-height: 60px;
             overflow-y: auto;
             margin-bottom: 12px;
         }
         .notification-item {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 10px;
@@ -240,12 +252,12 @@
         .notification-title {
             font-weight: 700;
             font-size: 13px;
-            color: #e0e0e0;
+            color: #e8e8e8;
             margin-bottom: 4px;
         }
         .notification-text {
             font-size: 11px;
-            color: #888;
+            color: #aaa;
         }
         .modal {
             display: none;
@@ -260,8 +272,9 @@
         }
         .modal.active { display: flex; }
         .modal-content {
-            background: #1a1a1a;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(20,20,30,0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 20px;
             padding: 24px;
             max-width: 500px;
@@ -276,20 +289,18 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 16px;
-            color: #e0e0e0;
+            color: #e8e8e8;
         }
-        .modal-content h3 i {
-            color: #8494FF;
-        }
+        .modal-content h3 i { color: #8494FF; }
         .modal-close {
             background: none;
             border: none;
             font-size: 24px;
             cursor: pointer;
             color: #888;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
         }
-        .modal-close:hover { color: #eee; }
+        .modal-close:hover { color: #ccc; }
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -316,7 +327,7 @@
             .content-grid { grid-template-columns: 1fr; }
         }
 
-        /* ====== صفحة تسجيل الدخول ====== */
+        /* ====== صفحة تسجيل الدخول المدمجة ====== */
         .login-wrapper {
             display: flex;
             align-items: center;
@@ -324,10 +335,11 @@
             min-height: 80vh;
         }
         .login-card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 32px;
-            border: 1px solid rgba(255,255,255,0.05);
             padding: 40px 32px;
             width: 100%;
             max-width: 420px;
@@ -337,7 +349,8 @@
         .login-card .logo { text-align: center; margin-bottom: 32px; }
         .login-card .logo-icon {
             width: 64px; height: 64px;
-            background: rgba(132,148,255,0.1);
+            background: rgba(132, 148, 255, 0.08);
+            border: 1px solid rgba(132, 148, 255, 0.1);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -355,39 +368,39 @@
         }
         .login-card .subtitle { color: #888; font-size: 14px; text-align: center; }
         .login-card .form-group { margin-bottom: 24px; }
-        .login-card label { display: block; margin-bottom: 8px; color: #888; font-weight: 500; font-size: 14px; }
+        .login-card label { display: block; margin-bottom: 8px; color: #999; font-weight: 500; font-size: 14px; }
         .login-card input {
             width: 100%; padding: 14px 18px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
-            color: #e0e0e0;
+            color: #e8e8e8;
             font-size: 16px;
             font-family: 'Tajawal', sans-serif;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
         }
         .login-card input:focus {
             outline: none;
-            border-color: #8494FF;
+            border-color: rgba(132,148,255,0.3);
             background: rgba(255,255,255,0.06);
         }
         .login-card .btn-login {
             width: 100%; padding: 14px;
-            background: rgba(132, 148, 255, 0.15);
+            background: rgba(132, 148, 255, 0.12);
             border: 1px solid rgba(132, 148, 255, 0.15);
             border-radius: 16px;
             color: #8494FF;
             font-weight: 700;
             font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             font-family: 'Tajawal', sans-serif;
         }
-        .login-card .btn-login:hover { transform: translateY(-2px); background: rgba(132, 148, 255, 0.25); }
+        .login-card .btn-login:hover { background: rgba(132, 148, 255, 0.2); transform: translateY(-2px); }
         .login-card .flash {
             padding: 12px;
-            background: rgba(220,53,69,0.1);
-            border: 1px solid rgba(220,53,69,0.1);
+            background: rgba(220,53,69,0.08);
+            border: 1px solid rgba(220,53,69,0.08);
             border-radius: 14px;
             color: #ff6b7a;
             margin-bottom: 24px;
@@ -397,17 +410,17 @@
         .logout-btn {
             display: inline-block;
             padding: 8px 16px;
-            background: rgba(220,53,69,0.1);
-            border: 1px solid rgba(220,53,69,0.1);
+            background: rgba(220,53,69,0.08);
+            border: 1px solid rgba(220,53,69,0.08);
             color: #ff6b7a;
             border-radius: 40px;
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
         }
+        .logout-btn:hover { background: rgba(220,53,69,0.15); }
         .logout-btn i { color: #ff6b7a; }
-        .logout-btn:hover { background: rgba(220,53,69,0.2); }
         .admin-header {
             display: flex;
             justify-content: space-between;
@@ -422,12 +435,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #e0e0e0;
+            color: #e8e8e8;
         }
         .admin-header h2 i { color: #8494FF; }
         .empty-state {
             text-align: center;
-            color: #666;
+            color: #888;
             padding: 30px 20px;
             font-size: 14px;
             grid-column: 1 / -1;
@@ -436,7 +449,7 @@
             font-size: 40px;
             display: block;
             margin-bottom: 12px;
-            color: #444;
+            color: #555;
         }
     </style>
 </head>
@@ -584,7 +597,7 @@
                 <div class="empty-state">
                     <i class="bi bi-file-text"></i>
                     لا يوجد محتوى مضاف<br>
-                    <span style="font-size:12px; color:#666;">أضف محتوى جديداً لبدء النشر التلقائي</span>
+                    <span style="font-size:12px;">أضف محتوى جديداً لبدء النشر التلقائي</span>
                 </div>
                 {% endfor %}
             </div>
@@ -611,7 +624,7 @@
                         {% endif %}
                     </div>
                     <div class="card-actions">
-                        <button class="btn btn-danger" onclick="if(confirm('إيقاف/تفعيل هذه القناة؟')) location.href='/admin/channel/toggle/{{ ch.id }}'"><i class="bi bi-pause-circle"></i> {% if ch.is_active %}إيقاف{% else %}تفعيل{% endif %}</button>
+                        <button class="btn" onclick="if(confirm('إيقاف/تفعيل هذه القناة؟')) location.href='/admin/channel/toggle/{{ ch.id }}'"><i class="bi bi-pause-circle"></i> {% if ch.is_active %}إيقاف{% else %}تفعيل{% endif %}</button>
                         <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/delete/{{ ch.id }}'"><i class="bi bi-trash3"></i> حذف</button>
                     </div>
                 </div>
@@ -699,13 +712,15 @@
             document.getElementById('contentEditModal').classList.remove('active');
         }
 
-        // ====== إغلاق المودالات ======
+        // ====== إغلاق المودالات بالنقر على الخلفية ======
         window.onclick = function(e) {
             const modal1 = document.getElementById('editModal');
             if (e.target === modal1) closeEditModal();
             const modal2 = document.getElementById('contentEditModal');
             if (e.target === modal2) closeContentEditModal();
         }
+
+        // ====== إغلاق المودالات بزر ESC ======
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeEditModal();

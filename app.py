@@ -228,33 +228,33 @@ def generate_post_content(content_id=None, custom_prompt=None):
     """توليد محتوى باستخدام البرومبت من admin"""
     prompt = None
     
-    # جلب البرومبت من قاعدة البيانات باستخدام content_id
+    # 1. جلب البرومبت باستخدام content_id إذا وجد
     if content_id:
         with get_db() as cur:
             cur.execute("SELECT prompt FROM publish_contents WHERE id = %s", (content_id,))
             row = cur.fetchone()
             if row and row['prompt']:
                 prompt = row['prompt']
-                logger.debug(f"Using prompt from content_id {content_id}")
+                logger.info(f"Using prompt from content_id {content_id}")
     
-    # إذا لم يكن هناك برومبت من content_id، نبحث عن أي برومبت في قاعدة البيانات
+    # 2. إذا لم يكن هناك برومبت من content_id، نبحث عن أول محتوى في قاعدة البيانات
     if not prompt:
         with get_db() as cur:
             cur.execute("SELECT id, prompt FROM publish_contents ORDER BY id LIMIT 1")
             row = cur.fetchone()
             if row and row['prompt']:
                 prompt = row['prompt']
-                logger.debug(f"Using prompt from first content in database (id: {row['id']})")
+                logger.info(f"Using prompt from first content (id: {row['id']})")
     
-    # إذا كان هناك برومبت مخصص من الطلب
+    # 3. استخدام البرومبت المخصص إذا وُجد
     if not prompt and custom_prompt:
         prompt = custom_prompt
-        logger.debug("Using custom prompt from request")
+        logger.info("Using custom prompt from request")
     
-    # برومبت افتراضي - يستخدم فقط إذا لم يكن هناك أي محتوى في قاعدة البيانات
+    # 4. برومبت افتراضي (فقط في حال عدم وجود أي محتوى في قاعدة البيانات)
     if not prompt:
         prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
-        logger.debug("Using default fallback prompt (no content in database)")
+        logger.warning("Using default fallback prompt (no content in database)")
     
     headers = {
         'Authorization': f'Bearer {OPENROUTER_API_KEY}',
@@ -445,14 +445,18 @@ def publish_state():
                         channel_dict[key] = value.isoformat()
                 response['channel'] = channel_dict
                 
-                cur.execute("SELECT * FROM publish_contents ORDER BY id")
+                # جلب المحتويات مع عدد القنوات المشتركة
+                cur.execute("""
+                    SELECT pc.*, 
+                           (SELECT COUNT(*) FROM publish_channels WHERE selected_content_id = pc.id) as channels_count
+                    FROM publish_contents pc
+                    ORDER BY pc.id
+                """)
                 contents = cur.fetchall()
                 contents_list = []
                 for c in contents:
                     c_dict = dict(c)
-                    if isinstance(c_dict.get('publish_time'), datetime):
-                        c_dict['publish_time'] = c_dict['publish_time'].isoformat()
-                    elif isinstance(c_dict.get('publish_time'), time):
+                    if isinstance(c_dict.get('publish_time'), (datetime, time)):
                         c_dict['publish_time'] = c_dict['publish_time'].isoformat()
                     contents_list.append(c_dict)
                 response['contents'] = contents_list
@@ -600,8 +604,8 @@ def publish_force():
                 return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
             
             content_id = row['selected_content_id']
+            # إذا لم يكن هناك محتوى محدد، نأخذ أول محتوى متاح
             if not content_id:
-                # جلب أول محتوى متاح كاحتياطي
                 cur.execute("SELECT id FROM publish_contents ORDER BY id LIMIT 1")
                 content_row = cur.fetchone()
                 if content_row:
@@ -609,6 +613,7 @@ def publish_force():
                 else:
                     return jsonify({'success': False, 'message': 'لا يوجد محتوى متاح. أضف محتوى من لوحة الإدارة.'}), 400
             
+            # توليد المحتوى باستخدام content_id المحدد
             content = generate_post_content(content_id=content_id)
             if not content:
                 return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
@@ -815,7 +820,7 @@ def admin_delete_content(content_id):
             for job in scheduler.get_jobs():
                 if job.id.endswith(f'_{content_id}'):
                     scheduler.remove_job(job.id)
-            # حذف من جدول scheduled_content
+            # حذف من جدول scheduled_content إذا وجد
             cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
             # حذف من جدول publish_contents
             cur.execute("DELETE FROM publish_contents WHERE id = %s", (content_id,))

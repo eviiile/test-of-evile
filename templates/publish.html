@@ -10,34 +10,35 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #ffffff;
+            background: #f8f9fa; /* خلفية بيضاء مائلة للرمادي الفاتح جداً */
+            background: radial-gradient(circle at 20% 30%, rgba(0,136,204,0.03) 0%, #f8f9fa 70%);
             color: #1a1a1a;
             min-height: 100vh;
             padding: 16px 12px 80px;
         }
         .container { max-width: 700px; margin: 0 auto; }
 
-        /* ألوان زجاجية زرقاء */
+        /* ألوان زجاجية زرقاء محسنة */
         .glass {
-            background: rgba(0, 136, 204, 0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.15);
-            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.05);
-        }
-        .glass-dark {
             background: rgba(0, 136, 204, 0.12);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.2);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.25);
             box-shadow: 0 8px 32px rgba(0, 136, 204, 0.08);
         }
+        .glass-dark {
+            background: rgba(0, 136, 204, 0.18);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.12);
+        }
         .glass-blue {
-            background: rgba(0, 136, 204, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.1);
+            background: rgba(0, 136, 204, 0.2);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.15);
         }
 
         .dashboard-header {
@@ -80,11 +81,12 @@
             border-radius: 20px;
             display: inline-block;
             width: fit-content;
-            background: rgba(0,136,204,0.1);
+            background: rgba(0,136,204,0.15);
+            border: 1px solid rgba(0,136,204,0.2);
         }
-        .channel-card .channel-status.active { color: #28a745; }
-        .channel-card .channel-status.paused { color: #ffc107; }
-        .channel-card .channel-status.inactive { color: #dc3545; }
+        .channel-card .channel-status.active { color: #28a745; border-color: #28a745; }
+        .channel-card .channel-status.paused { color: #ffc107; border-color: #ffc107; }
+        .channel-card .channel-status.inactive { color: #dc3545; border-color: #dc3545; }
 
         .stats-grid {
             display: grid;
@@ -96,39 +98,39 @@
             border-radius: 10px;
             padding: 10px 8px;
             text-align: center;
-            background: rgba(0, 136, 204, 0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.15);
+            background: rgba(0, 136, 204, 0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.2);
         }
         .stat-card .number { font-size: 20px; font-weight: 800; }
         .stat-card .label { font-size: 10px; color: #666; margin-top: 2px; }
         .stat-card i { font-size: 18px; display: block; margin-bottom: 4px; color: #0088cc; }
 
         .icon-center { text-align: center; margin: 12px 0; }
-        .icon-center i { font-size: 56px; color: #0088cc; opacity: 0.3; }
+        .icon-center i { font-size: 56px; color: #0088cc; opacity: 0.25; }
 
         .times-box {
             border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 14px;
-            background: rgba(0, 136, 204, 0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.15);
+            background: rgba(0, 136, 204, 0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.2);
         }
         .times-box h3 { font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
         .times-box .times-list { display: flex; gap: 8px; flex-wrap: wrap; }
-        .times-box .time-badge { background: rgba(0,136,204,0.1); padding: 3px 10px; border-radius: 20px; font-size: 11px; }
+        .times-box .time-badge { background: rgba(0,136,204,0.15); padding: 3px 10px; border-radius: 20px; font-size: 11px; }
 
         .content-selector {
             border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 14px;
-            background: rgba(0, 136, 204, 0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.15);
+            background: rgba(0, 136, 204, 0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.2);
         }
         .content-selector h3 { font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .content-selector .selector-row {
@@ -158,6 +160,7 @@
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,136,204,0.3);
         }
         .content-selector .btn-select:active { transform: scale(0.96); }
         .content-selector .current-content {
@@ -165,7 +168,7 @@
             color: #555;
             margin-top: 8px;
             padding: 6px 10px;
-            background: rgba(0, 136, 204, 0.05);
+            background: rgba(0, 136, 204, 0.08);
             border-radius: 6px;
             border-right: 3px solid #0088cc;
         }
@@ -206,10 +209,10 @@
         .recent-posts {
             border-radius: 12px;
             padding: 12px 14px;
-            background: rgba(0, 136, 204, 0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.15);
+            background: rgba(0, 136, 204, 0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.2);
         }
         .recent-posts h3 { font-size: 13px; margin-bottom: 8px; }
         .post-item { padding: 6px 0; border-bottom: 1px solid rgba(0,136,204,0.1); font-size: 12px; line-height: 1.4; }
@@ -218,7 +221,7 @@
 
         .toast {
             position: fixed; bottom: 80px; left: 20px; right: 20px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             color: #fff;
@@ -237,16 +240,16 @@
             left: 12px;
             right: 12px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(0, 136, 204, 0.2);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 136, 204, 0.3);
             border-radius: 12px;
             padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.1);
             height: 44px;
             max-width: 400px;
             margin: 0 auto;
@@ -274,7 +277,7 @@
         .nav-item span { font-size: 7px; }
         .nav-item.active {
             color: #0088cc;
-            background: rgba(0, 136, 204, 0.15);
+            background: rgba(0, 136, 204, 0.2);
         }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
@@ -284,7 +287,7 @@
     </style>
 </head>
 <body>
-    <!-- نفس المحتوى تماماً كما هو -->
+    <!-- نفس الهيكل تماماً -->
     ...
 </body>
 </html>

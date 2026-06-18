@@ -10,20 +10,19 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #f8f9fa;
-            background: radial-gradient(circle at 20% 30%, rgba(0,136,204,0.03) 0%, #f8f9fa 70%);
-            color: #1a1a1a;
-            overflow: hidden;
-            touch-action: manipulation;
             transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            touch-action: manipulation;
         }
         body.light {
-            background: #f8f9fa;
+            background: #f5f5f5;
             color: #1a1a1a;
         }
         body.light .bg-animation {
-            background: radial-gradient(circle at 20% 80%, rgba(0,136,204,0.06) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(0,136,204,0.04) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 80%, rgba(200,200,200,0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(150,150,150,0.2) 0%, transparent 50%);
         }
         body.light .floating-header,
         body.light .input-card,
@@ -32,23 +31,21 @@
         body.light .char-list-item,
         body.light .notif-item,
         body.light .message-content,
-        body.light .ai-bubble,
-        body.light .splash-input-wrapper,
-        body.light .login-card {
-            background: rgba(0, 136, 204, 0.12);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 136, 204, 0.25);
+        body.light .ai-bubble {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #1a1a1a;
-            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
         }
         body.light .header-circle,
         body.light .home-btn,
         body.light .send-btn {
-            background: rgba(0, 136, 204, 0.12);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 136, 204, 0.25);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         body.light .header-circle i,
         body.light .home-btn i,
@@ -59,7 +56,7 @@
         }
         body.light .welcome-title,
         body.light .logo-text {
-            background: linear-gradient(135deg, #0088cc, #00aaff);
+            background: linear-gradient(135deg, #333, #888);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -68,7 +65,6 @@
             background: linear-gradient(135deg, #0088cc, #00aaff) !important;
             color: #fff !important;
             border: none !important;
-            box-shadow: 0 4px 16px rgba(0,136,204,0.3) !important;
         }
         .sky-blue-btn i { color: #fff !important; }
         .sky-blue-text { color: #0088cc; }
@@ -78,8 +74,8 @@
             color: #e0e0e0;
         }
         body.dark .bg-animation {
-            background: radial-gradient(circle at 20% 80%, rgba(0,136,204,0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(0,136,204,0.08) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 80%, rgba(80,80,80,0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(50,50,50,0.15) 0%, transparent 50%);
         }
         body.dark .floating-header,
         body.dark .input-card,
@@ -88,22 +84,20 @@
         body.dark .char-list-item,
         body.dark .notif-item,
         body.dark .message-content,
-        body.dark .ai-bubble,
-        body.dark .splash-input-wrapper,
-        body.dark .login-card {
-            background: rgba(0, 136, 204, 0.15);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 136, 204, 0.25);
+        body.dark .ai-bubble {
+            background: rgba(20, 20, 30, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             color: #e0e0e0;
         }
         body.dark .header-circle,
         body.dark .home-btn,
         body.dark .send-btn {
-            background: rgba(0, 136, 204, 0.15);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 136, 204, 0.25);
+            background: rgba(40, 40, 55, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         body.dark .header-circle i,
         body.dark .home-btn i,
@@ -114,7 +108,7 @@
         }
         body.dark .welcome-title,
         body.dark .logo-text {
-            background: linear-gradient(135deg, #0088cc, #00aaff);
+            background: linear-gradient(135deg, #eee, #aaa);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -124,13 +118,28 @@
             filter: blur(80px);
             transition: background 0.3s;
         }
-        .main-container { width: 100%; height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 12px; padding-top: 70px; }
+        .main-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            padding-top: 70px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
         
         .floating-header {
             position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
             display: flex; align-items: center; justify-content: space-between; padding: 6px;
             border-radius: 18px; gap: 6px;
             transition: all 0.3s;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .floating-header { left: 20px; right: 20px; top: 20px; }
+            .main-container { padding-top: 80px; }
         }
         .header-circle {
             width: 40px; height: 40px; border-radius: 12px;
@@ -147,8 +156,7 @@
         .logo-wrapper { flex: 1; display: flex; align-items: center; gap: 6px; }
         .logo-center {
             flex: 1; height: 40px; background: transparent;
-            border: 1px solid rgba(0,136,204,0.25);
-            border-radius: 12px;
+            border: 1px solid; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
         }
         .logo-text {
@@ -169,16 +177,16 @@
             left: 12px;
             right: 12px;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(0, 136, 204, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             padding: 4px 8px;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 8px 32px rgba(0, 136, 204, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
             height: 44px;
             max-width: 400px;
             margin: 0 auto;
@@ -190,9 +198,8 @@
             pointer-events: none;
         }
         body.dark .bottom-nav {
-            background: rgba(0, 136, 204, 0.15);
-            backdrop-filter: blur(14px);
-            border-color: rgba(0, 136, 204, 0.25);
+            background: rgba(30, 30, 40, 0.15);
+            border-color: rgba(255, 255, 255, 0.05);
         }
         .nav-item {
             display: flex;
@@ -217,101 +224,14 @@
         .nav-item span { font-size: 7px; }
         .nav-item.active {
             color: #0088cc;
-            background: rgba(0, 136, 204, 0.2);
+            background: rgba(0, 136, 204, 0.15);
         }
         .nav-item.active i { transform: scale(1.05); }
         .nav-item:active { transform: scale(0.95); }
 
-        .splash-section {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            overflow-y: auto;
-        }
-        .splash-section.active { display: flex; }
-        .splash-icon {
-            width: 100px;
-            height: 100px;
-            background: rgba(0,136,204,0.12);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(0,136,204,0.25);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0%,100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } }
-        .splash-icon i { font-size: 56px; color: #0088cc; }
-        .splash-title {
-            font-size: 28px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #0088cc, #00aaff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 16px;
-        }
-        .splash-text {
-            font-size: 16px;
-            max-width: 280px;
-            line-height: 1.6;
-            margin-bottom: 32px;
-        }
-        .splash-input-wrapper {
-            width: 100%;
-            max-width: 320px;
-            display: flex;
-            gap: 12px;
-            backdrop-filter: blur(14px);
-            border-radius: 48px;
-            padding: 6px 6px 6px 16px;
-            align-items: center;
-        }
-        .splash-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 14px 0;
-            font-size: 16px;
-            font-family: 'Tajawal', sans-serif;
-            outline: none;
-            color: #1a1a1a;
-        }
-        .splash-input::placeholder { font-size: 14px; }
-        .splash-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 40px;
-            background: linear-gradient(135deg, #0088cc, #00aaff);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 16px rgba(0,136,204,0.3);
-        }
-        .splash-btn:active { transform: scale(0.94); }
-        .splash-btn i { font-size: 24px; color: #fff; }
-        .splash-error {
-            margin-top: 16px;
-            font-size: 12px;
-            color: #dc3545;
-            background: rgba(220,53,69,0.1);
-            border-radius: 40px;
-            padding: 8px 16px;
-        }
-
         .welcome-section {
             flex: 1;
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -319,23 +239,22 @@
             text-align: center;
             overflow-y: auto;
         }
-        .welcome-section.active { display: flex; }
         .character-logo {
             width: 100px;
             height: 100px;
             border-radius: 28px;
             object-fit: cover;
             margin-bottom: 20px;
-            border: 1px solid rgba(0,136,204,0.25);
-            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
         }
         .sparkle-icon { width: 60px; height: 60px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
-        .sparkle-icon i { font-size: 60px; color: #0088cc; }
+        .sparkle-icon i { font-size: 60px; }
         .welcome-title {
             font-size: 24px;
             font-weight: 800;
             margin-bottom: 6px;
-            background: linear-gradient(135deg, #0088cc, #00aaff);
+            background: linear-gradient(135deg, #333, #888);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -369,7 +288,6 @@
             font-family: 'Tajawal', sans-serif;
             font-size: 13px;
             outline: none;
-            color: #1a1a1a;
         }
         .send-btn {
             width: 34px;
@@ -387,7 +305,6 @@
         .send-btn.sky-blue {
             background: linear-gradient(135deg, #0088cc, #00aaff) !important;
             color: #fff !important;
-            box-shadow: 0 4px 12px rgba(0,136,204,0.3) !important;
         }
         .send-btn.sky-blue i { color: #fff; }
         
@@ -432,20 +349,18 @@
             align-items: center;
             gap: 4px;
             padding: 4px 10px;
-            backdrop-filter: blur(14px);
+            backdrop-filter: blur(20px);
             border-radius: 24px;
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
             font-size: 11px;
-            background: rgba(0,136,204,0.12);
-            border: 1px solid rgba(0,136,204,0.2);
         }
         .char-selector-btn.active {
-            background: rgba(0, 136, 204, 0.25);
+            background: rgba(0, 136, 204, 0.2);
             border-color: #0088cc;
         }
-        .char-selector-btn i { font-size: 14px; color: #0088cc; }
+        .char-selector-btn i { font-size: 14px; }
         .char-selector-name { font-size: 11px; font-weight: 500; }
 
         .chat-section {
@@ -464,16 +379,15 @@
         }
         .message { margin-bottom: 10px; animation: messageSlide 0.3s ease; }
         @keyframes messageSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message-time { font-size: 9px; margin-bottom: 3px; color: #888; }
+        .message-time { font-size: 9px; margin-bottom: 3px; }
         .message-content {
-            border: 1px solid rgba(0,136,204,0.25);
+            border: 1px solid rgba(255,255,255,0.2);
             padding: 8px 12px;
             border-radius: 12px;
             font-size: 12px;
             line-height: 1.5;
             word-wrap: break-word;
             max-width: 85%;
-            background: rgba(255,255,255,0.95);
         }
         .message.own { text-align: left; }
         .message.own .message-content {
@@ -481,11 +395,10 @@
             margin-left: 0;
         }
         .ai-bubble {
-            border: 1px solid rgba(0,136,204,0.25);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 12px;
             overflow: hidden;
             max-width: 85%;
-            background: rgba(255,255,255,0.95);
         }
         .ai-bubble-label {
             display: flex;
@@ -494,7 +407,6 @@
             padding: 6px 10px 0;
             font-size: 9px;
             font-weight: 700;
-            color: #0088cc;
         }
         .ai-bubble-label i { font-size: 11px; }
         .ai-bubble-text { padding: 4px 10px 8px; font-size: 12px; line-height: 1.5; word-wrap: break-word; }
@@ -503,7 +415,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 4px 10px 6px;
-            border-top: 1px solid rgba(0,136,204,0.1);
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         .ai-social-icons { display: flex; gap: 8px; }
         .ai-social-icons a {
@@ -543,7 +455,7 @@
             bottom: 80px;
             left: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             color: white;
@@ -577,8 +489,8 @@
             width: 100%;
             max-width: 600px;
             max-height: 70vh;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-radius: 20px 20px 0 0;
             padding: 20px;
             animation: slideUp 0.4s ease;
@@ -586,8 +498,8 @@
             display: flex;
             flex-direction: column;
             margin-bottom: 0;
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid rgba(0, 136, 204, 0.25);
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(40px); }
@@ -599,10 +511,10 @@
             justify-content: space-between;
             margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(0,136,204,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .sheet-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .sheet-title i { font-size: 18px; color: #0088cc; }
+        .sheet-title i { font-size: 18px; }
         .sheet-close {
             width: 30px;
             height: 30px;
@@ -619,7 +531,6 @@
             margin-bottom: 16px;
             padding: 6px;
             border-radius: 30px;
-            background: rgba(0,136,204,0.08);
         }
         .characters-list, .notifications-list {
             display: flex;
@@ -645,7 +556,7 @@
             justify-content: center;
             flex-shrink: 0;
         }
-        .char-list-icon i, .notif-icon i { font-size: 20px; color: #0088cc; }
+        .char-list-icon i, .notif-icon i { font-size: 20px; }
         .char-list-info, .notif-content {
             flex: 1;
             text-align: right;
@@ -671,7 +582,7 @@
         .char-list-item.active .char-list-check {
             opacity: 1;
         }
-        .char-list-check i { font-size: 12px; color: #0088cc; }
+        .char-list-check i { font-size: 12px; color: white; }
 
         @media (min-width: 768px) {
             .main-container { max-width: 700px; margin: 0 auto; padding: 20px; padding-top: 80px; }
@@ -681,7 +592,543 @@
     </style>
 </head>
 <body class="light">
-    <!-- نفس المحتوى -->
-    ...
+    <div class="bg-animation"></div>
+
+    <header class="floating-header">
+        <div style="display: flex; gap: 6px;">
+            <div class="header-circle" onclick="openCharactersSheet()">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="header-circle" onclick="toggleTheme()">
+                <i class="bi bi-brightness-high-fill" id="themeIcon"></i>
+            </div>
+        </div>
+        <div class="logo-wrapper">
+            <div class="logo-center"><span class="logo-text">EVILE</span></div>
+            <div class="active-users-box">
+                <i class="bi bi-person-friends"></i>
+                <span id="activeCount">0</span>
+            </div>
+        </div>
+        <div class="header-circle" onclick="openNotificationsSheet()">
+            <i class="bi bi-bell"></i>
+            <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- القسم الرئيسي - يظهر دائماً -->
+        <div class="welcome-section" id="welcomeSection">
+            <div id="welcomeLogo">
+                <div class="sparkle-icon">
+                    <i class="bi bi-stars"></i>
+                </div>
+            </div>
+            <h1 class="welcome-title" id="welcomeTitle">ابنِ أفكارك مع EVILE</h1>
+            <p class="welcome-subtitle" id="welcomeSubtitle">اختر شخصية وابدأ محادثة إبداعية</p>
+
+            <div class="welcome-input-card">
+                <div class="input-card">
+                    <div class="input-wrapper">
+                        <input type="text" class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." onkeypress="handleWelcomeKey(event)">
+                        <button class="send-btn sky-blue" id="welcomeSendBtn" onclick="sendWelcomeMessage()">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="char-scroll-container">
+                <div class="char-scroll-wrapper" id="charScrollWrapper">
+                    <div class="char-selector" id="charSelector">
+                        <!-- سيتم ملؤها بواسطة JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-section" id="chatSection">
+            <div class="messages-container" id="messagesContainer"></div>
+            <div class="input-section">
+                <div class="input-card">
+                    <div class="input-wrapper">
+                        <button class="home-btn" onclick="goHome()" title="العودة للقائمة الرئيسية">
+                            <i class="bi bi-house-door"></i>
+                        </button>
+                        <input type="text" class="message-input" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKey(event)">
+                        <button class="send-btn sky-blue" id="sendBtn" onclick="sendChatMessage()">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-sheet-overlay" id="charactersSheet" onclick="closeSheetOnBackdrop(event, 'charactersSheet')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <div class="sheet-title"><i class="bi bi-people"></i> الشخصيات</div>
+                <button class="sheet-close" onclick="closeSheet('charactersSheet')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="sheet-instruction">اختر الشخصية المناسبة لمحادثتك</div>
+            <div id="charactersList" class="characters-list"></div>
+        </div>
+    </div>
+
+    <div class="bottom-sheet-overlay" id="notificationsSheet" onclick="closeSheetOnBackdrop(event, 'notificationsSheet')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <div class="sheet-title"><i class="bi bi-bell"></i> الإشعارات</div>
+                <button class="sheet-close" onclick="closeSheet('notificationsSheet')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div id="notificationsList" class="notifications-list"></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" id="navChat" onclick="goHome()">
+            <i class="bi bi-chat-dots"></i>
+            <span>دردشة</span>
+        </button>
+        <a href="/publish" class="nav-item" id="navPublish" style="text-decoration:none;">
+            <i class="bi bi-megaphone"></i>
+            <span>نشر</span>
+        </a>
+    </nav>
+
+    <script>
+        // تمرير البيانات من Flask
+        let characters = [];
+        let telegramId = null;
+        const latestNotification = null;
+
+        try {
+            characters = {{ characters|tojson }};
+        } catch (e) {
+            console.error('Failed to parse characters:', e);
+            characters = [];
+        }
+
+        try {
+            telegramId = {{ telegram_id|tojson }};
+        } catch (e) {
+            telegramId = null;
+        }
+
+        // إذا لم تكن هناك شخصيات، نضيف شخصية افتراضية
+        if (!characters || characters.length === 0) {
+            characters = [{
+                id: 0,
+                name: 'EVILE',
+                description: 'مساعد ذكي لتوليد الأفكار',
+                callback_key: 'evile_default',
+                prompt: 'أنت مساعد ذكي ومبدع. ساعد المستخدم في توليد أفكار تقنية وإبداعية.',
+                logo_url: ''
+            }];
+        }
+
+        let currentCharacter = characters.length > 0 ? characters[0].callback_key : 'evile_default';
+        let isFirstMessage = true;
+        let isProcessing = false;
+
+        const welcomeSection = document.getElementById('welcomeSection');
+        const chatSection = document.getElementById('chatSection');
+        const charScrollWrapper = document.getElementById('charScrollWrapper');
+        const bottomNav = document.getElementById('bottomNav');
+
+        function updateNavVisibility() {
+            if (chatSection.classList.contains('active')) {
+                bottomNav.classList.add('hidden');
+            } else {
+                bottomNav.classList.remove('hidden');
+            }
+        }
+
+        // مراقبة التغييرات في حالة chatSection
+        const observer = new MutationObserver(() => {
+            updateNavVisibility();
+        });
+        observer.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
+
+        window.goHome = function() {
+            chatSection.classList.remove('active');
+            welcomeSection.style.display = 'flex';
+            document.getElementById('messagesContainer').innerHTML = '';
+            isFirstMessage = true;
+            updateNavVisibility();
+        };
+
+        window.sendWelcomeMessage = async function() {
+            if (isProcessing) return;
+            const input = document.getElementById('welcomeInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            if (isFirstMessage) {
+                welcomeSection.style.display = 'none';
+                chatSection.classList.add('active');
+                isFirstMessage = false;
+                updateNavVisibility();
+            }
+            await actuallySendMessage(msg);
+        };
+
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            if (body.classList.contains('light')) {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                icon.className = 'bi bi-moon-fill';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                icon.className = 'bi bi-brightness-high-fill';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // تطبيق الثيم المحفوظ
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.remove('light');
+            document.body.classList.add('dark');
+            document.getElementById('themeIcon').className = 'bi bi-moon-fill';
+        } else {
+            document.body.classList.add('light');
+            document.getElementById('themeIcon').className = 'bi bi-brightness-high-fill';
+        }
+
+        function initScreen() {
+            welcomeSection.style.display = 'flex';
+            chatSection.classList.remove('active');
+            document.getElementById('welcomeInput').placeholder = 'اكتب رسالتك...';
+            updateNavVisibility();
+            // عرض الإشعار إذا وجد
+            if (latestNotification && latestNotification.show_in_chat) {
+                showToastNotification(latestNotification.title + ': ' + latestNotification.text, 10000);
+            }
+            // تحديث عدد المستخدمين النشطين
+            updateActiveUsers();
+            // رسم الشخصيات
+            renderCharSelector();
+            renderCharactersSheet();
+            updateWelcomeDisplay();
+        }
+
+        function showToastNotification(message, duration = 10000) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, duration);
+        }
+
+        function updateActiveUsers() {
+            fetch('/api/active_users')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('activeCount').textContent = data.count || 0;
+                })
+                .catch(() => {});
+        }
+
+        function renderCharSelector() {
+            const selector = document.getElementById('charSelector');
+            if (!characters || characters.length === 0) {
+                selector.innerHTML = '<div class="char-selector-btn" style="cursor:default;">لا توجد شخصيات</div>';
+                return;
+            }
+            selector.innerHTML = characters.map(char => `
+                <div class="char-selector-btn ${char.callback_key === currentCharacter ? 'active' : ''}" data-key="${char.callback_key}">
+                    <i class="bi bi-robot"></i>
+                    <span class="char-selector-name">${escapeHtml(char.name)}</span>
+                </div>
+            `).join('');
+            
+            if (charScrollWrapper) {
+                const isOverflowing = selector.scrollWidth > charScrollWrapper.clientWidth;
+                if (isOverflowing) {
+                    charScrollWrapper.classList.add('overflowing');
+                } else {
+                    charScrollWrapper.classList.remove('overflowing');
+                    charScrollWrapper.style.display = 'flex';
+                    charScrollWrapper.style.justifyContent = 'center';
+                }
+            }
+            
+            document.querySelectorAll('.char-selector-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = btn.getAttribute('data-key');
+                    if (key) selectCharacter(key);
+                });
+            });
+        }
+
+        function renderCharactersSheet() {
+            const list = document.getElementById('charactersList');
+            if (!characters || characters.length === 0) {
+                list.innerHTML = '<div class="char-list-item" style="justify-content:center;">لا توجد شخصيات بعد</div>';
+                return;
+            }
+            list.innerHTML = characters.map(char => `
+                <div class="char-list-item ${char.callback_key === currentCharacter ? 'active' : ''}" onclick="selectCharacter('${char.callback_key}')">
+                    <div class="char-list-icon"><i class="bi bi-robot"></i></div>
+                    <div class="char-list-info">
+                        <div class="char-list-name">${escapeHtml(char.name)}</div>
+                        <div class="char-list-desc">${escapeHtml(char.description)}</div>
+                    </div>
+                    <div class="char-list-check"><i class="bi bi-check-lg"></i></div>
+                </div>
+            `).join('');
+        }
+
+        async function renderNotificationsSheet() {
+            try {
+                const res = await fetch('/api/notifications');
+                const notifications = await res.json();
+                const list = document.getElementById('notificationsList');
+                const badge = document.getElementById('notifBadge');
+                if (!notifications || notifications.length === 0) {
+                    list.innerHTML = '<div class="notif-item" style="justify-content: center; text-align: center;">لا توجد إشعارات</div>';
+                    badge.style.display = 'none';
+                    return;
+                }
+                badge.textContent = notifications.length;
+                badge.style.display = 'flex';
+                list.innerHTML = notifications.map(notif => `
+                    <div class="notif-item">
+                        <div class="notif-icon"><i class="bi bi-bell"></i></div>
+                        <div class="notif-content">
+                            <div class="notif-title">${escapeHtml(notif.title)}</div>
+                            <div class="notif-text">${escapeHtml(notif.text)}</div>
+                            <div class="notif-time">${escapeHtml(notif.created_at)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load notifications', err);
+            }
+        }
+
+        function updateWelcomeDisplay() {
+            const char = characters.find(c => c.callback_key === currentCharacter);
+            const logoContainer = document.getElementById('welcomeLogo');
+            const title = document.getElementById('welcomeTitle');
+            const subtitle = document.getElementById('welcomeSubtitle');
+            if (char) {
+                if (char.logo_url) {
+                    logoContainer.innerHTML = `<img src="${escapeHtml(char.logo_url)}" class="character-logo" alt="${escapeHtml(char.name)}">`;
+                } else {
+                    logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
+                }
+                title.textContent = char.name;
+                subtitle.textContent = char.description;
+            } else if (characters.length > 0) {
+                const first = characters[0];
+                if (first.logo_url) {
+                    logoContainer.innerHTML = `<img src="${escapeHtml(first.logo_url)}" class="character-logo" alt="${escapeHtml(first.name)}">`;
+                } else {
+                    logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
+                }
+                title.textContent = first.name;
+                subtitle.textContent = first.description;
+            } else {
+                logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
+                title.textContent = "ابنِ أفكارك مع EVILE";
+                subtitle.textContent = "أضف شخصيات من لوحة التحكم";
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function setButtonLoading(btn, loading) {
+            if (!btn) return;
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner"></div>';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i>';
+            }
+        }
+
+        function addMessage(text, isOwn) {
+            const container = document.getElementById('messagesContainer');
+            const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            const div = document.createElement('div');
+            div.className = `message ${isOwn ? 'own' : ''}`;
+            div.innerHTML = `<div class="message-time">${time}</div><div class="message-content">${escapeHtml(text)}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showLoading() {
+            const container = document.getElementById('messagesContainer');
+            const div = document.createElement('div');
+            div.id = 'loadingMessage';
+            div.className = 'message';
+            div.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>';
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeLoading() {
+            const el = document.getElementById('loadingMessage');
+            if (el) el.remove();
+        }
+
+        async function streamResponse(text) {
+            return new Promise((resolve) => {
+                const container = document.getElementById('messagesContainer');
+                const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.innerHTML = `<div class="message-time">${time}</div>`;
+                container.appendChild(msgDiv);
+                const bubble = document.createElement('div');
+                bubble.className = 'ai-bubble';
+                bubble.innerHTML = `
+                    <div class="ai-bubble-label"><i class="bi bi-cpu"></i> AI</div>
+                    <div class="ai-bubble-text"></div>
+                    <div class="ai-bubble-footer">
+                        <div class="ai-social-icons">
+                            <a href="https://t.me/Evile_Prompts" target="_blank" class="bi bi-telegram"></a>
+                            <a href="https://www.instagram.com/bla6c7" target="_blank" class="bi bi-instagram"></a>
+                        </div>
+                        <div class="ai-bubble-copy">
+                            <i class="bi bi-files"></i>
+                            <span>نسخ</span>
+                        </div>
+                    </div>
+                `;
+                msgDiv.appendChild(bubble);
+                const textEl = bubble.querySelector('.ai-bubble-text');
+                const copyBtn = bubble.querySelector('.ai-bubble-copy');
+                copyBtn.onclick = () => copyBubbleContent(copyBtn, textEl.innerText);
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                textEl.appendChild(cursor);
+                let idx = 0;
+                const interval = setInterval(() => {
+                    if (idx < text.length) {
+                        const span = document.createElement('span');
+                        span.textContent = text.charAt(idx);
+                        textEl.insertBefore(span, cursor);
+                        idx++;
+                        container.scrollTop = container.scrollHeight;
+                    } else {
+                        clearInterval(interval);
+                        cursor.remove();
+                        resolve();
+                    }
+                }, 20);
+            });
+        }
+
+        function copyBubbleContent(button, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check-lg"></i><span>تم النسخ</span>';
+                setTimeout(() => {
+                    button.innerHTML = original;
+                }, 1500);
+            }).catch(() => {
+                button.innerHTML = '<i class="bi bi-x-lg"></i><span>فشل</span>';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="bi bi-files"></i><span>نسخ</span>';
+                }, 1500);
+            });
+        }
+
+        async function actuallySendMessage(message) {
+            if (isProcessing) return;
+            isProcessing = true;
+            const sendBtn = document.getElementById('sendBtn') || document.getElementById('welcomeSendBtn');
+            setButtonLoading(sendBtn, true);
+            addMessage(message, true);
+            document.getElementById('welcomeInput').value = '';
+            showLoading();
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ character: currentCharacter, message: message })
+                });
+                const data = await res.json();
+                removeLoading();
+                if (data.response) {
+                    await streamResponse(data.response);
+                } else {
+                    addMessage('حدث خطأ في المعالجة. حاول مرة أخرى.', false);
+                }
+            } catch (err) {
+                removeLoading();
+                addMessage('خطأ في الاتصال بالخادم. تأكد من اتصالك بالإنترنت.', false);
+                console.error(err);
+            }
+            isProcessing = false;
+            setButtonLoading(sendBtn, false);
+        }
+
+        async function sendWelcomeMessage() {
+            if (isProcessing) return;
+            const input = document.getElementById('welcomeInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            if (isFirstMessage) {
+                welcomeSection.style.display = 'none';
+                chatSection.classList.add('active');
+                isFirstMessage = false;
+                updateNavVisibility();
+            }
+            await actuallySendMessage(msg);
+        }
+
+        async function sendChatMessage() {
+            if (isProcessing) return;
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            await actuallySendMessage(msg);
+        }
+
+        function handleWelcomeKey(e) { if (e.key === 'Enter' && !isProcessing) sendWelcomeMessage(); }
+        function handleChatKey(e) { if (e.key === 'Enter' && !isProcessing) sendChatMessage(); }
+
+        function openCharactersSheet() { renderCharactersSheet(); document.getElementById('charactersSheet').classList.add('active'); }
+        async function openNotificationsSheet() { await renderNotificationsSheet(); document.getElementById('notificationsSheet').classList.add('active'); document.getElementById('notifBadge').style.display = 'none'; }
+        function closeSheet(id) { document.getElementById(id).classList.remove('active'); }
+        function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
+        function selectCharacter(key) {
+            currentCharacter = key;
+            renderCharSelector();
+            renderCharactersSheet();
+            updateWelcomeDisplay();
+            closeSheet('charactersSheet');
+            const char = characters.find(c => c.callback_key === key);
+            if (char) {
+                document.getElementById('welcomeInput').placeholder = `اكتب لـ ${char.name}...`;
+                document.getElementById('chatInput').placeholder = `اكتب لـ ${char.name}...`;
+            }
+        }
+
+        // تهيئة الصفحة عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            initScreen();
+            setInterval(updateActiveUsers, 30000);
+        });
+    </script>
 </body>
 </html>

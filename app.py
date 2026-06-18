@@ -7,7 +7,10 @@ from datetime import datetime, timedelta
 from functools import wraps
 from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import pytz
+import random
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -20,6 +23,7 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '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')
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
+BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
 TIMEZONE = pytz.timezone('Asia/Aden')
 
@@ -74,7 +78,7 @@ def ensure_notification_columns(cur):
 def init_db():
     try:
         with get_db() as cur:
-            # جداول المستخدمين والشخصيات والإشعارات فقط
+            # الجداول الحالية
             cur.execute('''CREATE TABLE IF NOT EXISTS characters (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -95,6 +99,40 @@ def init_db():
                 id SERIAL PRIMARY KEY,
                 telegram_id TEXT UNIQUE NOT NULL,
                 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
+            
+            # جداول النشر الجديدة
+            cur.execute('''CREATE TABLE IF NOT EXISTS publish_channels (
+                id SERIAL PRIMARY KEY,
+                telegram_id TEXT NOT NULL UNIQUE,
+                channel_id TEXT NOT NULL UNIQUE,
+                channel_username TEXT,
+                channel_name TEXT,
+                channel_bio TEXT,
+                members_count INTEGER DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
+                is_paused BOOLEAN DEFAULT FALSE,
+                selected_content_id INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_post_at TIMESTAMP
+            )''')
+            
+            cur.execute('''CREATE TABLE IF NOT EXISTS publish_contents (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                prompt TEXT NOT NULL,
+                publish_time TIME NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
+            
+            cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
+                id SERIAL PRIMARY KEY,
+                channel_id TEXT NOT NULL,
+                content TEXT NOT NULL,
+                content_id INTEGER,
+                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                message_id TEXT
             )''')
             
             ensure_notification_columns(cur)
@@ -121,6 +159,184 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def get_telegram_channel_info(channel_id):
+    """جلب معلومات القناة من تلغرام"""
+    if not BOT_TOKEN:
+        return None
+    try:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getChat?chat_id={channel_id}"
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+        if data.get('ok'):
+            chat = data['result']
+            return {
+                'name': chat.get('title', ''),
+                'bio': chat.get('description', ''),
+                'username': chat.get('username', ''),
+                'members_count': 0
+            }
+        return None
+    except Exception as e:
+        logger.error(f"Error getting channel info: {e}")
+        return None
+
+def get_channel_members_count(channel_id):
+    """جلب عدد أعضاء القناة"""
+    if not BOT_TOKEN:
+        return 0
+    try:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getChatMembersCount?chat_id={channel_id}"
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+        if data.get('ok'):
+            return data['result']
+        return 0
+    except Exception as e:
+        logger.error(f"Error getting members count: {e}")
+        return 0
+
+def send_telegram_message(channel_id, text):
+    if not BOT_TOKEN:
+        logger.error("BOT_TOKEN not set")
+        return None
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    payload = {
+        'chat_id': channel_id,
+        'text': text,
+        'parse_mode': 'Markdown',
+        'disable_web_page_preview': False
+    }
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        data = response.json()
+        if data.get('ok'):
+            return data['result']['message_id']
+        else:
+            logger.error(f"Telegram API error: {data}")
+            return None
+    except Exception as e:
+        logger.error(f"Error sending message: {e}")
+        return None
+
+def generate_post_content(content_id=None, custom_prompt=None):
+    """توليد محتوى باستخدام البرومبت المخزن"""
+    prompt = None
+    
+    if content_id:
+        with get_db() as cur:
+            cur.execute("SELECT prompt FROM publish_contents WHERE id = %s", (content_id,))
+            row = cur.fetchone()
+            if row:
+                prompt = row['prompt']
+    
+    if not prompt and custom_prompt:
+        prompt = custom_prompt
+    
+    if not prompt:
+        prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
+    
+    headers = {
+        'Authorization': f'Bearer {OPENROUTER_API_KEY}',
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://evile.onrender.com',
+        'X-Title': 'EVILE Publisher'
+    }
+    
+    payload = {
+        'model': 'openai/gpt-4o-mini',
+        'messages': [
+            {'role': 'system', 'content': 'أنت كاتب محتوى تقني محترف. اكتب مقالة قصيرة وجذابة.'},
+            {'role': 'user', 'content': prompt}
+        ],
+        'temperature': 0.9,
+        'max_tokens': 400,
+        'top_p': 0.95
+    }
+    
+    try:
+        response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
+        result = response.json()
+        if result and 'choices' in result and len(result['choices']) > 0:
+            message = result['choices'][0].get('message', {})
+            content = message.get('content')
+            if content:
+                return content.strip()
+        return None
+    except Exception as e:
+        logger.error(f"Error generating content: {e}")
+        return None
+
+# ==================== جدولة النشر ====================
+scheduler = BackgroundScheduler(timezone=TIMEZONE)
+scheduler.start()
+
+def schedule_posts():
+    """جدولة النشر لجميع القنوات النشطة"""
+    try:
+        with get_db() as cur:
+            # جلب جميع القنوات النشطة وغير الموقفة
+            cur.execute("SELECT * FROM publish_channels WHERE is_active = true AND is_paused = false")
+            channels = cur.fetchall()
+            
+            # جلب جميع المحتويات مع وقت النشر
+            cur.execute("SELECT * FROM publish_contents")
+            contents = cur.fetchall()
+            
+            for channel in channels:
+                # إلغاء المهام القديمة لهذه القناة
+                for job in scheduler.get_jobs():
+                    if job.id.startswith(f'publish_{channel["id"]}_'):
+                        scheduler.remove_job(job.id)
+                
+                # جدولة لكل محتوى
+                for content in contents:
+                    content_id = content['id']
+                    publish_time = content['publish_time']
+                    hour = publish_time.hour
+                    minute = publish_time.minute
+                    
+                    job_id = f'publish_{channel["id"]}_{content_id}'
+                    trigger = CronTrigger(hour=hour, minute=minute, timezone=TIMEZONE)
+                    scheduler.add_job(
+                        func=publish_content_to_channel,
+                        trigger=trigger,
+                        id=job_id,
+                        args=[channel['channel_id'], content_id],
+                        replace_existing=True
+                    )
+                    logger.info(f"Scheduled content {content_id} for channel {channel['channel_id']} at {hour}:{minute}")
+    except Exception as e:
+        logger.error(f"Error scheduling posts: {e}")
+
+def publish_content_to_channel(channel_id, content_id):
+    """نشر محتوى معين إلى قناة"""
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT * FROM publish_channels WHERE channel_id = %s AND is_active = true AND is_paused = false", (channel_id,))
+            channel = cur.fetchone()
+            if not channel:
+                return
+            
+            # توليد المحتوى
+            content_text = generate_post_content(content_id=content_id)
+            if not content_text:
+                logger.error(f"Failed to generate content for channel {channel_id}")
+                return
+            
+            # إرسال الرسالة
+            message_id = send_telegram_message(channel_id, content_text)
+            if message_id:
+                cur.execute(
+                    "INSERT INTO published_posts (channel_id, content, content_id, message_id) VALUES (%s, %s, %s, %s)",
+                    (channel_id, content_text, content_id, message_id)
+                )
+                cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
+                logger.info(f"Published content {content_id} to channel {channel_id}")
+            else:
+                logger.error(f"Failed to send message to channel {channel_id}")
+    except Exception as e:
+        logger.error(f"Error publishing content: {e}")
+
 # ==================== Routes ====================
 @app.route('/')
 def index():
@@ -145,6 +361,200 @@ def index():
                          latest_notification=latest_notification,
                          channel_url=channel_url,
                          instagram_url=instagram_url)
+
+@app.route('/publish')
+def publish_start():
+    """الصفحة الترحيبية للنشر"""
+    telegram_id = session.get('telegram_id')
+    # إذا كان المستخدم مسجلاً ولديه قناة، نوجهه للوحة التحكم
+    if telegram_id:
+        with get_db() as cur:
+            cur.execute("SELECT * FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            channel = cur.fetchone()
+            if channel:
+                return redirect(url_for('publish_dashboard'))
+    return render_template('publish_start.html', telegram_id=telegram_id)
+
+@app.route('/publish/register', methods=['GET', 'POST'])
+def publish_register():
+    """صفحة تسجيل القناة بعد الموافقة"""
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        flash('يرجى تسجيل الدخول أولاً', 'error')
+        return redirect(url_for('publish_start'))
+    
+    # التحقق من وجود قناة مسجلة بالفعل
+    with get_db() as cur:
+        cur.execute("SELECT * FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+        channel = cur.fetchone()
+        if channel:
+            return redirect(url_for('publish_dashboard'))
+    
+    if request.method == 'POST':
+        # معالجة تسجيل القناة
+        channel_username = request.form.get('channel_username', '').strip()
+        if not channel_username.startswith('@'):
+            flash('اسم المستخدم يجب أن يبدأ بـ @', 'error')
+            return render_template('publish_register.html')
+        
+        # جلب معلومات القناة من تلغرام
+        channel_info = get_telegram_channel_info(channel_username)
+        if not channel_info:
+            flash('لم يتم العثور على القناة. تأكد من اسم المستخدم وأن البوت مضاف كمشرف.', 'error')
+            return render_template('publish_register.html')
+        
+        # جلب عدد الأعضاء
+        members_count = get_channel_members_count(channel_username)
+        
+        # حفظ القناة في قاعدة البيانات
+        try:
+            with get_db() as cur:
+                cur.execute("""
+                    INSERT INTO publish_channels 
+                    (telegram_id, channel_id, channel_username, channel_name, channel_bio, members_count)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (telegram_id, channel_username, channel_username, channel_info['name'], channel_info['bio'], members_count))
+            flash('تم تسجيل القناة بنجاح!', 'success')
+            return redirect(url_for('publish_dashboard'))
+        except Exception as e:
+            logger.error(f"Error registering channel: {e}")
+            flash(f'حدث خطأ: {str(e)}', 'error')
+            return render_template('publish_register.html')
+    
+    return render_template('publish_register.html', telegram_id=telegram_id)
+
+@app.route('/publish/dashboard')
+def publish_dashboard():
+    """لوحة التحكم بعد التسجيل"""
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return redirect(url_for('publish_start'))
+    
+    with get_db() as cur:
+        cur.execute("SELECT * FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+        channel = cur.fetchone()
+        if not channel:
+            return redirect(url_for('publish_start'))
+        
+        # جلب المحتويات المتاحة
+        cur.execute("SELECT * FROM publish_contents ORDER BY id")
+        contents = cur.fetchall()
+        
+        # جلب المنشورات الأخيرة
+        cur.execute("SELECT * FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 5", (channel['channel_id'],))
+        recent_posts = cur.fetchall()
+        
+    return render_template('publish_dashboard.html',
+                         channel=channel,
+                         contents=contents,
+                         recent_posts=recent_posts)
+
+@app.route('/publish/select_content', methods=['POST'])
+def publish_select_content():
+    """اختيار المحتوى للقناة"""
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    content_id = request.form.get('content_id')
+    if not content_id:
+        return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى'}), 400
+    
+    try:
+        with get_db() as cur:
+            cur.execute("UPDATE publish_channels SET selected_content_id = %s WHERE telegram_id = %s", (content_id, telegram_id))
+        return jsonify({'success': True, 'message': 'تم اختيار المحتوى بنجاح'})
+    except Exception as e:
+        logger.error(f"Error selecting content: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/publish/toggle_pause')
+def publish_toggle_pause():
+    """إيقاف/استئناف النشر"""
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT is_paused FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
+            
+            new_status = not row['is_paused']
+            cur.execute("UPDATE publish_channels SET is_paused = %s WHERE telegram_id = %s", (new_status, telegram_id))
+            
+            # إعادة جدولة النشر إذا تم الاستئناف
+            if not new_status:
+                schedule_posts()
+            
+        return jsonify({'success': True, 'is_paused': new_status})
+    except Exception as e:
+        logger.error(f"Error toggling pause: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/publish/stop')
+def publish_stop():
+    """إيقاف النشر نهائياً"""
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT id, channel_id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
+            
+            # إلغاء المهام المجدولة
+            for job in scheduler.get_jobs():
+                if job.id.startswith(f'publish_{row["id"]}_'):
+                    scheduler.remove_job(job.id)
+            
+            cur.execute("UPDATE publish_channels SET is_active = false WHERE id = %s", (row['id'],))
+        
+        return jsonify({'success': True, 'message': 'تم إيقاف النشر نهائياً'})
+    except Exception as e:
+        logger.error(f"Error stopping publishing: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/publish/force_publish')
+def publish_force():
+    """نشر فوري"""
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT channel_id, selected_content_id FROM publish_channels WHERE telegram_id = %s AND is_active = true", (telegram_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
+            
+            content_id = row['selected_content_id']
+            if not content_id:
+                return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى'}), 400
+            
+            content = generate_post_content(content_id=content_id)
+            if not content:
+                return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
+            
+            message_id = send_telegram_message(row['channel_id'], content)
+            if message_id:
+                cur.execute(
+                    "INSERT INTO published_posts (channel_id, content, content_id, message_id) VALUES (%s, %s, %s, %s)",
+                    (row['channel_id'], content, content_id, message_id)
+                )
+                cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (row['channel_id'],))
+                return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
+            else:
+                return jsonify({'success': False, 'message': 'فشل النشر'}), 500
+    except Exception as e:
+        logger.error(f"Error forcing publish: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -222,91 +632,132 @@ def admin_panel():
             cur.execute('SELECT COUNT(*) FROM users')
             row = cur.fetchone()
             users_count = row['count'] if row else 0
+            cur.execute('SELECT * FROM publish_contents ORDER BY id DESC')
+            contents = cur.fetchall()
+            cur.execute('SELECT * FROM publish_channels ORDER BY created_at DESC')
+            channels = cur.fetchall()
     except Exception as e:
         logger.error(f"Admin panel error: {e}")
-        characters, notifications, users_count = [], [], 0
+        characters, notifications, users_count, contents, channels = [], [], 0, [], []
     
     return render_template('admin.html',
                          logged_in=True,
                          characters=characters,
                          notifications=notifications,
-                         users_count=users_count)
+                         users_count=users_count,
+                         contents=contents,
+                         channels=channels)
 
-# ==================== CRUD Characters ====================
-@app.route('/admin/character/add', methods=['POST'])
+# ==================== Admin Content Management ====================
+@app.route('/admin/content/add', methods=['POST'])
 @admin_required
-def add_character():
-    name = request.form.get('name')
-    description = request.form.get('description')
-    prompt = request.form.get('prompt')
-    callback_key = request.form.get('callback_key', name.lower().replace(' ', '_'))
-    logo_url = request.form.get('logo_url', '')
-    if name and description and prompt:
-        try:
-            with get_db() as cur:
-                cur.execute("INSERT INTO characters (name, description, prompt, callback_key, logo_url) VALUES (%s, %s, %s, %s, %s)",
-                    (name, description, prompt, callback_key, logo_url))
-            flash('تمت إضافة الشخصية بنجاح', 'success')
-        except Exception as e:
-            flash('مفتاح الشخصية موجود مسبقاً' if 'unique' in str(e).lower() else str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/character/<int:char_id>/edit', methods=['POST'])
-@admin_required
-def edit_character(char_id):
-    name = request.form.get('name')
-    description = request.form.get('description')
-    prompt = request.form.get('prompt')
-    logo_url = request.form.get('logo_url', '')
-    if name and description and prompt:
-        try:
-            with get_db() as cur:
-                cur.execute("UPDATE characters SET name=%s, description=%s, prompt=%s, logo_url=%s WHERE id=%s",
-                    (name, description, prompt, logo_url, char_id))
-            flash('تم تعديل الشخصية بنجاح', 'success')
-        except Exception as e:
-            flash(str(e), 'error')
-    return redirect(url_for('admin_panel'))
-
-@app.route('/admin/character/<int:char_id>/delete')
-@admin_required
-def delete_character(char_id):
+def admin_add_content():
+    name = request.form.get('name', '').strip()
+    description = request.form.get('description', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    publish_time = request.form.get('publish_time', '').strip()
+    
+    if not name or not prompt or not publish_time:
+        flash('جميع الحقول مطلوبة', 'error')
+        return redirect(url_for('admin_panel'))
+    
     try:
+        # تحويل الوقت إلى تنسيق TIME
+        time_obj = datetime.strptime(publish_time, '%H:%M').time()
+        
         with get_db() as cur:
-            cur.execute("DELETE FROM characters WHERE id=%s", (char_id,))
-        flash('تم حذف الشخصية', 'success')
+            cur.execute(
+                "INSERT INTO publish_contents (name, description, prompt, publish_time) VALUES (%s, %s, %s, %s)",
+                (name, description, prompt, time_obj)
+            )
+        flash('تم إضافة المحتوى بنجاح', 'success')
+        # إعادة جدولة النشر
+        schedule_posts()
     except Exception as e:
+        logger.error(f"Error adding content: {e}")
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 
-# ==================== CRUD Notifications ====================
-@app.route('/admin/notification/add', methods=['POST'])
+@app.route('/admin/content/<int:content_id>/edit', methods=['POST'])
 @admin_required
-def add_notification():
-    title = request.form.get('title')
-    text = request.form.get('text')
-    duration_hours = request.form.get('duration_hours', 1, type=int)
-    show_in_chat = request.form.get('show_in_chat') == 'on'
-    if title and text:
-        try:
-            with get_db() as cur:
-                cur.execute(
-                    "INSERT INTO notifications (title, text, duration_hours, show_in_chat) VALUES (%s, %s, %s, %s)",
-                    (title, text, duration_hours, show_in_chat)
-                )
-            flash('تم إرسال الإشعار بنجاح', 'success')
-        except Exception as e:
-            flash(str(e), 'error')
+def admin_edit_content(content_id):
+    name = request.form.get('name', '').strip()
+    description = request.form.get('description', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    publish_time = request.form.get('publish_time', '').strip()
+    
+    if not name or not prompt or not publish_time:
+        flash('جميع الحقول مطلوبة', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        time_obj = datetime.strptime(publish_time, '%H:%M').time()
+        
+        with get_db() as cur:
+            cur.execute(
+                "UPDATE publish_contents SET name = %s, description = %s, prompt = %s, publish_time = %s WHERE id = %s",
+                (name, description, prompt, time_obj, content_id)
+            )
+        flash('تم تعديل المحتوى بنجاح', 'success')
+        schedule_posts()
+    except Exception as e:
+        logger.error(f"Error editing content: {e}")
+        flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 
-@app.route('/admin/notification/<int:notif_id>/delete')
+@app.route('/admin/content/<int:content_id>/delete')
 @admin_required
-def delete_notification(notif_id):
+def admin_delete_content(content_id):
     try:
         with get_db() as cur:
-            cur.execute("DELETE FROM notifications WHERE id=%s", (notif_id,))
-        flash('تم حذف الإشعار', 'success')
+            # إلغاء المهام المجدولة لهذا المحتوى
+            for job in scheduler.get_jobs():
+                if job.id.endswith(f'_{content_id}'):
+                    scheduler.remove_job(job.id)
+            cur.execute("DELETE FROM publish_contents WHERE id = %s", (content_id,))
+        flash('تم حذف المحتوى بنجاح', 'success')
+        schedule_posts()
     except Exception as e:
+        logger.error(f"Error deleting content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== Admin Channel Management ====================
+@app.route('/admin/channel/delete/<int:channel_id>')
+@admin_required
+def admin_delete_channel(channel_id):
+    try:
+        with get_db() as cur:
+            # إلغاء المهام المجدولة لهذه القناة
+            for job in scheduler.get_jobs():
+                if job.id.startswith(f'publish_{channel_id}_'):
+                    scheduler.remove_job(job.id)
+            cur.execute("DELETE FROM publish_channels WHERE id = %s", (channel_id,))
+        flash('تم حذف القناة بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting channel: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/channel/toggle/<int:channel_id>')
+@admin_required
+def admin_toggle_channel(channel_id):
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT is_active FROM publish_channels WHERE id = %s", (channel_id,))
+            row = cur.fetchone()
+            if row:
+                new_status = not row['is_active']
+                cur.execute("UPDATE publish_channels SET is_active = %s WHERE id = %s", (new_status, channel_id))
+                if new_status:
+                    schedule_posts()
+                else:
+                    for job in scheduler.get_jobs():
+                        if job.id.startswith(f'publish_{channel_id}_'):
+                            scheduler.remove_job(job.id)
+                flash('تم تحديث حالة القناة', 'success')
+    except Exception as e:
+        logger.error(f"Error toggling channel: {e}")
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 
@@ -376,4 +827,5 @@ def api_chat():
 # ==================== بدء التشغيل ====================
 if __name__ == '__main__':
     init_db()
+    schedule_posts()
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)

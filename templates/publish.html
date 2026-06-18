@@ -214,7 +214,58 @@
         .post-item .time { font-size: 10px; color: #888; display: block; margin-bottom: 2px; }
         .post-item:last-child { border-bottom: none; }
         
-        /* ====== نموذج تسجيل القناة (يظهر في حالة عدم وجود قناة) ====== */
+        /* ====== نموذج تسجيل الدخول ====== */
+        .login-card {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .login-card .logo-img {
+            width: 100%;
+            max-width: 200px;
+            height: auto;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        .login-card h2 { font-size: 20px; margin-bottom: 4px; }
+        .login-card .sub { color: #666; font-size: 14px; margin-bottom: 16px; }
+        .login-card .form-group { margin-bottom: 14px; text-align: right; }
+        .login-card label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #333; }
+        .login-card input {
+            width: 100%; padding: 10px 14px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 14px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+        }
+        .login-card input:focus { outline: none; border-color: #0088cc; }
+        .login-card .btn-login {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #0088cc, #00aaff);
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .login-card .btn-login:active { transform: scale(0.97); }
+        .login-card .btn-login:disabled { opacity: 0.5; pointer-events: none; }
+        .login-card .hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        /* ====== نموذج تسجيل القناة ====== */
         .register-card {
             background: rgba(255,255,255,0.12);
             backdrop-filter: blur(25px);
@@ -359,7 +410,22 @@
             <a href="/" style="color:#888; text-decoration:none;"><i class="bi bi-house"></i></a>
         </div>
 
-        {% if channel %}
+        {% if show_login %}
+        <!-- ====== تسجيل الدخول ====== -->
+        <div class="login-card">
+            <img src="https://img.sanishtech.com/u/ee1d7d91cf4b7ab4950b402e79a93e16.png" alt="EVILE" class="logo-img">
+            <h2>مرحباً بعودتك</h2>
+            <p class="sub">سجل دخولك للوصول إلى لوحة النشر</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>معرف التلغرام (ID)</label>
+                    <input type="text" id="telegramId" placeholder="أدخل معرفك الرقمي" required>
+                    <div class="hint">يمكنك الحصول على معرفك من بوت @userinfobot</div>
+                </div>
+                <button type="submit" class="btn-login">تسجيل الدخول</button>
+            </form>
+        </div>
+        {% elif channel %}
         <!-- ====== القناة موجودة ====== -->
         <div class="channel-card glass-blue">
             <div class="channel-id"><i class="bi bi-hash"></i> {{ channel.channel_id }}</div>
@@ -466,7 +532,7 @@
         </div>
 
         {% else %}
-        <!-- ====== لا توجد قناة ====== عرض نموذج التسجيل -->
+        <!-- ====== لا توجد قناة ====== عرض نموذج التسجيل مع حقل معرف التلغرام -->
         <div class="register-card">
             <img src="https://img.sanishtech.com/u/ee1d7d91cf4b7ab4950b402e79a93e16.png" alt="EVILE" class="logo-img">
             <h2>مرحباً بك في EVILE</h2>
@@ -486,6 +552,11 @@
                 4. حدد أوقات النشر واستمتع بمحتوى متجدد يومياً.
             </div>
             <form id="registerForm">
+                <div class="form-group">
+                    <label>معرف التلغرام (ID)</label>
+                    <input type="text" id="telegramId" placeholder="أدخل معرفك الرقمي" required>
+                    <div class="hint">يمكنك الحصول على معرفك من بوت @userinfobot</div>
+                </div>
                 <div class="form-group">
                     <label>معرف القناة (رقمي)</label>
                     <input type="text" id="channelId" placeholder="مثال: -1001234567890" required>
@@ -527,27 +598,75 @@
             toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
         }
 
-        // نموذج التسجيل
+        // نموذج تسجيل الدخول (إذا ظهر)
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const telegramId = document.getElementById('telegramId').value.trim();
+                if (!telegramId || !telegramId.match(/^\d+$/)) {
+                    showToast('الرجاء إدخال معرف صحيح (أرقام فقط)');
+                    return;
+                }
+                const btn = this.querySelector('.btn-login');
+                btn.disabled = true;
+                btn.textContent = 'جاري التحقق...';
+                try {
+                    const formData = new FormData();
+                    formData.append('telegram_id', telegramId);
+                    const res = await fetch('/register', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('✅ تم تسجيل الدخول بنجاح!', 2000);
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.message || 'حدث خطأ');
+                        btn.disabled = false;
+                        btn.textContent = 'تسجيل الدخول';
+                    }
+                } catch (err) {
+                    showToast('خطأ في الاتصال');
+                    btn.disabled = false;
+                    btn.textContent = 'تسجيل الدخول';
+                }
+            });
+        }
+
+        // نموذج تسجيل القناة
         const registerForm = document.getElementById('registerForm');
         if (registerForm) {
             registerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                const telegramId = document.getElementById('telegramId').value.trim();
                 const channelId = document.getElementById('channelId').value.trim();
                 const channelUsername = document.getElementById('channelUsername').value.trim();
-                if (!channelId) { showToast('معرف القناة مطلوب'); return; }
-                if (!channelUsername.startsWith('@')) { showToast('اسم المستخدم يجب أن يبدأ بـ @'); return; }
+
+                if (!telegramId || !telegramId.match(/^\d+$/)) {
+                    showToast('الرجاء إدخال معرف تلغرام صحيح (أرقام فقط)');
+                    return;
+                }
+                if (!channelId) {
+                    showToast('معرف القناة مطلوب');
+                    return;
+                }
+                if (!channelUsername.startsWith('@')) {
+                    showToast('اسم المستخدم يجب أن يبدأ بـ @');
+                    return;
+                }
+
                 const btn = this.querySelector('.btn-register');
                 btn.disabled = true;
                 btn.textContent = 'جاري التسجيل...';
                 try {
                     const formData = new FormData();
+                    formData.append('telegram_id', telegramId);
                     formData.append('channel_id', channelId);
                     formData.append('channel_username', channelUsername);
                     const res = await fetch('/publish/register_channel', { method: 'POST', body: formData });
                     const data = await res.json();
                     if (data.success) {
-                        showToast('✅ تم تسجيل القناة بنجاح! جاري التوجيه...', 3000);
-                        setTimeout(() => { window.location.reload(); }, 2000);
+                        showToast('✅ تم تسجيل القناة بنجاح!', 3000);
+                        setTimeout(() => window.location.reload(), 2000);
                     } else {
                         showToast(data.message || 'حدث خطأ');
                         btn.disabled = false;

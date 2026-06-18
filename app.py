@@ -1,9 +1,9 @@
 import os
 import logging
 import requests
-import time
+import time as time_module  # استيراد وحدة الوقت القياسية باسم مختلف لتجنب التعارض
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time  # استيراد time من datetime
 from functools import wraps
 from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -411,10 +411,11 @@ def publish_state():
             if channel:
                 response['has_channel'] = True
                 channel_dict = dict(channel)
+                # تحويل أي حقل من نوع datetime أو time إلى سلسلة
                 for key, value in channel_dict.items():
                     if isinstance(value, datetime):
                         channel_dict[key] = value.isoformat()
-                    elif isinstance(value, time):
+                    elif isinstance(value, time):  # الآن time معرف من datetime
                         channel_dict[key] = value.isoformat()
                 response['channel'] = channel_dict
                 
@@ -423,11 +424,10 @@ def publish_state():
                 contents_list = []
                 for c in contents:
                     c_dict = dict(c)
-                    if isinstance(c_dict.get('publish_time'), (datetime, time)):
-                        if isinstance(c_dict['publish_time'], datetime):
-                            c_dict['publish_time'] = c_dict['publish_time'].isoformat()
-                        elif isinstance(c_dict['publish_time'], time):
-                            c_dict['publish_time'] = c_dict['publish_time'].isoformat()
+                    if isinstance(c_dict.get('publish_time'), datetime):
+                        c_dict['publish_time'] = c_dict['publish_time'].isoformat()
+                    elif isinstance(c_dict.get('publish_time'), time):
+                        c_dict['publish_time'] = c_dict['publish_time'].isoformat()
                     contents_list.append(c_dict)
                 response['contents'] = contents_list
                 
@@ -831,7 +831,7 @@ def admin_toggle_channel(channel_id):
 # ==================== API ====================
 @app.route('/api/characters')
 def api_characters():
-    now = time.time()
+    now = time_module.time()  # استخدام time_module لتجنب التعارض
     if _characters_cache['data'] and (now - _characters_cache['timestamp']) < CACHE_TTL:
         return jsonify(_characters_cache['data'])
     try:

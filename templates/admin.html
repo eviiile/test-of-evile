@@ -150,20 +150,20 @@
         }
         .btn-success:hover { background: rgba(40,167,69,0.15); }
         .btn:active { transform: scale(0.96); }
-        .characters-grid, .channels-grid, .content-grid {
+        .characters-grid, .channels-grid, .content-grid, .ads-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 16px;
             margin-top: 16px;
         }
-        .character-card, .channel-card, .content-card {
+        .character-card, .channel-card, .content-card, .ad-card {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
             padding: 12px;
             transition: background 0.25s ease, border 0.25s ease;
         }
-        .character-card:hover, .channel-card:hover, .content-card:hover {
+        .character-card:hover, .channel-card:hover, .content-card:hover, .ad-card:hover {
             background: rgba(255,255,255,0.05);
             border-color: rgba(255,255,255,0.08);
         }
@@ -195,6 +195,28 @@
             color: #888;
             margin: 2px 0 6px;
         }
+        .ad-card .ad-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #e8e8e8;
+        }
+        .ad-card .ad-content {
+            font-size: 12px;
+            color: #aaa;
+            margin: 4px 0 6px;
+            line-height: 1.5;
+        }
+        .ad-card .ad-link {
+            font-size: 11px;
+            color: #8494FF;
+            word-break: break-all;
+        }
+        .ad-card .ad-status {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .ad-card .ad-status.active { color: #5ddb7a; }
+        .ad-card .ad-status.inactive { color: #666; }
         .channel-card .channel-id {
             font-size: 12px;
             color: #aaa;
@@ -322,7 +344,7 @@
             .admin-tabs { gap: 6px; }
             .tab-btn { padding: 6px 12px; font-size: 11px; }
             .modal-content { padding: 16px; }
-            .content-grid { grid-template-columns: 1fr; }
+            .content-grid, .ads-grid { grid-template-columns: 1fr; }
         }
 
         .login-wrapper {
@@ -448,6 +470,24 @@
             margin-bottom: 12px;
             color: #555;
         }
+        .badge-active {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(40,167,69,0.12);
+            color: #5ddb7a;
+        }
+        .badge-inactive {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.04);
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -486,7 +526,8 @@
             <button class="tab-btn active" data-tab="characters"><i class="bi bi-people"></i> الشخصيات</button>
             <button class="tab-btn" data-tab="notifications"><i class="bi bi-bell"></i> الإشعارات</button>
             <button class="tab-btn" data-tab="publish-content"><i class="bi bi-file-text"></i> محتوى النشر</button>
-            <button class="tab-btn" data-tab="channels"><i class="bi bi-megaphone"></i> القنوات المسجلة</button>
+            <button class="tab-btn" data-tab="ads"><i class="bi bi-megaphone"></i> الإعلانات</button>
+            <button class="tab-btn" data-tab="channels"><i class="bi bi-hash"></i> القنوات المسجلة</button>
         </div>
 
         <!-- ====== تبويب الشخصيات ====== -->
@@ -598,9 +639,62 @@
             </div>
         </div>
 
+        <!-- ====== تبويب الإعلانات ====== -->
+        <div id="tab-ads" class="tab-content">
+            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة إعلان جديد</div>
+            <form method="POST" action="/admin/ad/add">
+                <div class="form-grid">
+                    <div class="form-group"><label>العنوان (نص عريض)</label><input type="text" name="title" required placeholder="عنوان الإعلان"></div>
+                    <div class="form-group"><label>الرابط (اختياري)</label><input type="url" name="link" placeholder="https://example.com"></div>
+                    <div class="form-group" style="grid-column: 1 / -1;"><label>نص الإعلان</label><textarea name="content" rows="4" required placeholder="نص الإعلان..."></textarea></div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="is_active" id="ad_active" checked>
+                            <label for="ad_active">نشط (سيتم نشره في القنوات)</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> إضافة إعلان</button>
+            </form>
+
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> الإعلانات</div>
+            <div class="ads-grid">
+                {% for ad in ads %}
+                <div class="ad-card">
+                    <div class="ad-title">{{ ad.title }}</div>
+                    <div class="ad-content">{{ ad.content[:100] }}{% if ad.content|length > 100 %}...{% endif %}</div>
+                    {% if ad.link %}
+                    <div class="ad-link"><i class="bi bi-link"></i> {{ ad.link }}</div>
+                    {% endif %}
+                    <div class="ad-status {% if ad.is_active %}active{% else %}inactive{% endif %}">
+                        {% if ad.is_active %}
+                            <span class="badge-active">✅ نشط</span>
+                        {% else %}
+                            <span class="badge-inactive">⛔ غير نشط</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="openAdEditModal({{ ad.id }}, '{{ ad.title }}', `{{ ad.content|replace('`', '\\`') }}`, '{{ ad.link or '' }}', {{ ad.is_active|lower }})"><i class="bi bi-pencil-square"></i> تعديل</button>
+                        <button class="btn btn-success" onclick="location.href='/admin/ad/{{ ad.id }}/toggle'">
+                            <i class="bi {% if ad.is_active %}bi-pause-circle{% else %}bi-play-circle{% endif %}"></i>
+                            {% if ad.is_active %}إيقاف{% else %}تفعيل{% endif %}
+                        </button>
+                        <button class="btn btn-danger" onclick="if(confirm('حذف الإعلان؟')) location.href='/admin/ad/{{ ad.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-megaphone"></i>
+                    لا توجد إعلانات<br>
+                    <span style="font-size:12px;">أضف إعلانات لنشرها في القنوات</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
         <!-- ====== تبويب القنوات المسجلة ====== -->
         <div id="tab-channels" class="tab-content">
-            <div class="section-title"><i class="bi bi-megaphone"></i> القنوات المسجلة في النظام</div>
+            <div class="section-title"><i class="bi bi-hash"></i> القنوات المسجلة في النظام</div>
             <div class="channels-grid">
                 {% for ch in channels %}
                 <div class="channel-card">
@@ -625,7 +719,7 @@
                 </div>
                 {% else %}
                 <div class="empty-state">
-                    <i class="bi bi-megaphone"></i>
+                    <i class="bi bi-hash"></i>
                     لا توجد قنوات مسجلة
                 </div>
                 {% endfor %}
@@ -664,6 +758,26 @@
                 <div class="form-group"><label>البرومبت (تعليمات التوليد)</label><textarea name="prompt" id="contentEditPrompt" rows="4" required></textarea></div>
                 <div class="form-group"><label>وقت النشر (بتوقيت صنعاء)</label><input type="time" name="publish_time" id="contentEditTime" required></div>
                 <button type="submit" class="btn btn-primary" style="width:100%;"><i class="bi bi-save"></i> حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== مودال تعديل الإعلان ====== -->
+    <div id="adEditModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-pencil-square"></i> تعديل الإعلان</h3>
+                <button class="modal-close" onclick="closeAdEditModal()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="POST" id="adEditForm">
+                <div class="form-group"><label>العنوان (نص عريض)</label><input type="text" name="title" id="adEditTitle" required></div>
+                <div class="form-group"><label>الرابط (اختياري)</label><input type="url" name="link" id="adEditLink" placeholder="https://example.com"></div>
+                <div class="form-group"><label>نص الإعلان</label><textarea name="content" id="adEditContent" rows="4" required></textarea></div>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="is_active" id="adEditActive">
+                    <label for="adEditActive">نشط (سيتم نشره في القنوات)</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;"><i class="bi bi-save"></i> حفظ التعديلات</button>
             </form>
         </div>
     </div>
@@ -707,12 +821,27 @@
             document.getElementById('contentEditModal').classList.remove('active');
         }
 
+        // ====== مودال تعديل الإعلان ======
+        function openAdEditModal(id, title, content, link, isActive) {
+            document.getElementById('adEditForm').action = `/admin/ad/${id}/edit`;
+            document.getElementById('adEditTitle').value = title;
+            document.getElementById('adEditContent').value = content;
+            document.getElementById('adEditLink').value = link || '';
+            document.getElementById('adEditActive').checked = isActive;
+            document.getElementById('adEditModal').classList.add('active');
+        }
+        function closeAdEditModal() {
+            document.getElementById('adEditModal').classList.remove('active');
+        }
+
         // ====== إغلاق المودالات بالنقر على الخلفية ======
         window.onclick = function(e) {
             const modal1 = document.getElementById('editModal');
             if (e.target === modal1) closeEditModal();
             const modal2 = document.getElementById('contentEditModal');
             if (e.target === modal2) closeContentEditModal();
+            const modal3 = document.getElementById('adEditModal');
+            if (e.target === modal3) closeAdEditModal();
         }
 
         // ====== إغلاق المودالات بزر ESC ======
@@ -720,6 +849,7 @@
             if (e.key === 'Escape') {
                 closeEditModal();
                 closeContentEditModal();
+                closeAdEditModal();
             }
         });
     </script>

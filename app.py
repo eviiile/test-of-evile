@@ -537,7 +537,6 @@ def publish():
 
 @app.route('/publish/register_channel', methods=['POST'])
 def register_channel():
-    # الحصول على telegram_id من الجلسة أو من الطلب
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         telegram_id = request.form.get('telegram_id', '').strip()
@@ -556,10 +555,8 @@ def register_channel():
     
     try:
         with get_db() as cur:
-            # تسجيل المستخدم
             cur.execute("INSERT INTO users (telegram_id) VALUES (%s) ON CONFLICT (telegram_id) DO UPDATE SET last_active = CURRENT_TIMESTAMP", (telegram_id,))
             
-            # التحقق من وجود قناة مسجلة لهذا المستخدم
             cur.execute("SELECT id FROM channels WHERE admin_id = %s", (telegram_id,))
             if cur.fetchone():
                 return jsonify({'success': False, 'message': 'لديك قناة مسجلة مسبقاً'}), 400
@@ -574,7 +571,6 @@ def register_channel():
             )
             logger.info(f"Channel {channel_id} registered successfully for user {telegram_id}")
         
-        # حفظ الجلسة لتسجيل الدخول التلقائي
         session['telegram_id'] = telegram_id
         session.permanent = True
         

@@ -77,7 +77,6 @@ def ensure_notification_columns(cur):
 def init_db():
     try:
         with get_db() as cur:
-            # الجداول الأساسية
             cur.execute('''CREATE TABLE IF NOT EXISTS characters (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -100,7 +99,6 @@ def init_db():
                 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
             
-            # جداول النشر
             cur.execute('''CREATE TABLE IF NOT EXISTS publish_channels (
                 id SERIAL PRIMARY KEY,
                 telegram_id TEXT NOT NULL UNIQUE,
@@ -159,7 +157,6 @@ def admin_required(f):
     return decorated
 
 def get_telegram_channel_info(channel_username):
-    """جلب معلومات القناة من تلغرام"""
     if not BOT_TOKEN:
         return None
     try:
@@ -217,7 +214,6 @@ def send_telegram_message(channel_id, text):
         return None
 
 def generate_post_content(content_id=None, custom_prompt=None):
-    """توليد محتوى باستخدام البرومبت المخزن"""
     prompt = None
     
     if content_id:
@@ -269,7 +265,6 @@ scheduler = BackgroundScheduler(timezone=TIMEZONE)
 scheduler.start()
 
 def schedule_posts():
-    """جدولة النشر لجميع القنوات النشطة"""
     try:
         with get_db() as cur:
             cur.execute("SELECT * FROM publish_channels WHERE is_active = true AND is_paused = false")
@@ -302,7 +297,6 @@ def schedule_posts():
         logger.error(f"Error scheduling posts: {e}")
 
 def publish_content_to_channel(channel_id, content_id):
-    """نشر محتوى معين إلى قناة"""
     try:
         with get_db() as cur:
             cur.execute("SELECT * FROM publish_channels WHERE channel_id = %s AND is_active = true AND is_paused = false", (channel_id,))
@@ -402,12 +396,12 @@ def health_check():
 # ==================== Routes النشر ====================
 @app.route('/publish/state')
 def publish_state():
-    """إرجاع حالة النشر للمستخدم الحالي"""
     telegram_id = session.get('telegram_id')
     response = {
         'telegram_id': telegram_id,
         'has_channel': False,
-        'has_agreed': session.get('publish_agreed', False)
+        'has_agreed': session.get('publish_agreed', False),
+        'needs_login': False
     }
     
     if telegram_id:
@@ -425,12 +419,15 @@ def publish_state():
                 cur.execute("SELECT * FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 5", (channel['channel_id'],))
                 recent_posts = cur.fetchall()
                 response['recent_posts'] = [dict(p) for p in recent_posts]
+            else:
+                response['has_channel'] = False
+    else:
+        response['needs_login'] = True
     
     return jsonify(response)
 
 @app.route('/publish/agree', methods=['POST'])
 def publish_agree():
-    """تسجيل موافقة المستخدم على الشروط"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
@@ -440,7 +437,6 @@ def publish_agree():
 
 @app.route('/publish/register', methods=['POST'])
 def publish_register_channel():
-    """تسجيل القناة بعد الموافقة"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
@@ -475,7 +471,6 @@ def publish_register_channel():
 
 @app.route('/publish/select_content', methods=['POST'])
 def publish_select_content():
-    """اختيار المحتوى للقناة"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
@@ -494,14 +489,13 @@ def publish_select_content():
 
 @app.route('/publish/toggle_pause')
 def publish_toggle_pause():
-    """إيقاف/استئناف النشر"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
     
     try:
         with get_db() as cur:
-            cur.execute("SELECT is_paused, id, channel_id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            cur.execute("SELECT is_paused, id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
             row = cur.fetchone()
             if not row:
                 return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
@@ -523,14 +517,13 @@ def publish_toggle_pause():
 
 @app.route('/publish/stop')
 def publish_stop():
-    """إيقاف النشر نهائياً"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401
     
     try:
         with get_db() as cur:
-            cur.execute("SELECT id, channel_id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            cur.execute("SELECT id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
             row = cur.fetchone()
             if not row:
                 return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
@@ -548,7 +541,6 @@ def publish_stop():
 
 @app.route('/publish/force_publish')
 def publish_force():
-    """نشر فوري"""
     telegram_id = session.get('telegram_id')
     if not telegram_id:
         return jsonify({'success': False, 'message': 'غير مصرح'}), 401

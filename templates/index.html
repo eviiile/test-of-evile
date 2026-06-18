@@ -617,7 +617,6 @@
     </header>
 
     <div class="main-container">
-        <!-- القسم الرئيسي - يظهر دائماً -->
         <div class="welcome-section" id="welcomeSection">
             <div id="welcomeLogo">
                 <div class="sparkle-icon">
@@ -805,13 +804,10 @@
             chatSection.classList.remove('active');
             document.getElementById('welcomeInput').placeholder = 'اكتب رسالتك...';
             updateNavVisibility();
-            // عرض الإشعار إذا وجد
             if (latestNotification && latestNotification.show_in_chat) {
                 showToastNotification(latestNotification.title + ': ' + latestNotification.text, 10000);
             }
-            // تحديث عدد المستخدمين النشطين
             updateActiveUsers();
-            // رسم الشخصيات
             renderCharSelector();
             renderCharactersSheet();
             updateWelcomeDisplay();

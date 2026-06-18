@@ -532,6 +532,15 @@
             transition: background 0.3s, border 0.3s, color 0.3s;
         }
         .content-selector select:focus { outline: none; border-color: #8494FF; }
+        body.dark .btn-select { background: rgba(132, 148, 255, 0.08); border: 1px solid rgba(132, 148, 255, 0.1); color: #8494FF; }
+        body.dark .btn-select:hover { background: rgba(132, 148, 255, 0.15); }
+        body.light .btn-select { background: rgba(132, 148, 255, 0.1); border: 1px solid rgba(132, 148, 255, 0.2); color: #333; }
+        body.light .btn-select:hover { background: rgba(132, 148, 255, 0.2); }
+        .btn-select {
+            padding: 10px 20px; border-radius: 40px; font-weight: 600; font-size: 13px;
+            cursor: pointer; transition: all 0.2s; font-family: 'Tajawal', sans-serif;
+        }
+        .btn-select:disabled { opacity: 0.4; cursor: not-allowed; }
         body.dark .selected-content-info { background: rgba(255,255,255,0.02); color: #888; }
         body.light .selected-content-info { background: rgba(255,255,255,0.5); color: #555; }
         .selected-content-info {
@@ -1311,6 +1320,9 @@
                                 <option value="${c.id}" ${ch.selected_content_id == c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>
                             `).join('')}
                         </select>
+                        <button type="button" class="btn-select" id="selectContentBtn" style="padding:10px 20px; background:rgba(132,148,255,0.08); border:1px solid rgba(132,148,255,0.1); border-radius:40px; color:#8494FF; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s; font-family:'Tajawal',sans-serif;">
+                            <i class="bi bi-check"></i> اختيار
+                        </button>
                     </div>
                     ${ch.selected_content_id ? 
                         contents.filter(c => c.id == ch.selected_content_id).map(c => `
@@ -1342,14 +1354,16 @@
                 </div>
             `;
 
-            // اختيار المحتوى عبر onchange (بدون زر)
-            document.getElementById('contentSelect')?.addEventListener('change', async function() {
-                const contentId = this.value;
+            // زر اختيار المحتوى
+            document.getElementById('selectContentBtn')?.addEventListener('click', async function() {
+                const select = document.getElementById('contentSelect');
+                const contentId = select.value;
                 if (!contentId) {
                     showToast('الرجاء اختيار محتوى');
                     return;
                 }
                 this.disabled = true;
+                this.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
                 try {
                     const fd = new FormData();
                     fd.append('content_id', contentId);
@@ -1365,6 +1379,12 @@
                     showToast('خطأ في الاتصال');
                 }
                 this.disabled = false;
+                this.innerHTML = '<i class="bi bi-check"></i> اختيار';
+            });
+
+            // اختيار المحتوى عبر onchange (خيار إضافي)
+            document.getElementById('contentSelect')?.addEventListener('change', function() {
+                // لا نقوم بالتنفيذ التلقائي هنا، نترك المستخدم يضغط زر "اختيار"
             });
 
             // باقي الأحداث

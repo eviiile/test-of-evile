@@ -96,7 +96,6 @@ def ensure_content_columns(cur):
         logger.info("Added column publish_time to content_templates table")
 
 def fix_publish_settings():
-    """إصلاح بيانات JSON التالفة في publish_settings"""
     try:
         with get_db() as cur:
             cur.execute("SELECT id, publish_times FROM publish_settings LIMIT 1")
@@ -463,8 +462,19 @@ def index():
 @app.route('/publish')
 def publish():
     telegram_id = session.get('telegram_id')
+    # إذا لم يكن هناك جلسة، نعرض صفحة publish مع نموذج تسجيل الدخول
     if not telegram_id:
-        return redirect(url_for('index'))
+        return render_template('publish.html',
+                             channel=None,
+                             posts_count=0,
+                             recent_posts=[],
+                             times=get_publish_times(),
+                             members_count=0,
+                             is_paused=False,
+                             content_templates=[],
+                             selected_content_id=None,
+                             telegram_id=None,
+                             show_login=True)  # متغير لعرض نموذج تسجيل الدخول
     
     with get_db() as cur:
         cur.execute("SELECT * FROM channels WHERE admin_id = %s", (telegram_id,))
@@ -480,7 +490,8 @@ def publish():
                                  is_paused=False,
                                  content_templates=[],
                                  selected_content_id=None,
-                                 telegram_id=telegram_id)
+                                 telegram_id=telegram_id,
+                                 show_login=False)
         
         cur.execute("""
             SELECT ct.*, 
@@ -522,7 +533,8 @@ def publish():
                              is_paused=is_paused,
                              content_templates=content_templates,
                              selected_content_id=None,
-                             telegram_id=telegram_id)
+                             telegram_id=telegram_id,
+                             show_login=False)
 
 @app.route('/publish/register_channel', methods=['POST'])
 def register_channel():
@@ -880,10 +892,7 @@ def admin_panel():
             settings = cur.fetchone()
             if settings:
                 publish_count = settings['publish_count']
-                try:
-                    publish_times = json.loads(settings['publish_times'])
-                except json.JSONDecodeError:
-                    publish_times = ["09:00", "13:00", "17:00"]
+                publish_times = json.loads(settings['publish_times'])
             else:
                 publish_count = 3
                 publish_times = ["09:00", "13:00", "17:00"]

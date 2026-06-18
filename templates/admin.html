@@ -10,7 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #f5f5f5;
+            background: #F3F4F4;
             min-height: 100vh;
             color: #1a1a1a;
             padding: 20px;
@@ -40,11 +40,12 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            font-family: 'Tajawal', sans-serif;
         }
         .tab-btn i { font-size: 14px; }
         .tab-btn.active {
-            background: rgba(0,0,0,0.1);
-            border-color: #aaa;
+            background: rgba(132, 148, 255, 0.15);
+            border-color: #8494FF;
             color: #000;
         }
         .tab-btn:active { transform: scale(0.96); }
@@ -62,12 +63,12 @@
             font-weight: 700;
             margin-bottom: 16px;
             padding-right: 12px;
-            border-right: 3px solid #aaa;
+            border-right: 3px solid #8494FF;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .section-title i { font-size: 18px; color: #888; }
+        .section-title i { font-size: 18px; color: #8494FF; }
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -80,6 +81,7 @@
             margin-bottom: 4px;
             font-size: 12px;
             color: #555;
+            font-weight: 600;
         }
         input, textarea, select {
             width: 100%;
@@ -93,7 +95,7 @@
         }
         input:focus, textarea:focus {
             outline: none;
-            border-color: #aaa;
+            border-color: #8494FF;
         }
         textarea { min-height: 80px; resize: vertical; }
         .checkbox-group {
@@ -119,9 +121,10 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-family: 'Tajawal', sans-serif;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #0088cc, #00aaff);
+            background: linear-gradient(135deg, #8494FF, #6a7df0);
             color: #fff;
         }
         .btn-primary i { color: #fff; }
@@ -146,6 +149,44 @@
             border-radius: 16px;
             padding: 12px;
         }
+        .content-card .content-preview {
+            background: rgba(0,0,0,0.03);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            max-height: 80px;
+            overflow-y: auto;
+            margin: 6px 0 10px;
+            color: #444;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .content-card .publish-time {
+            font-size: 12px;
+            color: #8494FF;
+            margin: 4px 0;
+            font-weight: 600;
+        }
+        .content-card .content-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a1a1a;
+        }
+        .content-card .content-desc {
+            font-size: 12px;
+            color: #666;
+            margin: 2px 0 6px;
+        }
+        .channel-card .channel-id {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        .channel-card .admin-id {
+            font-size: 11px;
+            color: #777;
+        }
+        .card-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .character-header {
             display: flex;
             align-items: center;
@@ -181,7 +222,6 @@
             overflow-y: auto;
             margin-bottom: 12px;
         }
-        .card-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .notification-item {
             background: rgba(255,255,255,0.7);
             border: 1px solid rgba(0,0,0,0.1);
@@ -214,9 +254,40 @@
             background: white;
             border: 1px solid rgba(0,0,0,0.1);
             border-radius: 20px;
-            padding: 20px;
+            padding: 24px;
             max-width: 500px;
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+        .modal-content h3 i {
+            color: #8494FF;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { color: #333; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         .spinner-small {
             display: inline-block;
@@ -232,6 +303,8 @@
             body { padding: 12px; }
             .admin-tabs { gap: 6px; }
             .tab-btn { padding: 6px 12px; font-size: 11px; }
+            .modal-content { padding: 16px; }
+            .content-grid { grid-template-columns: 1fr; }
         }
 
         /* ====== صفحة تسجيل الدخول المدمجة ====== */
@@ -286,21 +359,22 @@
         }
         .login-card input:focus {
             outline: none;
-            border-color: #aaa;
+            border-color: #8494FF;
             background: rgba(255,255,255,0.95);
         }
         .login-card .btn-login {
             width: 100%; padding: 14px;
-            background: linear-gradient(135deg, #ddd, #bbb);
+            background: linear-gradient(135deg, #8494FF, #6a7df0);
             border: none;
             border-radius: 16px;
-            color: #333;
+            color: #fff;
             font-weight: 700;
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif;
         }
-        .login-card .btn-login:hover { transform: translateY(-2px); filter: brightness(0.98); }
+        .login-card .btn-login:hover { transform: translateY(-2px); filter: brightness(0.95); }
         .login-card .flash {
             padding: 12px;
             background: rgba(220,53,69,0.1);
@@ -320,6 +394,7 @@
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
+            transition: opacity 0.2s;
         }
         .logout-btn i { color: #fff; }
         .logout-btn:hover { opacity: 0.8; }
@@ -328,6 +403,29 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .admin-header h2 {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-header h2 i { color: #8494FF; }
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 30px 20px;
+            font-size: 14px;
+            grid-column: 1 / -1;
+        }
+        .empty-state i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 12px;
+            color: #ccc;
         }
     </style>
 </head>
@@ -361,17 +459,18 @@
         {% else %}
         <!-- ====== لوحة التحكم (مسجل الدخول) ====== -->
         <div class="admin-header">
-            <h2 style="font-size: 22px;"><i class="bi bi-speedometer2"></i> لوحة التحكم</h2>
+            <h2><i class="bi bi-speedometer2"></i> لوحة التحكم</h2>
             <a href="/admin/logout" class="logout-btn"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
         </div>
 
         <div class="admin-tabs">
             <button class="tab-btn active" data-tab="characters"><i class="bi bi-people"></i> الشخصيات</button>
             <button class="tab-btn" data-tab="notifications"><i class="bi bi-bell"></i> الإشعارات</button>
-            <!-- تم إزالة باقي التبويبات (القنوات، فشل النشر، إعدادات النشر، المحتوى) -->
+            <button class="tab-btn" data-tab="publish-content"><i class="bi bi-file-text"></i> محتوى النشر</button>
+            <button class="tab-btn" data-tab="channels"><i class="bi bi-megaphone"></i> القنوات المسجلة</button>
         </div>
 
-        <!-- تبويب الشخصيات -->
+        <!-- ====== تبويب الشخصيات ====== -->
         <div id="tab-characters" class="tab-content active">
             <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة شخصية جديدة</div>
             <form method="POST" action="/admin/character/add">
@@ -382,7 +481,7 @@
                     <div class="form-group"><label>البرومبت</label><textarea name="prompt" required></textarea></div>
                     <div class="form-group"><label>مفتاح الاستدعاء</label><input type="text" name="callback_key" placeholder="مثال: logo_maker"></div>
                 </div>
-                <button type="submit" class="btn"><i class="bi bi-save"></i> إضافة شخصية</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> إضافة شخصية</button>
             </form>
 
             <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> قائمة الشخصيات</div>
@@ -402,11 +501,16 @@
                         <button class="btn btn-danger" onclick="if(confirm('حذف الشخصية؟')) location.href='/admin/character/{{ char.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
                     </div>
                 </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-people"></i>
+                    لا توجد شخصيات مضافة
+                </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- تبويب الإشعارات -->
+        <!-- ====== تبويب الإشعارات ====== -->
         <div id="tab-notifications" class="tab-content">
             <div class="section-title"><i class="bi bi-send"></i> إرسال إشعار جديد</div>
             <form method="POST" action="/admin/notification/add">
@@ -417,7 +521,7 @@
                     <input type="checkbox" name="show_in_chat" id="show_in_chat">
                     <label for="show_in_chat">ظهور إجباري في واجهة الدردشة (لمدة 10 ثوانٍ)</label>
                 </div>
-                <button type="submit" class="btn"><i class="bi bi-bell"></i> إرسال الإشعار</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-bell"></i> إرسال الإشعار</button>
             </form>
             <div class="section-title" style="margin-top: 30px;"><i class="bi bi-clock-history"></i> الإشعارات المرسلة</div>
             {% for notif in notifications %}
@@ -427,61 +531,178 @@
                 <div class="notification-meta" style="font-size: 10px; color:#888; margin-top: 5px;">
                     المدة: {{ notif.duration_hours }} ساعة | ظهور إجباري: {{ 'نعم' if notif.show_in_chat else 'لا' }}
                 </div>
+                <div class="card-actions" style="margin-top:8px;">
+                    <button class="btn btn-danger" onclick="if(confirm('حذف الإشعار؟')) location.href='/admin/notification/{{ notif.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                </div>
             </div>
             {% else %}
-            <p style="text-align:center; color:#888;">لا توجد إشعارات بعد</p>
+            <div class="empty-state">
+                <i class="bi bi-bell"></i>
+                لا توجد إشعارات
+            </div>
             {% endfor %}
+        </div>
+
+        <!-- ====== تبويب محتوى النشر ====== -->
+        <div id="tab-publish-content" class="tab-content">
+            <div class="section-title"><i class="bi bi-plus-circle"></i> إضافة محتوى جديد</div>
+            <form method="POST" action="/admin/content/add">
+                <div class="form-grid">
+                    <div class="form-group"><label>اسم المحتوى</label><input type="text" name="name" required placeholder="مثال: مقالات تقنية"></div>
+                    <div class="form-group"><label>الوصف</label><input type="text" name="description" placeholder="وصف مختصر للمحتوى"></div>
+                    <div class="form-group" style="grid-column: 1 / -1;"><label>البرومبت (تعليمات التوليد)</label><textarea name="prompt" rows="4" required placeholder="أدخل التعليمات التي سيستخدمها الذكاء الاصطناعي لتوليد المحتوى..."></textarea></div>
+                    <div class="form-group"><label>وقت النشر (بتوقيت صنعاء)</label><input type="time" name="publish_time" required></div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> إضافة محتوى</button>
+            </form>
+
+            <div class="section-title" style="margin-top: 30px;"><i class="bi bi-list-ul"></i> المحتويات المتاحة</div>
+            <div class="content-grid">
+                {% for item in contents %}
+                <div class="content-card">
+                    <div class="content-name">{{ item.name }}</div>
+                    <div class="content-desc">{{ item.description or 'لا يوجد وصف' }}</div>
+                    <div class="publish-time"><i class="bi bi-clock"></i> {{ item.publish_time }}</div>
+                    <div class="content-preview"><strong>البرومبت:</strong> {{ item.prompt }}</div>
+                    <div class="card-actions">
+                        <button class="btn" onclick="openContentEditModal({{ item.id }}, '{{ item.name }}', '{{ item.description or '' }}', `{{ item.prompt|replace('`', '\\`') }}`, '{{ item.publish_time }}')"><i class="bi bi-pencil-square"></i> تعديل</button>
+                        <button class="btn btn-danger" onclick="if(confirm('هل أنت متأكد من حذف المحتوى "{{ item.name }}"؟')) location.href='/admin/content/{{ item.id }}/delete'"><i class="bi bi-trash3"></i> حذف</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-file-text"></i>
+                    لا يوجد محتوى مضاف<br>
+                    <span style="font-size:12px;">أضف محتوى جديداً لبدء النشر التلقائي</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ====== تبويب القنوات المسجلة ====== -->
+        <div id="tab-channels" class="tab-content">
+            <div class="section-title"><i class="bi bi-megaphone"></i> القنوات المسجلة في النظام</div>
+            <div class="channels-grid">
+                {% for ch in channels %}
+                <div class="channel-card">
+                    <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
+                    <div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username or 'لا يوجد' }}</div>
+                    <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.telegram_id }}</div>
+                    <div style="font-size:10px; color:#888; margin-top:4px;">تمت الإضافة: {{ ch.created_at }}</div>
+                    <div style="font-size:11px; margin-top:4px;">
+                        الحالة: 
+                        {% if ch.is_paused %}
+                            <span style="color:#ffc107;">⏸️ موقّت مؤقت</span>
+                        {% elif ch.is_active %}
+                            <span style="color:#28a745;">✅ نشط</span>
+                        {% else %}
+                            <span style="color:#dc3545;">⛔ متوقف</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-danger" onclick="if(confirm('إيقاف/تفعيل هذه القناة؟')) location.href='/admin/channel/toggle/{{ ch.id }}'"><i class="bi bi-pause-circle"></i> {% if ch.is_active %}إيقاف{% else %}تفعيل{% endif %}</button>
+                        <button class="btn btn-danger" onclick="if(confirm('حذف القناة نهائياً؟')) location.href='/admin/channel/delete/{{ ch.id }}'"><i class="bi bi-trash3"></i> حذف</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-megaphone"></i>
+                    لا توجد قنوات مسجلة
+                </div>
+                {% endfor %}
+            </div>
         </div>
         {% endif %}
     </div>
 
-    <!-- مودال تعديل الشخصية -->
+    <!-- ====== مودال تعديل الشخصية ====== -->
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+            <div class="modal-header">
                 <h3><i class="bi bi-pencil-square"></i> تعديل الشخصية</h3>
-                <button onclick="closeEditModal()" style="background:none; border:none; font-size:20px;"><i class="bi bi-x-lg"></i></button>
+                <button class="modal-close" onclick="closeEditModal()"><i class="bi bi-x-lg"></i></button>
             </div>
             <form method="POST" id="editForm">
                 <div class="form-group"><label>اسم الشخصية</label><input type="text" name="name" id="editName" required></div>
                 <div class="form-group"><label>رابط الصورة</label><input type="url" name="logo_url" id="editImage"></div>
                 <div class="form-group"><label>وصف مختصر</label><input type="text" name="description" id="editDesc" required></div>
                 <div class="form-group"><label>البرومبت</label><textarea name="prompt" id="editPrompt" required></textarea></div>
-                <button type="submit" class="btn"><i class="bi bi-save"></i> حفظ التعديلات</button>
+                <button type="submit" class="btn btn-primary" style="width:100%;"><i class="bi bi-save"></i> حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== مودال تعديل المحتوى ====== -->
+    <div id="contentEditModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="bi bi-pencil-square"></i> تعديل المحتوى</h3>
+                <button class="modal-close" onclick="closeContentEditModal()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <form method="POST" id="contentEditForm">
+                <div class="form-group"><label>اسم المحتوى</label><input type="text" name="name" id="contentEditName" required></div>
+                <div class="form-group"><label>الوصف</label><input type="text" name="description" id="contentEditDesc"></div>
+                <div class="form-group"><label>البرومبت (تعليمات التوليد)</label><textarea name="prompt" id="contentEditPrompt" rows="4" required></textarea></div>
+                <div class="form-group"><label>وقت النشر (بتوقيت صنعاء)</label><input type="time" name="publish_time" id="contentEditTime" required></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;"><i class="bi bi-save"></i> حفظ التعديلات</button>
             </form>
         </div>
     </div>
 
     <script>
-        // تبديل التبويبات
+        // ====== تبديل التبويبات ======
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const tabId = btn.getAttribute('data-tab');
                 document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                document.getElementById(`tab-${tabId}`).classList.add('active');
+                const target = document.getElementById(`tab-${tabId}`);
+                if (target) target.classList.add('active');
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             });
         });
 
-        // مودال تعديل الشخصية
+        // ====== مودال تعديل الشخصية ======
         function openEditModal(id, name, desc, prompt, image) {
             document.getElementById('editForm').action = `/admin/character/${id}/edit`;
             document.getElementById('editName').value = name;
             document.getElementById('editDesc').value = desc;
             document.getElementById('editPrompt').value = prompt;
-            document.getElementById('editImage').value = image;
+            document.getElementById('editImage').value = image || '';
             document.getElementById('editModal').classList.add('active');
         }
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('active');
         }
 
-        // إغلاق المودالات عند النقر على الخلفية
+        // ====== مودال تعديل المحتوى ======
+        function openContentEditModal(id, name, description, prompt, time) {
+            document.getElementById('contentEditForm').action = `/admin/content/${id}/edit`;
+            document.getElementById('contentEditName').value = name;
+            document.getElementById('contentEditDesc').value = description || '';
+            document.getElementById('contentEditPrompt').value = prompt;
+            document.getElementById('contentEditTime').value = time;
+            document.getElementById('contentEditModal').classList.add('active');
+        }
+        function closeContentEditModal() {
+            document.getElementById('contentEditModal').classList.remove('active');
+        }
+
+        // ====== إغلاق المودالات بالنقر على الخلفية ======
         window.onclick = function(e) {
             const modal1 = document.getElementById('editModal');
             if (e.target === modal1) closeEditModal();
+            const modal2 = document.getElementById('contentEditModal');
+            if (e.target === modal2) closeContentEditModal();
         }
+
+        // ====== إغلاق المودالات بزر ESC ======
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+                closeContentEditModal();
+            }
+        });
     </script>
 </body>
 </html>

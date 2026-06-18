@@ -142,6 +142,25 @@ def init_db():
                 message_id TEXT
             )''')
             
+            cur.execute('''CREATE TABLE IF NOT EXISTS scheduled_content (
+                id SERIAL PRIMARY KEY,
+                content_id INTEGER NOT NULL,
+                channel_id TEXT NOT NULL,
+                scheduled_time TIMESTAMP NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
+            
+            # ====== جدول الإعلانات ======
+            cur.execute('''CREATE TABLE IF NOT EXISTS ads (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                link TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
+            
             ensure_notification_columns(cur)
             ensure_published_posts_columns(cur)
             logger.info("Database initialized/updated successfully")
@@ -201,7 +220,7 @@ def get_channel_members_count(channel_username):
         logger.error(f"Error getting members count: {e}")
         return 0
 
-def send_telegram_message(channel_id, text):
+def send_telegram_message(channel_id, text, parse_mode='Markdown'):
     if not BOT_TOKEN:
         logger.error("BOT_TOKEN not set")
         return None
@@ -209,7 +228,7 @@ def send_telegram_message(channel_id, text):
     payload = {
         'chat_id': channel_id,
         'text': text,
-        'parse_mode': 'Markdown',
+        'parse_mode': parse_mode,
         'disable_web_page_preview': False
     }
     try:
@@ -225,7 +244,7 @@ def send_telegram_message(channel_id, text):
         return None
 
 def generate_post_content(content_id=None, custom_prompt=None):
-    """توليد محتوى باستخدام البرومبت من admin"""
+    """توليد محتوى باستخدام البرومبت من admin فقط - لا يوجد برومبت افتراضي"""
     prompt = None
     
     # 1. جلب البرومبت باستخدام content_id إذا وجد
@@ -251,10 +270,10 @@ def generate_post_content(content_id=None, custom_prompt=None):
         prompt = custom_prompt
         logger.info("Using custom prompt from request")
     
-    # 4. برومبت افتراضي (فقط في حال عدم وجود أي محتوى في قاعدة البيانات)
+    # 4. إذا لم يوجد أي برومبت في قاعدة البيانات، نعيد None
     if not prompt:
-        prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
-        logger.warning("Using default fallback prompt (no content in database)")
+        logger.error("No content found in database. Please add content from admin panel.")
+        return None
     
     headers = {
         'Authorization': f'Bearer {OPENROUTER_API_KEY}',
@@ -286,6 +305,13 @@ def generate_post_content(content_id=None, custom_prompt=None):
     except Exception as e:
         logger.error(f"Error generating content: {e}")
         return None
+
+def format_ad_message(ad):
+    """تنسيق الإعلان إلى نص قابل للنشر"""
+    message = f"📢 *{ad['title']}*\n\n{ad['content']}"
+    if ad.get('link'):
+        message += f"\n\n🔗 [رابط إضافي]({ad['link']})"
+    return message
 
 # ==================== جدولة النشر ====================
 scheduler = BackgroundScheduler(timezone=TIMEZONE)
@@ -331,21 +357,33 @@ def publish_content_to_channel(channel_id, content_id):
             if not channel:
                 return
             
+            # 1. نشر المحتوى
             content_text = generate_post_content(content_id=content_id)
-            if not content_text:
-                logger.error(f"Failed to generate content for channel {channel_id}")
-                return
-            
-            message_id = send_telegram_message(channel_id, content_text)
-            if message_id:
-                cur.execute(
-                    "INSERT INTO published_posts (channel_id, content, content_id, message_id) VALUES (%s, %s, %s, %s)",
-                    (channel_id, content_text, content_id, message_id)
-                )
-                cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
-                logger.info(f"Published content {content_id} to channel {channel_id}")
+            if content_text:
+                message_id = send_telegram_message(channel_id, content_text)
+                if message_id:
+                    cur.execute(
+                        "INSERT INTO published_posts (channel_id, content, content_id, message_id) VALUES (%s, %s, %s, %s)",
+                        (channel_id, content_text, content_id, message_id)
+                    )
+                    cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
+                    logger.info(f"Published content {content_id} to channel {channel_id}")
+                else:
+                    logger.error(f"Failed to send content to channel {channel_id}")
             else:
-                logger.error(f"Failed to send message to channel {channel_id}")
+                logger.error(f"Failed to generate content for channel {channel_id}")
+            
+            # 2. نشر الإعلانات النشطة
+            cur.execute("SELECT * FROM ads WHERE is_active = true ORDER BY id")
+            ads = cur.fetchall()
+            for ad in ads:
+                ad_message = format_ad_message(ad)
+                message_id = send_telegram_message(channel_id, ad_message)
+                if message_id:
+                    logger.info(f"Published ad {ad['id']} to channel {channel_id}")
+                else:
+                    logger.error(f"Failed to send ad {ad['id']} to channel {channel_id}")
+                    
     except Exception as e:
         logger.error(f"Error publishing content: {e}")
 
@@ -445,7 +483,6 @@ def publish_state():
                         channel_dict[key] = value.isoformat()
                 response['channel'] = channel_dict
                 
-                # جلب المحتويات مع عدد القنوات المشتركة
                 cur.execute("""
                     SELECT pc.*, 
                            (SELECT COUNT(*) FROM publish_channels WHERE selected_content_id = pc.id) as channels_count
@@ -604,7 +641,6 @@ def publish_force():
                 return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
             
             content_id = row['selected_content_id']
-            # إذا لم يكن هناك محتوى محدد، نأخذ أول محتوى متاح
             if not content_id:
                 cur.execute("SELECT id FROM publish_contents ORDER BY id LIMIT 1")
                 content_row = cur.fetchone()
@@ -613,11 +649,11 @@ def publish_force():
                 else:
                     return jsonify({'success': False, 'message': 'لا يوجد محتوى متاح. أضف محتوى من لوحة الإدارة.'}), 400
             
-            # توليد المحتوى باستخدام content_id المحدد
             content = generate_post_content(content_id=content_id)
             if not content:
-                return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
+                return jsonify({'success': False, 'message': 'فشل توليد المحتوى. تأكد من وجود برومبت في المحتوى المختار.'}), 500
             
+            # نشر المحتوى
             message_id = send_telegram_message(row['channel_id'], content)
             if message_id:
                 cur.execute(
@@ -625,6 +661,14 @@ def publish_force():
                     (row['channel_id'], content, content_id, message_id)
                 )
                 cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (row['channel_id'],))
+                
+                # نشر الإعلانات النشطة
+                cur.execute("SELECT * FROM ads WHERE is_active = true ORDER BY id")
+                ads = cur.fetchall()
+                for ad in ads:
+                    ad_message = format_ad_message(ad)
+                    send_telegram_message(row['channel_id'], ad_message)
+                
                 return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
             else:
                 return jsonify({'success': False, 'message': 'فشل النشر'}), 500
@@ -668,9 +712,12 @@ def admin_panel():
             
             cur.execute('SELECT * FROM publish_channels ORDER BY created_at DESC')
             channels = cur.fetchall()
+            
+            cur.execute('SELECT * FROM ads ORDER BY id DESC')
+            ads = cur.fetchall()
     except Exception as e:
         logger.error(f"Admin panel error: {e}")
-        characters, notifications, users_count, contents, channels = [], [], 0, [], []
+        characters, notifications, users_count, contents, channels, ads = [], [], 0, [], [], []
     
     return render_template('admin.html',
                          logged_in=True,
@@ -678,7 +725,8 @@ def admin_panel():
                          notifications=notifications,
                          users_count=users_count,
                          contents=contents,
-                         channels=channels)
+                         channels=channels,
+                         ads=ads)
 
 # ==================== Admin: Characters ====================
 @app.route('/admin/character/add', methods=['POST'])
@@ -821,14 +869,17 @@ def admin_delete_content(content_id):
                 if job.id.endswith(f'_{content_id}'):
                     scheduler.remove_job(job.id)
             # حذف من جدول scheduled_content إذا وجد
-            cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
+            try:
+                cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
+            except Exception as e:
+                logger.warning(f"Could not delete from scheduled_content: {e}")
             # حذف من جدول publish_contents
             cur.execute("DELETE FROM publish_contents WHERE id = %s", (content_id,))
         flash('تم حذف المحتوى بنجاح', 'success')
         schedule_posts()
     except Exception as e:
         logger.error(f"Error deleting content: {e}")
-        flash(str(e), 'error')
+        flash(f'حدث خطأ أثناء حذف المحتوى: {str(e)}', 'error')
     return redirect(url_for('admin_panel'))
 
 # ==================== Admin: Channels ====================
@@ -866,6 +917,83 @@ def admin_toggle_channel(channel_id):
                 flash('تم تحديث حالة القناة', 'success')
     except Exception as e:
         logger.error(f"Error toggling channel: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== Admin: Ads ====================
+@app.route('/admin/ad/add', methods=['POST'])
+@admin_required
+def admin_add_ad():
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    link = request.form.get('link', '').strip()
+    is_active = request.form.get('is_active') == 'on'
+    
+    if not title or not content:
+        flash('العنوان والنص مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "INSERT INTO ads (title, content, link, is_active) VALUES (%s, %s, %s, %s)",
+                (title, content, link or None, is_active)
+            )
+        flash('تم إضافة الإعلان بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error adding ad: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/ad/<int:ad_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_ad(ad_id):
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    link = request.form.get('link', '').strip()
+    is_active = request.form.get('is_active') == 'on'
+    
+    if not title or not content:
+        flash('العنوان والنص مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "UPDATE ads SET title = %s, content = %s, link = %s, is_active = %s WHERE id = %s",
+                (title, content, link or None, is_active, ad_id)
+            )
+        flash('تم تعديل الإعلان بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error editing ad: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/ad/<int:ad_id>/delete')
+@admin_required
+def admin_delete_ad(ad_id):
+    try:
+        with get_db() as cur:
+            cur.execute("DELETE FROM ads WHERE id = %s", (ad_id,))
+        flash('تم حذف الإعلان بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting ad: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/ad/<int:ad_id>/toggle')
+@admin_required
+def admin_toggle_ad(ad_id):
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT is_active FROM ads WHERE id = %s", (ad_id,))
+            row = cur.fetchone()
+            if row:
+                new_status = not row['is_active']
+                cur.execute("UPDATE ads SET is_active = %s WHERE id = %s", (new_status, ad_id))
+                flash(f'تم {"تفعيل" if new_status else "إيقاف"} الإعلان', 'success')
+    except Exception as e:
+        logger.error(f"Error toggling ad: {e}")
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 

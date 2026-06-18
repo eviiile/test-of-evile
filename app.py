@@ -410,15 +410,32 @@ def publish_state():
             channel = cur.fetchone()
             if channel:
                 response['has_channel'] = True
-                response['channel'] = dict(channel)
+                channel_dict = dict(channel)
+                # تحويل أي حقل time أو datetime إلى سلسلة
+                for key, value in channel_dict.items():
+                    if isinstance(value, (datetime, time)):
+                        channel_dict[key] = value.isoformat()
+                response['channel'] = channel_dict
                 
                 cur.execute("SELECT * FROM publish_contents ORDER BY id")
                 contents = cur.fetchall()
-                response['contents'] = [dict(c) for c in contents]
+                contents_list = []
+                for c in contents:
+                    c_dict = dict(c)
+                    if isinstance(c_dict.get('publish_time'), (datetime, time)):
+                        c_dict['publish_time'] = c_dict['publish_time'].isoformat()
+                    contents_list.append(c_dict)
+                response['contents'] = contents_list
                 
                 cur.execute("SELECT * FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 5", (channel['channel_id'],))
                 recent_posts = cur.fetchall()
-                response['recent_posts'] = [dict(p) for p in recent_posts]
+                posts_list = []
+                for p in recent_posts:
+                    p_dict = dict(p)
+                    if isinstance(p_dict.get('published_at'), datetime):
+                        p_dict['published_at'] = p_dict['published_at'].isoformat()
+                    posts_list.append(p_dict)
+                response['recent_posts'] = posts_list
             else:
                 response['has_channel'] = False
     else:

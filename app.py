@@ -1,1480 +1,898 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>EVILE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        /* ====== كل الستايلات كما هي ====== */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Tajawal', sans-serif;
-            min-height: 100vh;
-            touch-action: manipulation;
-            transition: background 0.3s, color 0.3s;
-        }
-        body.dark {
-            background: #0a0a0a;
-            color: #e0e0e0;
-        }
-        body.dark .bg-animation {
-            background: radial-gradient(circle at 20% 80%, rgba(132,148,255,0.06) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(255,240,217,0.04) 0%, transparent 50%),
-                        #0a0a0a;
-        }
-        body.light {
-            background: #f0f2f5;
-            color: #1a1a1a;
-        }
-        body.light .bg-animation {
-            background: radial-gradient(circle at 20% 80%, rgba(132,148,255,0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(255,240,217,0.04) 0%, transparent 50%),
-                        #f0f2f5;
-        }
-        .bg-animation {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            transition: background 0.3s;
-        }
-        
-        /* ====== الهيدر الثابت ====== */
-        .floating-header {
-            position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 4px 8px; border-radius: 14px; gap: 4px;
-            max-width: 700px; margin: 0 auto;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .floating-header {
-            background: rgba(10,10,10,0.7);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        body.light .floating-header {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        @media (min-width: 768px) {
-            .floating-header { left: 20px; right: 20px; top: 20px; }
-        }
-        .header-circle {
-            width: 34px; height: 34px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
-            position: relative;
-        }
-        body.dark .header-circle {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            color: #888;
-        }
-        body.light .header-circle {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: #555;
-        }
-        .header-circle:active { transform: scale(0.92); }
-        .header-circle i { font-size: 16px; }
-        .header-circle .notif-badge {
-            position: absolute; top: -4px; right: -4px; width: 16px; height: 16px;
-            background: #dc3545; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 8px; font-weight: bold; color: #fff;
-            border: 2px solid currentColor;
-        }
-        .logo-wrapper { flex: 1; display: flex; align-items: center; gap: 4px; }
-        .logo-center {
-            flex: 1; height: 34px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            transition: border 0.3s;
-        }
-        body.dark .logo-center { border: 1px solid rgba(255,255,255,0.05); }
-        body.light .logo-center { border: 1px solid rgba(255,255,255,0.3); }
-        .logo-text {
-            font-size: 16px; font-weight: 900; letter-spacing: 2px;
-        }
-        body.dark .logo-text { background: linear-gradient(135deg, #8494FF, #a8b4ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        body.light .logo-text { background: linear-gradient(135deg, #333, #888); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .active-users-box {
-            height: 34px; padding: 0 8px; border-radius: 10px;
-            display: flex; align-items: center; gap: 4px;
-            font-size: 10px; font-weight: 700;
-            transition: background 0.3s, border 0.3s, color 0.3s;
-        }
-        body.dark .active-users-box {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            color: #666;
-        }
-        body.light .active-users-box {
-            background: rgba(255,255,255,0.5);
-            border: 1px solid rgba(0,0,0,0.05);
-            color: #888;
-        }
-        .active-users-box i { font-size: 12px; color: #8494FF; }
-        body.dark .active-users-box span { color: #888; }
-        body.light .active-users-box span { color: #555; }
+import os
+import logging
+import requests
+import time
+import json
+from datetime import datetime, timedelta
+from functools import wraps
+from contextlib import contextmanager
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+import pytz
 
-        .main-container {
-            width: 100%; min-height: 100vh;
-            display: flex; flex-direction: column;
-            padding: 12px; padding-top: 65px;
-            max-width: 700px; margin: 0 auto;
-        }
-        @media (min-width: 768px) {
-            .main-container { padding-top: 75px; }
-        }
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
-        /* ====== الشريط السفلي ====== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 1000;
-            border-radius: 14px;
-            padding: 3px 6px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            height: 36px;
-            max-width: 400px;
-            margin: 0 auto;
-            transition: opacity 0.3s, transform 0.3s, background 0.3s, border 0.3s;
-        }
-        body.dark .bottom-nav {
-            background: rgba(10,10,10,0.75);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        body.light .bottom-nav {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        .bottom-nav.hidden {
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
-        }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            font-size: 8px;
-            font-weight: 600;
-            padding: 3px 12px;
-            border-radius: 20px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            height: 28px;
-            flex: 1;
-            max-width: 90px;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        body.dark .nav-item { color: #666; }
-        body.light .nav-item { color: #888; }
-        body.dark .nav-item.active {
-            color: #8494FF;
-            background: rgba(132, 148, 255, 0.1);
-            border: 1px solid rgba(132, 148, 255, 0.08);
-        }
-        body.light .nav-item.active {
-            color: #8494FF;
-            background: rgba(132, 148, 255, 0.1);
-            border: 1px solid rgba(132, 148, 255, 0.15);
-        }
-        .nav-item i { font-size: 15px; }
-        .nav-item span { font-size: 8px; }
-        .nav-item:active { transform: scale(0.94); }
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'evile-secret-key-2026')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
-        /* ====== الدردشة ====== */
-        .welcome-section {
-            flex: 1; display: none; flex-direction: column; align-items: center;
-            justify-content: center; padding: 16px; text-align: center;
-        }
-        .welcome-section.active { display: flex; }
-        .sparkle-icon i { font-size: 56px; color: #8494FF; opacity: 0.4; }
-        body.dark .welcome-title { background: linear-gradient(135deg, #8494FF, #a8b4ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        body.light .welcome-title { background: linear-gradient(135deg, #333, #888); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .welcome-title { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
-        body.dark .welcome-subtitle { color: #666; }
-        body.light .welcome-subtitle { color: #666; }
-        .welcome-subtitle { font-size: 12px; max-width: 260px; line-height: 1.4; margin-bottom: 16px; }
-        .input-card {
-            border-radius: 14px; padding: 4px 4px 4px 14px;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .input-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
-        body.light .input-card { background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3); }
-        .input-wrapper { display: flex; align-items: center; gap: 6px; }
-        .message-input {
-            flex: 1; background: transparent; border: none; padding: 8px 0;
-            font-family: 'Tajawal', sans-serif; font-size: 13px; outline: none;
-            transition: color 0.3s;
-        }
-        body.dark .message-input { color: #e0e0e0; }
-        body.dark .message-input::placeholder { color: #555; }
-        body.light .message-input { color: #1a1a1a; }
-        body.light .message-input::placeholder { color: #999; }
-        .send-btn {
-            width: 34px; height: 34px; border-radius: 10px; border: none;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.2s;
-        }
-        body.dark .send-btn { background: rgba(132, 148, 255, 0.15); color: #8494FF; }
-        body.dark .send-btn:hover { background: rgba(132, 148, 255, 0.25); }
-        body.light .send-btn { background: rgba(132, 148, 255, 0.15); color: #8494FF; }
-        body.light .send-btn:hover { background: rgba(132, 148, 255, 0.25); }
-        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .send-btn i { font-size: 18px; }
-        
-        .spinner {
-            width: 16px; height: 16px;
-            border: 2px solid rgba(132,148,255,0.2);
-            border-top-color: #8494FF;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'evile2026')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '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')
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+DATABASE_URL = "postgresql://evile_site_user:yxWlZVZsC39DhRtXoY7e84ci6NTJgcaR@dpg-d8mpl3rsq97s739pscq0-a.oregon-postgres.render.com/evile_site"
+BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
-        .char-scroll-container { width: 100%; max-width: 320px; margin: 8px auto; }
-        .char-scroll-wrapper {
-            overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch; scrollbar-width: thin;
-            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        }
-        .char-scroll-wrapper:not(.overflowing) { display: flex; justify-content: center; }
-        .char-selector { display: flex; gap: 8px; padding: 6px 0; width: max-content; }
-        .char-selector-btn {
-            scroll-snap-align: center; display: flex; align-items: center; gap: 4px;
-            padding: 4px 12px; border-radius: 24px; cursor: pointer;
-            transition: all 0.2s; white-space: nowrap; font-size: 11px;
-        }
-        body.dark .char-selector-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #888; }
-        body.light .char-selector-btn { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); color: #888; }
-        body.dark .char-selector-btn.active { background: rgba(132, 148, 255, 0.1); border-color: rgba(132, 148, 255, 0.15); color: #8494FF; }
-        body.light .char-selector-btn.active { background: rgba(132, 148, 255, 0.1); border-color: rgba(132, 148, 255, 0.2); color: #8494FF; }
-        .char-selector-btn i { font-size: 14px; }
-        .char-selector-name { font-size: 11px; font-weight: 500; }
+TIMEZONE = pytz.timezone('Asia/Aden')
 
-        .chat-section {
-            flex: 1; display: none; flex-direction: column; overflow: hidden;
-        }
-        .chat-section.active { display: flex; }
-        .messages-container {
-            flex: 1; overflow-y: auto; padding: 12px; margin-bottom: 10px;
-            border-radius: 16px; transition: background 0.3s;
-        }
-        body.dark .messages-container { background: rgba(255,255,255,0.02); }
-        body.light .messages-container { background: rgba(255,255,255,0.3); }
-        .message { margin-bottom: 10px; animation: messageSlide 0.3s ease; }
-        @keyframes messageSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message-time { font-size: 9px; margin-bottom: 2px; }
-        body.dark .message-time { color: #555; }
-        body.light .message-time { color: #999; }
-        .message-content {
-            padding: 8px 12px; border-radius: 12px; font-size: 12px;
-            line-height: 1.5; max-width: 85%; transition: background 0.3s, border 0.3s;
-        }
-        body.dark .message-content { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
-        body.light .message-content { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); }
-        body.dark .message.own .message-content { background: rgba(132,148,255,0.06); border-color: rgba(132,148,255,0.1); }
-        body.light .message.own .message-content { background: rgba(132,148,255,0.08); border-color: rgba(132,148,255,0.15); }
-        .message.own { text-align: left; }
-        .message.own .message-content { margin-right: auto; margin-left: 0; }
-        .ai-bubble {
-            border-radius: 12px; overflow: hidden; max-width: 85%;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .ai-bubble { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
-        body.light .ai-bubble { background: rgba(255,255,255,0.3); border: 1px solid rgba(0,0,0,0.05); }
-        .ai-bubble-label {
-            display: flex; align-items: center; gap: 4px; padding: 6px 10px 0;
-            font-size: 9px; font-weight: 700; color: #8494FF;
-        }
-        .ai-bubble-label i { font-size: 11px; }
-        body.dark .ai-bubble-text { padding: 4px 10px 8px; font-size: 12px; line-height: 1.5; color: #ccc; }
-        body.light .ai-bubble-text { padding: 4px 10px 8px; font-size: 12px; line-height: 1.5; color: #333; }
-        .ai-bubble-footer {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 4px 10px 6px; border-top: 1px solid rgba(128,128,128,0.1);
-        }
-        .ai-social-icons { display: flex; gap: 8px; }
-        .ai-social-icons a { text-decoration: none; font-size: 14px; transition: transform 0.2s; }
-        body.dark .ai-social-icons a { color: #666; }
-        body.light .ai-social-icons a { color: #888; }
-        .ai-social-icons a:active { transform: scale(0.9); }
-        .ai-social-icons .bi-telegram { color: #0088cc; }
-        .ai-social-icons .bi-instagram { color: #e4405f; }
-        .ai-bubble-copy { cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 10px; }
-        body.dark .ai-bubble-copy { color: #666; }
-        body.light .ai-bubble-copy { color: #888; }
-        .ai-bubble-copy i { font-size: 12px; }
-        .ai-bubble-copy:active { opacity: 0.6; }
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-        .home-btn {
-            width: 34px; height: 34px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: background 0.3s, border 0.3s, color 0.3s;
-        }
-        body.dark .home-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #888; }
-        body.light .home-btn { background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3); color: #555; }
-        .home-btn:active { transform: scale(0.9); }
-        .home-btn i { font-size: 18px; }
+_characters_cache = {'data': None, 'timestamp': 0}
+CACHE_TTL = 300
 
-        /* ====== النشر ====== */
-        .publish-section {
-            display: none; flex-direction: column; flex: 1; overflow-y: auto;
-        }
-        .publish-section.active { display: flex; }
-        
-        .publish-container {
-            width: 100%; border-radius: 24px; overflow: hidden; flex: 1;
-            min-height: 500px;
-            border: 1px solid rgba(128,128,128,0.05);
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .publish-container { background: radial-gradient(ellipse at 50% 30%, rgba(132,148,255,0.04) 0%, transparent 70%), #0a0a0a; border-color: rgba(255,255,255,0.03); }
-        body.light .publish-container { background: radial-gradient(ellipse at 50% 30%, rgba(132,148,255,0.03) 0%, transparent 70%), #f0f2f5; border-color: rgba(0,0,0,0.05); }
-        .publish-overlay {
-            padding: 30px 24px; text-align: center; min-height: 500px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: background 0.3s, border 0.3s;
-        }
-        .publish-overlay .icon-center {
-            width: 80px; height: 80px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin-bottom: 20px;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .publish-overlay .icon-center { background: rgba(132, 148, 255, 0.05); border: 1px solid rgba(132, 148, 255, 0.05); }
-        body.light .publish-overlay .icon-center { background: rgba(132, 148, 255, 0.05); border: 1px solid rgba(132, 148, 255, 0.05); }
-        .publish-overlay .icon-center i { font-size: 40px; color: #8494FF; }
-        body.dark .publish-overlay h2 { color: #e0e0e0; }
-        body.light .publish-overlay h2 { color: #1a1a1a; }
-        .publish-overlay h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-        body.dark .publish-overlay .sub { color: #888; }
-        body.light .publish-overlay .sub { color: #666; }
-        .publish-overlay .sub { font-size: 14px; max-width: 320px; margin-bottom: 20px; line-height: 1.8; }
-        
-        .publish-input-group {
-            width: 100%; max-width: 320px; display: flex; align-items: center;
-            border-radius: 14px; padding: 4px 4px 4px 16px; margin-bottom: 16px;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .publish-input-group { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
-        body.light .publish-input-group { background: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.3); }
-        .publish-input-group .telegram-icon { font-size: 20px; margin-left: 10px; color: #8494FF; }
-        body.dark .publish-input-group input { color: #e0e0e0; }
-        body.dark .publish-input-group input::placeholder { color: #555; }
-        body.light .publish-input-group input { color: #1a1a1a; }
-        body.light .publish-input-group input::placeholder { color: #999; }
-        .publish-input-group input {
-            flex: 1; background: transparent; border: none; padding: 14px 0;
-            font-size: 16px; font-family: 'Tajawal', sans-serif; outline: none;
-            transition: color 0.3s;
-        }
-        
-        .btn-start, .btn-agree, .btn-register {
-            width: 100%; max-width: 320px; padding: 8px 20px;
-            border-radius: 40px; font-weight: 700; font-size: 14px;
-            cursor: pointer; transition: all 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: 'Tajawal', sans-serif; margin-bottom: 8px;
-        }
-        body.dark .btn-start, body.dark .btn-agree, body.dark .btn-register {
-            background: rgba(132, 148, 255, 0.08);
-            border: 1px solid rgba(132, 148, 255, 0.1);
-            color: #8494FF;
-        }
-        body.dark .btn-start:hover, body.dark .btn-agree:hover, body.dark .btn-register:hover {
-            background: rgba(132, 148, 255, 0.15);
-        }
-        body.light .btn-start, body.light .btn-agree, body.light .btn-register {
-            background: rgba(132, 148, 255, 0.1);
-            border: 1px solid rgba(132, 148, 255, 0.15);
-            color: #8494FF;
-        }
-        body.light .btn-start:hover, body.light .btn-agree:hover, body.light .btn-register:hover {
-            background: rgba(132, 148, 255, 0.2);
-        }
-        .btn-start:disabled, .btn-agree:disabled, .btn-register:disabled { opacity: 0.4; pointer-events: none; }
-        
-        .terms-box {
-            border-radius: 16px; padding: 16px 20px; margin-bottom: 20px;
-            max-width: 380px; width: 100%; text-align: right;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .terms-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); }
-        body.light .terms-box { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); }
-        body.dark .terms-box p { color: #888; }
-        body.light .terms-box p { color: #555; }
-        .terms-box p { font-size: 13px; line-height: 1.8; }
-        .terms-box p i { color: #8494FF; margin-left: 6px; }
-        body.dark .terms-box p strong { color: #aaa; }
-        body.light .terms-box p strong { color: #333; }
-        
-        .publish-form {
-            width: 100%; max-width: 320px; display: none; flex-direction: column; gap: 12px;
-        }
-        .publish-form.show { display: flex; }
-        .publish-form .form-group { text-align: right; }
-        body.dark .publish-form label { color: #888; }
-        body.light .publish-form label { color: #555; }
-        .publish-form label { font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block; }
-        body.dark .publish-form input { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #e0e0e0; }
-        body.dark .publish-form input::placeholder { color: #555; }
-        body.light .publish-form input { background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.05); color: #1a1a1a; }
-        body.light .publish-form input::placeholder { color: #999; }
-        .publish-form input {
-            width: 100%; padding: 12px 16px;
-            border-radius: 14px; font-size: 14px;
-            font-family: 'Tajawal', sans-serif; outline: none;
-            transition: background 0.3s, border 0.3s, color 0.3s;
-        }
-        .publish-form input:focus { border-color: #8494FF; }
-        
-        .btn-add-bot {
-            width: 100%; padding: 12px;
-            border-radius: 40px; font-weight: 700; font-size: 14px;
-            cursor: pointer; transition: all 0.3s; text-decoration: none;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: 'Tajawal', sans-serif;
-        }
-        body.dark .btn-add-bot { background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.1); color: #00aaff; }
-        body.dark .btn-add-bot:hover { background: rgba(0, 136, 204, 0.15); }
-        body.light .btn-add-bot { background: rgba(0, 136, 204, 0.1); border: 1px solid rgba(0, 136, 204, 0.15); color: #0088cc; }
-        body.light .btn-add-bot:hover { background: rgba(0, 136, 204, 0.15); }
-        .btn-add-bot:active { transform: scale(0.96); }
-        
-        .publish-flash {
-            padding: 10px 16px; border-radius: 12px; margin-bottom: 12px;
-            font-size: 13px; display: none; max-width: 320px; width: 100%;
-            transition: background 0.3s, color 0.3s;
-        }
-        body.dark .publish-flash { background: rgba(220,53,69,0.1); color: #ff6b7a; }
-        body.light .publish-flash { background: rgba(220,53,69,0.1); color: #dc3545; }
-        body.dark .publish-flash.success { background: rgba(40,167,69,0.1); color: #5ddb7a; }
-        body.light .publish-flash.success { background: rgba(40,167,69,0.1); color: #28a745; }
-        .publish-flash.show { display: block; }
-        body.dark .publish-hint { color: #555; }
-        body.light .publish-hint { color: #999; }
-        .publish-hint { margin-top: 8px; font-size: 11px; }
+# ==================== قاعدة البيانات ====================
+@contextmanager
+def get_db():
+    conn = None
+    cur = None
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        yield cur
+        conn.commit()
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        logger.error(f"Database error: {str(e)}")
+        raise
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
-        /* ====== لوحة التحكم ====== */
-        .dashboard-container {
-            width: 100%; border-radius: 24px; padding: 20px;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .dashboard-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); }
-        body.light .dashboard-container { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); }
-        .dashboard-container .channel-header {
-            display: flex; align-items: center; gap: 16px;
-            margin-bottom: 20px; padding-bottom: 16px;
-            border-bottom: 1px solid rgba(128,128,128,0.1);
-        }
-        .dashboard-container .channel-avatar {
-            width: 56px; height: 56px; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; flex-shrink: 0;
-            background: rgba(132, 148, 255, 0.1);
-            color: #8494FF;
-        }
-        body.dark .dashboard-container .channel-info h2 { color: #e0e0e0; }
-        body.light .dashboard-container .channel-info h2 { color: #1a1a1a; }
-        .dashboard-container .channel-info h2 { font-size: 18px; font-weight: 800; }
-        body.dark .dashboard-container .channel-info .username { color: #666; }
-        body.light .dashboard-container .channel-info .username { color: #888; }
-        .dashboard-container .channel-info .username { font-size: 13px; }
-        body.dark .dashboard-container .channel-info .bio { color: #555; }
-        body.light .dashboard-container .channel-info .bio { color: #999; }
-        .dashboard-container .channel-info .bio { font-size: 12px; margin-top: 4px; }
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px;
-        }
-        body.dark .stat-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); }
-        body.light .stat-card { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); }
-        .stat-card {
-            border-radius: 12px; padding: 12px; text-align: center;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .stat-card .number { color: #e0e0e0; }
-        body.light .stat-card .number { color: #1a1a1a; }
-        .stat-card .number { font-size: 20px; font-weight: 800; }
-        body.dark .stat-card .label { color: #666; }
-        body.light .stat-card .label { color: #888; }
-        .stat-card .label { font-size: 10px; margin-top: 2px; }
-        .stat-card i { font-size: 16px; color: #8494FF; display: block; margin-bottom: 4px; }
-        
-        .content-selector {
-            border-radius: 16px; padding: 16px; margin-bottom: 20px;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .content-selector { background: rgba(255, 240, 217, 0.03); border: 1px solid rgba(255, 240, 217, 0.04); }
-        body.light .content-selector { background: rgba(255, 240, 217, 0.3); border: 1px solid rgba(255, 240, 217, 0.5); }
-        body.dark .content-selector h3 { color: #888; }
-        body.light .content-selector h3 { color: #555; }
-        .content-selector h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .content-selector h3 i { color: #8494FF; }
-        .content-selector .selector-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        body.dark .content-selector select { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #e0e0e0; }
-        body.dark .content-selector select option { background: #1a1a1a; }
-        body.light .content-selector select { background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1); color: #1a1a1a; }
-        body.light .content-selector select option { background: #fff; }
-        .content-selector select {
-            flex: 1; padding: 10px 14px; border-radius: 12px;
-            font-family: 'Tajawal', sans-serif; font-size: 13px; min-width: 150px;
-            transition: background 0.3s, border 0.3s, color 0.3s;
-        }
-        .content-selector select:focus { outline: none; border-color: #8494FF; }
-        body.dark .btn-select { background: rgba(132, 148, 255, 0.08); border: 1px solid rgba(132, 148, 255, 0.1); color: #8494FF; }
-        body.dark .btn-select:hover { background: rgba(132, 148, 255, 0.15); }
-        body.light .btn-select { background: rgba(132, 148, 255, 0.1); border: 1px solid rgba(132, 148, 255, 0.2); color: #333; }
-        body.light .btn-select:hover { background: rgba(132, 148, 255, 0.2); }
-        .btn-select {
-            padding: 10px 20px; border-radius: 40px; font-weight: 600; font-size: 13px;
-            cursor: pointer; transition: all 0.2s; font-family: 'Tajawal', sans-serif;
-        }
-        .btn-select:disabled { opacity: 0.4; cursor: not-allowed; }
-        body.dark .selected-content-info { background: rgba(255,255,255,0.02); color: #888; }
-        body.light .selected-content-info { background: rgba(255,255,255,0.5); color: #555; }
-        .selected-content-info {
-            margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 12px;
-            border-right: 3px solid #8494FF; transition: background 0.3s, color 0.3s;
-        }
-        body.dark .selected-content-info strong { color: #e0e0e0; }
-        body.light .selected-content-info strong { color: #1a1a1a; }
-        .selected-content-info strong { transition: color 0.3s; }
-        
-        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .actions .btn {
-            flex: 1; padding: 10px 16px; border: none; border-radius: 40px;
-            font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            font-family: 'Tajawal', sans-serif; min-width: 80px;
-        }
-        body.dark .btn-pause { background: rgba(255, 240, 217, 0.06); border: 1px solid rgba(255, 240, 217, 0.08); color: #ffd966; }
-        body.dark .btn-pause:hover { background: rgba(255, 240, 217, 0.12); }
-        body.light .btn-pause { background: rgba(255, 240, 217, 0.8); border: 1px solid rgba(255, 240, 217, 0.5); color: #333; }
-        body.light .btn-pause:hover { background: rgba(255, 240, 217, 1); }
-        body.dark .btn-stop { background: rgba(220,53,69,0.06); border: 1px solid rgba(220,53,69,0.08); color: #ff6b7a; }
-        body.dark .btn-stop:hover { background: rgba(220,53,69,0.12); }
-        body.light .btn-stop { background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.2); color: #dc3545; }
-        body.light .btn-stop:hover { background: rgba(220,53,69,0.2); }
-        body.dark .btn-publish { background: rgba(132, 148, 255, 0.06); border: 1px solid rgba(132, 148, 255, 0.08); color: #8494FF; }
-        body.dark .btn-publish:hover { background: rgba(132, 148, 255, 0.12); }
-        body.light .btn-publish { background: rgba(132, 148, 255, 0.1); border: 1px solid rgba(132, 148, 255, 0.2); color: #333; }
-        body.light .btn-publish:hover { background: rgba(132, 148, 255, 0.2); }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        
-        body.dark .recent-posts { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); }
-        body.light .recent-posts { background: rgba(255,255,255,0.3); border: 1px solid rgba(0,0,0,0.05); }
-        .recent-posts {
-            border-radius: 16px; padding: 16px;
-            transition: background 0.3s, border 0.3s;
-        }
-        body.dark .recent-posts h3 { color: #888; }
-        body.light .recent-posts h3 { color: #555; }
-        .recent-posts h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .recent-posts h3 i { color: #8494FF; }
-        body.dark .post-item { color: #aaa; border-color: rgba(255,255,255,0.03); }
-        body.light .post-item { color: #555; border-color: rgba(0,0,0,0.05); }
-        .post-item {
-            padding: 8px 0; font-size: 12px; line-height: 1.5;
-            border-bottom: 1px solid rgba(128,128,128,0.05);
-            transition: color 0.3s, border-color 0.3s;
-        }
-        body.dark .post-item .time { color: #555; }
-        body.light .post-item .time { color: #999; }
-        .post-item .time { font-size: 10px; display: block; margin-bottom: 2px; }
-        .post-item:last-child { border-bottom: none; }
-        
-        body.dark .status-badge { background: rgba(40,167,69,0.08); color: #5ddb7a; }
-        body.light .status-badge { background: rgba(40,167,69,0.1); color: #28a745; }
-        body.dark .status-badge.paused { background: rgba(255,193,7,0.08); color: #ffd966; }
-        body.light .status-badge.paused { background: rgba(255,193,7,0.1); color: #ffc107; }
-        body.dark .status-badge.inactive { background: rgba(220,53,69,0.08); color: #ff6b7a; }
-        body.light .status-badge.inactive { background: rgba(220,53,69,0.1); color: #dc3545; }
-        .status-badge {
-            display: inline-block; padding: 3px 12px; border-radius: 40px;
-            font-size: 11px; font-weight: 600;
-            transition: background 0.3s, color 0.3s;
-        }
-        
-        body.dark .toast { background: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.04); color: #e0e0e0; }
-        body.light .toast { background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
-        .toast {
-            position: fixed; bottom: 65px; left: 20px; right: 20px;
-            backdrop-filter: blur(20px); padding: 12px 18px; border-radius: 14px;
-            text-align: center; z-index: 1000; display: none; font-size: 13px;
-            max-width: 500px; margin: 0 auto; transition: background 0.3s, border 0.3s, color 0.3s;
-        }
+def ensure_notification_columns(cur):
+    cur.execute("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='notifications' AND column_name='duration_hours'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE notifications ADD COLUMN duration_hours INTEGER DEFAULT 1")
+        logger.info("Added column duration_hours to notifications table")
+    cur.execute("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='notifications' AND column_name='show_in_chat'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE notifications ADD COLUMN show_in_chat BOOLEAN DEFAULT FALSE")
+        logger.info("Added column show_in_chat to notifications table")
 
-        .bottom-sheet-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
-            z-index: 1000; display: none; align-items: flex-end; justify-content: center;
-            padding-bottom: 60px;
-        }
-        .bottom-sheet-overlay.active { display: flex; }
-        body.dark .bottom-sheet { background: rgba(20,20,30,0.95); border: 1px solid rgba(255,255,255,0.04); }
-        body.light .bottom-sheet { background: rgba(255,255,255,0.95); border: 1px solid rgba(0,0,0,0.05); }
-        .bottom-sheet {
-            width: 100%; max-width: 600px; max-height: 70vh;
-            border-radius: 20px 20px 0 0; padding: 20px;
-            animation: slideUp 0.4s ease; overflow-y: auto;
-            transition: background 0.3s, border 0.3s;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .sheet-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 12px; padding-bottom: 10px;
-            border-bottom: 1px solid rgba(128,128,128,0.05);
-        }
-        body.dark .sheet-title { color: #e0e0e0; }
-        body.light .sheet-title { color: #1a1a1a; }
-        .sheet-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .sheet-title i { color: #8494FF; font-size: 18px; }
-        body.dark .sheet-close { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); color: #888; }
-        body.light .sheet-close { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); color: #888; }
-        .sheet-close {
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .sheet-close:active { transform: scale(0.9); }
-        body.dark .sheet-instruction { color: #666; }
-        body.light .sheet-instruction { color: #999; }
-        .sheet-instruction { font-size: 11px; text-align: center; margin-bottom: 16px; }
-        .characters-list, .notifications-list { display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; }
-        body.dark .char-list-item, body.dark .notif-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); }
-        body.dark .char-list-item:hover, body.dark .notif-item:hover { background: rgba(255,255,255,0.04); }
-        body.light .char-list-item, body.light .notif-item { background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); }
-        body.light .char-list-item:hover, body.light .notif-item:hover { background: rgba(255,255,255,0.8); }
-        .char-list-item, .notif-item {
-            display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-            border-radius: 14px; cursor: pointer; transition: all 0.2s;
-        }
-        body.dark .char-list-item.active { border-color: rgba(132,148,255,0.15); background: rgba(132,148,255,0.04); }
-        body.light .char-list-item.active { border-color: rgba(132,148,255,0.2); background: rgba(132,148,255,0.04); }
-        .char-list-icon, .notif-icon {
-            width: 36px; height: 36px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; color: #8494FF;
-            background: rgba(132,148,255,0.05);
-        }
-        .char-list-info, .notif-content { flex: 1; text-align: right; }
-        body.dark .char-list-name, body.dark .notif-title { color: #e0e0e0; }
-        body.light .char-list-name, body.light .notif-title { color: #1a1a1a; }
-        .char-list-name, .notif-title { font-size: 13px; font-weight: 700; }
-        body.dark .char-list-desc, body.dark .notif-text { color: #666; }
-        body.light .char-list-desc, body.light .notif-text { color: #666; }
-        .char-list-desc, .notif-text { font-size: 10px; line-height: 1.3; }
-        .char-list-check {
-            width: 20px; height: 20px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: #8494FF; color: #fff; font-size: 12px;
-            opacity: 0; transition: opacity 0.2s;
-        }
-        .char-list-item.active .char-list-check { opacity: 1; }
-        
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr 1fr 1fr; }
-            .actions .btn { flex: 1 1 45%; }
-            .publish-overlay { padding: 20px; }
-            .publish-overlay h2 { font-size: 20px; }
-        }
-    </style>
-</head>
-<body class="dark">
-    <div class="bg-animation"></div>
-
-    <header class="floating-header">
-        <div style="display: flex; gap: 4px;">
-            <div class="header-circle" onclick="openCharactersSheet()">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="header-circle" onclick="toggleTheme()">
-                <i class="bi bi-moon-fill" id="themeIcon"></i>
-            </div>
-        </div>
-        <div class="logo-wrapper">
-            <div class="logo-center"><span class="logo-text">EVILE</span></div>
-            <div class="active-users-box">
-                <i class="bi bi-person-friends"></i>
-                <span id="activeCount">0</span>
-            </div>
-        </div>
-        <div class="header-circle" onclick="openNotificationsSheet()" style="position:relative;">
-            <i class="bi bi-bell"></i>
-            <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <!-- ====== الدردشة ====== -->
-        <div class="welcome-section" id="welcomeSection">
-            <div id="welcomeLogo">
-                <div class="sparkle-icon"><i class="bi bi-stars"></i></div>
-            </div>
-            <h1 class="welcome-title" id="welcomeTitle">ابنِ أفكارك مع EVILE</h1>
-            <p class="welcome-subtitle" id="welcomeSubtitle">اختر شخصية وابدأ محادثة إبداعية</p>
-            <div class="welcome-input-card" style="width:100%; max-width:320px;">
-                <div class="input-card">
-                    <div class="input-wrapper">
-                        <input type="text" class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." onkeypress="handleWelcomeKey(event)">
-                        <button class="send-btn" id="welcomeSendBtn" onclick="sendWelcomeMessage()">
-                            <i class="bi bi-send"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="char-scroll-container">
-                <div class="char-scroll-wrapper" id="charScrollWrapper">
-                    <div class="char-selector" id="charSelector"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="chat-section" id="chatSection">
-            <div class="messages-container" id="messagesContainer"></div>
-            <div class="input-section">
-                <div class="input-card">
-                    <div class="input-wrapper">
-                        <button class="home-btn" onclick="goHome()" title="الرئيسية">
-                            <i class="bi bi-house-door"></i>
-                        </button>
-                        <input type="text" class="message-input" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKey(event)">
-                        <button class="send-btn" id="sendBtn" onclick="sendChatMessage()">
-                            <i class="bi bi-send"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== النشر ====== -->
-        <div class="publish-section" id="publishSection">
-            <div class="publish-container">
-                <div class="publish-overlay" id="publishOverlay">
-                    <!-- الحالة 1: الترحيب / طلب ID -->
-                    <div id="publishWelcome" style="display:flex; flex-direction:column; align-items:center; width:100%;">
-                        <div class="icon-center"><i class="bi bi-megaphone"></i></div>
-                        <h2>🚀 نشر تلقائي</h2>
-                        <p class="sub">أدخل معرف التلغرام لعرض بيانات قناتك أو تسجيل قناة جديدة</p>
-                        <div class="publish-input-group">
-                            <i class="bi bi-telegram telegram-icon"></i>
-                            <input type="text" id="publishTelegramId" placeholder="أدخل معرف التلغرام" value="{{ telegram_id or '' }}">
-                        </div>
-                        <button class="btn-start" id="publishStartBtn">
-                            <i class="bi bi-arrow-left"></i> عرض بياناتي
-                        </button>
-                        <div style="margin-top:12px; font-size:11px; color:#666;">
-                            <i class="bi bi-info-circle"></i> سيتم تذكر جلسة الدخول تلقائياً
-                        </div>
-                    </div>
-
-                    <!-- الحالة 2: الموافقة على الشروط -->
-                    <div id="publishTerms" style="display:none; flex-direction:column; align-items:center; width:100%;">
-                        <div class="icon-center"><i class="bi bi-check-circle"></i></div>
-                        <h2>شروط الخدمة</h2>
-                        <p class="sub">يرجى قراءة الشروط قبل الموافقة</p>
-                        <div class="terms-box">
-                            <p><i class="bi bi-check-circle"></i> <strong>شروط الخدمة:</strong></p>
-                            <p>• بالموافقة، أنت توافق على نشر الإعلانات داخل قناتك كجزء من الخدمة.</p>
-                            <p>• سيتم نشر محتوى تقني يومي بتوقيت محدد.</p>
-                            <p>• يمكنك إيقاف الخدمة في أي وقت عبر لوحة التحكم.</p>
-                            <p>• نضمن جودة المحتوى وملاءمته للقنوات التقنية.</p>
-                        </div>
-                        <button class="btn-agree" id="publishAgreeBtn">
-                            <i class="bi bi-check-lg"></i> أوافق على الشروط
-                        </button>
-                    </div>
-
-                    <!-- الحالة 3: تسجيل القناة -->
-                    <div id="publishRegister" style="display:none; flex-direction:column; align-items:center; width:100%;">
-                        <div class="icon-center"><i class="bi bi-plus-circle"></i></div>
-                        <h2>تسجيل القناة</h2>
-                        <p class="sub">أضف البوت وسجل قناتك للبدء</p>
-                        <div class="publish-flash" id="publishFlash"></div>
-                        <a href="https://t.me/eV7Ile_bot?startchannel=start" target="_blank" class="btn-add-bot">
-                            <i class="bi bi-plus-circle"></i> إضافة البوت @eV7Ile_bot إلى القناة
-                        </a>
-                        <form id="publishRegisterForm" style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:12px; margin-top:8px;">
-                            <div class="form-group">
-                                <label>اسم المستخدم (يبدأ بـ @)</label>
-                                <input type="text" id="publishChannelUsername" placeholder="@my_channel" required>
-                            </div>
-                            <button type="submit" class="btn-register">
-                                <i class="bi bi-save"></i> تسجيل القناة
-                            </button>
-                        </form>
-                        <div class="publish-hint">تأكد من إضافة البوت كمشرف في قناتك</div>
-                    </div>
-
-                    <!-- الحالة 4: لوحة التحكم -->
-                    <div id="publishDashboard" style="display:none; width:100%;">
-                        <div id="dashboardContent"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== الأوراق السفلية ====== -->
-    <div class="bottom-sheet-overlay" id="charactersSheet" onclick="closeSheetOnBackdrop(event, 'charactersSheet')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()">
-            <div class="sheet-header">
-                <div class="sheet-title"><i class="bi bi-people"></i> الشخصيات</div>
-                <button class="sheet-close" onclick="closeSheet('charactersSheet')"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="sheet-instruction">اختر الشخصية المناسبة لمحادثتك</div>
-            <div id="charactersList" class="characters-list"></div>
-        </div>
-    </div>
-
-    <div class="bottom-sheet-overlay" id="notificationsSheet" onclick="closeSheetOnBackdrop(event, 'notificationsSheet')">
-        <div class="bottom-sheet" onclick="event.stopPropagation()">
-            <div class="sheet-header">
-                <div class="sheet-title"><i class="bi bi-bell"></i> الإشعارات</div>
-                <button class="sheet-close" onclick="closeSheet('notificationsSheet')"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div id="notificationsList" class="notifications-list"></div>
-        </div>
-    </div>
-
-    <!-- ====== الشريط السفلي ====== -->
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" id="navChat" onclick="switchTab('chat')">
-            <i class="bi bi-chat-dots"></i>
-            <span>دردشة</span>
-        </button>
-        <button class="nav-item" id="navPublish" onclick="switchTab('publish')">
-            <i class="bi bi-megaphone"></i>
-            <span>نشر</span>
-        </button>
-    </nav>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
-        // ====== بيانات من Flask ======
-        let characters = [];
-        try { characters = {{ characters|tojson }}; } catch(e) { characters = []; }
-        if (!characters || characters.length === 0) {
-            characters = [{
-                id: 0,
-                name: 'EVILE',
-                description: 'مساعد ذكي لتوليد الأفكار',
-                callback_key: 'evile_default',
-                prompt: 'أنت مساعد ذكي ومبدع.',
-                logo_url: ''
-            }];
-        }
-        let currentCharacter = characters[0]?.callback_key || 'evile_default';
-        let isFirstMessage = true, isProcessing = false;
-        let publishState = 'welcome';
-        let sessionTelegramId = null;
-        try { sessionTelegramId = {{ telegram_id|tojson }}; } catch(e) { sessionTelegramId = null; }
-
-        // ====== عناصر DOM ======
-        const welcomeSection = document.getElementById('welcomeSection');
-        const chatSection = document.getElementById('chatSection');
-        const publishSection = document.getElementById('publishSection');
-        const bottomNav = document.getElementById('bottomNav');
-        const charScrollWrapper = document.getElementById('charScrollWrapper');
-
-        // ====== تبديل التبويبات ======
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if (tab === 'chat') {
-                document.getElementById('navChat').classList.add('active');
-                welcomeSection.classList.add('active');
-                chatSection.classList.remove('active');
-                publishSection.classList.remove('active');
-                bottomNav.classList.remove('hidden');
-            } else {
-                document.getElementById('navPublish').classList.add('active');
-                welcomeSection.classList.remove('active');
-                chatSection.classList.remove('active');
-                publishSection.classList.add('active');
-                bottomNav.classList.remove('hidden');
-                loadPublishState();
-            }
-        }
-
-        // ====== الثيم ======
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('themeIcon');
-            if (body.classList.contains('dark')) {
-                body.classList.remove('dark');
-                body.classList.add('light');
-                icon.className = 'bi bi-sun-fill';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.classList.remove('light');
-                body.classList.add('dark');
-                icon.className = 'bi bi-moon-fill';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.remove('dark');
-            document.body.classList.add('light');
-            document.getElementById('themeIcon').className = 'bi bi-sun-fill';
-        } else {
-            document.body.classList.add('dark');
-            document.getElementById('themeIcon').className = 'bi bi-moon-fill';
-        }
-
-        // ====== دوال الدردشة ======
-        function updateNavVisibility() {
-            if (chatSection.classList.contains('active')) {
-                bottomNav.classList.add('hidden');
-            } else {
-                bottomNav.classList.remove('hidden');
-            }
-        }
-        const observer = new MutationObserver(updateNavVisibility);
-        observer.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
-
-        window.goHome = function() {
-            chatSection.classList.remove('active');
-            welcomeSection.classList.add('active');
-            document.getElementById('messagesContainer').innerHTML = '';
-            isFirstMessage = true;
-            updateNavVisibility();
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('navChat').classList.add('active');
-        };
-
-        function initScreen() {
-            welcomeSection.classList.add('active');
-            chatSection.classList.remove('active');
-            publishSection.classList.remove('active');
-            updateNavVisibility();
-            updateActiveUsers();
-            renderCharSelector();
-            renderCharactersSheet();
-            updateWelcomeDisplay();
+def init_db():
+    try:
+        with get_db() as cur:
+            cur.execute('''CREATE TABLE IF NOT EXISTS characters (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                prompt TEXT NOT NULL,
+                callback_key TEXT UNIQUE NOT NULL,
+                logo_url TEXT DEFAULT ''
+            )''')
+            cur.execute('''CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                text TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                duration_hours INTEGER DEFAULT 1,
+                show_in_chat BOOLEAN DEFAULT FALSE
+            )''')
+            cur.execute('''CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                telegram_id TEXT UNIQUE NOT NULL,
+                last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
             
-            if (sessionTelegramId) {
-                setTimeout(loadPublishState, 500);
-            }
-        }
-
-        function updateActiveUsers() {
-            fetch('/api/active_users')
-                .then(r => r.json())
-                .then(d => { document.getElementById('activeCount').textContent = d.count || 0; })
-                .catch(() => {});
-        }
-
-        function renderCharSelector() {
-            const selector = document.getElementById('charSelector');
-            if (!characters || characters.length === 0) {
-                selector.innerHTML = '<div class="char-selector-btn" style="cursor:default;">لا توجد شخصيات</div>';
-                return;
-            }
-            selector.innerHTML = characters.map(c => `
-                <div class="char-selector-btn ${c.callback_key === currentCharacter ? 'active' : ''}" data-key="${c.callback_key}">
-                    <i class="bi bi-robot"></i>
-                    <span class="char-selector-name">${escapeHtml(c.name)}</span>
-                </div>
-            `).join('');
-            if (charScrollWrapper) {
-                const overflow = selector.scrollWidth > charScrollWrapper.clientWidth;
-                charScrollWrapper.classList.toggle('overflowing', overflow);
-                if (!overflow) {
-                    charScrollWrapper.style.display = 'flex';
-                    charScrollWrapper.style.justifyContent = 'center';
-                }
-            }
-            document.querySelectorAll('.char-selector-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const key = btn.dataset.key;
-                    if (key) selectCharacter(key);
-                });
-            });
-        }
-
-        function renderCharactersSheet() {
-            const list = document.getElementById('charactersList');
-            if (!characters || characters.length === 0) {
-                list.innerHTML = '<div class="char-list-item" style="justify-content:center; color:#666;">لا توجد شخصيات بعد</div>';
-                return;
-            }
-            list.innerHTML = characters.map(c => `
-                <div class="char-list-item ${c.callback_key === currentCharacter ? 'active' : ''}" onclick="selectCharacter('${c.callback_key}')">
-                    <div class="char-list-icon"><i class="bi bi-robot"></i></div>
-                    <div class="char-list-info">
-                        <div class="char-list-name">${escapeHtml(c.name)}</div>
-                        <div class="char-list-desc">${escapeHtml(c.description)}</div>
-                    </div>
-                    <div class="char-list-check"><i class="bi bi-check-lg"></i></div>
-                </div>
-            `).join('');
-        }
-
-        async function renderNotificationsSheet() {
-            try {
-                const res = await fetch('/api/notifications');
-                const notifications = await res.json();
-                const list = document.getElementById('notificationsList');
-                const badge = document.getElementById('notifBadge');
-                if (!notifications || notifications.length === 0) {
-                    list.innerHTML = '<div class="notif-item" style="justify-content:center; color:#666;">لا توجد إشعارات</div>';
-                    badge.style.display = 'none';
-                    return;
-                }
-                badge.textContent = notifications.length;
-                badge.style.display = 'flex';
-                list.innerHTML = notifications.map(n => `
-                    <div class="notif-item">
-                        <div class="notif-icon"><i class="bi bi-bell"></i></div>
-                        <div class="notif-content">
-                            <div class="notif-title">${escapeHtml(n.title)}</div>
-                            <div class="notif-text">${escapeHtml(n.text)}</div>
-                            <div style="font-size:10px; color:#666;">${escapeHtml(n.created_at)}</div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch(e) { console.error(e); }
-        }
-
-        function updateWelcomeDisplay() {
-            const char = characters.find(c => c.callback_key === currentCharacter);
-            const logo = document.getElementById('welcomeLogo');
-            const title = document.getElementById('welcomeTitle');
-            const sub = document.getElementById('welcomeSubtitle');
-            if (char) {
-                logo.innerHTML = `<div class="sparkle-icon"><i class="bi bi-robot"></i></div>`;
-                title.textContent = char.name;
-                sub.textContent = char.description;
-            } else {
-                logo.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
-                title.textContent = 'ابنِ أفكارك مع EVILE';
-                sub.textContent = 'اختر شخصية وابدأ محادثة إبداعية';
-            }
-        }
-
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m] || m); }
-
-        function setButtonLoading(btn, loading) {
-            if (!btn) return;
-            btn.disabled = loading;
-            btn.innerHTML = loading ? '<div class="spinner"></div>' : '<i class="bi bi-send"></i>';
-        }
-
-        function addMessage(text, isOwn) {
-            const container = document.getElementById('messagesContainer');
-            const time = new Date().toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' });
-            const div = document.createElement('div');
-            div.className = `message ${isOwn ? 'own' : ''}`;
-            div.innerHTML = `<div class="message-time">${time}</div><div class="message-content">${escapeHtml(text)}</div>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function showLoading() {
-            const container = document.getElementById('messagesContainer');
-            const div = document.createElement('div');
-            div.id = 'loadingMessage';
-            div.className = 'message';
-            div.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>';
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
-        function removeLoading() { const el = document.getElementById('loadingMessage'); if (el) el.remove(); }
-
-        async function streamResponse(text) {
-            return new Promise((resolve) => {
-                const container = document.getElementById('messagesContainer');
-                const time = new Date().toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' });
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'message';
-                msgDiv.innerHTML = `<div class="message-time">${time}</div>`;
-                container.appendChild(msgDiv);
-                const bubble = document.createElement('div');
-                bubble.className = 'ai-bubble';
-                bubble.innerHTML = `
-                    <div class="ai-bubble-label"><i class="bi bi-cpu"></i> AI</div>
-                    <div class="ai-bubble-text"></div>
-                    <div class="ai-bubble-footer">
-                        <div class="ai-social-icons">
-                            <a href="https://t.me/Evile_Prompts" target="_blank" class="bi bi-telegram"></a>
-                            <a href="https://www.instagram.com/bla6c7" target="_blank" class="bi bi-instagram"></a>
-                        </div>
-                        <div class="ai-bubble-copy"><i class="bi bi-files"></i> <span>نسخ</span></div>
-                    </div>
-                `;
-                msgDiv.appendChild(bubble);
-                const textEl = bubble.querySelector('.ai-bubble-text');
-                const copyBtn = bubble.querySelector('.ai-bubble-copy');
-                copyBtn.onclick = () => {
-                    navigator.clipboard.writeText(textEl.innerText).then(() => {
-                        copyBtn.innerHTML = '<i class="bi bi-check-lg"></i> <span>تم</span>';
-                        setTimeout(() => { copyBtn.innerHTML = '<i class="bi bi-files"></i> <span>نسخ</span>'; }, 1500);
-                    });
-                };
-                const cursor = document.createElement('span');
-                cursor.className = 'cursor';
-                textEl.appendChild(cursor);
-                let idx = 0;
-                const interval = setInterval(() => {
-                    if (idx < text.length) {
-                        const span = document.createElement('span');
-                        span.textContent = text.charAt(idx);
-                        textEl.insertBefore(span, cursor);
-                        idx++;
-                        container.scrollTop = container.scrollHeight;
-                    } else {
-                        clearInterval(interval);
-                        cursor.remove();
-                        resolve();
-                    }
-                }, 20);
-            });
-        }
-
-        async function actuallySendMessage(message) {
-            if (isProcessing) return;
-            isProcessing = true;
-            const sendBtn = document.getElementById('sendBtn') || document.getElementById('welcomeSendBtn');
-            setButtonLoading(sendBtn, true);
-            addMessage(message, true);
-            document.getElementById('welcomeInput').value = '';
-            showLoading();
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ character: currentCharacter, message })
-                });
-                const data = await res.json();
-                removeLoading();
-                if (data.response) await streamResponse(data.response);
-                else addMessage('حدث خطأ. حاول مرة أخرى.', false);
-            } catch (err) {
-                removeLoading();
-                addMessage('خطأ في الاتصال.', false);
-            }
-            isProcessing = false;
-            setButtonLoading(sendBtn, false);
-        }
-
-        window.sendWelcomeMessage = async function() {
-            if (isProcessing) return;
-            const input = document.getElementById('welcomeInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            if (isFirstMessage) {
-                welcomeSection.classList.remove('active');
-                chatSection.classList.add('active');
-                isFirstMessage = false;
-                updateNavVisibility();
-            }
-            await actuallySendMessage(msg);
-        };
-
-        async function sendChatMessage() {
-            if (isProcessing) return;
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if (!msg) return;
-            await actuallySendMessage(msg);
-        }
-
-        function handleWelcomeKey(e) { if (e.key === 'Enter') sendWelcomeMessage(); }
-        function handleChatKey(e) { if (e.key === 'Enter') sendChatMessage(); }
-
-        function openCharactersSheet() { renderCharactersSheet(); document.getElementById('charactersSheet').classList.add('active'); }
-        async function openNotificationsSheet() { await renderNotificationsSheet(); document.getElementById('notificationsSheet').classList.add('active'); document.getElementById('notifBadge').style.display = 'none'; }
-        function closeSheet(id) { document.getElementById(id).classList.remove('active'); }
-        function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
-        function selectCharacter(key) {
-            currentCharacter = key;
-            renderCharSelector();
-            renderCharactersSheet();
-            updateWelcomeDisplay();
-            closeSheet('charactersSheet');
-            const char = characters.find(c => c.callback_key === key);
-            if (char) {
-                document.getElementById('welcomeInput').placeholder = `اكتب لـ ${char.name}...`;
-                document.getElementById('chatInput').placeholder = `اكتب لـ ${char.name}...`;
-            }
-        }
-
-        // ====== دوال النشر ======
-        function showToast(msg, duration = 3000) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.display = 'block';
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
-        }
-
-        function setPublishState(state, data = null) {
-            publishState = state;
-            const welcome = document.getElementById('publishWelcome');
-            const terms = document.getElementById('publishTerms');
-            const register = document.getElementById('publishRegister');
-            const dashboard = document.getElementById('publishDashboard');
+            cur.execute('''CREATE TABLE IF NOT EXISTS publish_channels (
+                id SERIAL PRIMARY KEY,
+                telegram_id TEXT NOT NULL UNIQUE,
+                channel_id TEXT NOT NULL UNIQUE,
+                channel_username TEXT,
+                channel_name TEXT,
+                channel_bio TEXT,
+                members_count INTEGER DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
+                is_paused BOOLEAN DEFAULT FALSE,
+                selected_content_id INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_post_at TIMESTAMP
+            )''')
             
-            [welcome, terms, register, dashboard].forEach(el => el.style.display = 'none');
+            cur.execute('''CREATE TABLE IF NOT EXISTS publish_contents (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                prompt TEXT NOT NULL,
+                publish_time TIME NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
             
-            if (state === 'welcome') {
-                welcome.style.display = 'flex';
-                welcome.style.flexDirection = 'column';
-                welcome.style.alignItems = 'center';
-                welcome.style.width = '100%';
-                const idInput = document.getElementById('publishTelegramId');
-                if (sessionTelegramId && !idInput.value) {
-                    idInput.value = sessionTelegramId;
-                }
-            } else if (state === 'terms') {
-                terms.style.display = 'flex';
-                terms.style.flexDirection = 'column';
-                terms.style.alignItems = 'center';
-                terms.style.width = '100%';
-            } else if (state === 'register') {
-                register.style.display = 'flex';
-                register.style.flexDirection = 'column';
-                register.style.alignItems = 'center';
-                register.style.width = '100%';
-            } else if (state === 'dashboard') {
-                dashboard.style.display = 'block';
-                dashboard.style.width = '100%';
-                if (data) renderDashboard(data);
-            }
-        }
+            cur.execute('''CREATE TABLE IF NOT EXISTS published_posts (
+                id SERIAL PRIMARY KEY,
+                channel_id TEXT NOT NULL,
+                content TEXT NOT NULL,
+                content_id INTEGER,
+                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                message_id TEXT
+            )''')
+            
+            ensure_notification_columns(cur)
+            logger.info("Database initialized/updated successfully")
+    except Exception as e:
+        logger.error(f"Database initialization error: {e}")
+        raise
 
-        async function loadPublishState() {
-            try {
-                const res = await fetch('/publish/state');
-                const data = await res.json();
+# ==================== دوال مساعدة ====================
+def update_user_activity(telegram_id):
+    if not telegram_id:
+        return
+    try:
+        with get_db() as cur:
+            cur.execute("UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE telegram_id = %s", (telegram_id,))
+    except Exception as e:
+        logger.error(f"Update activity error: {e}")
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
+def get_telegram_channel_info(channel_username):
+    if not BOT_TOKEN:
+        return None
+    try:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getChat?chat_id={channel_username}"
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+        if data.get('ok'):
+            chat = data['result']
+            return {
+                'name': chat.get('title', ''),
+                'bio': chat.get('description', ''),
+                'username': chat.get('username', ''),
+                'members_count': 0
+            }
+        return None
+    except Exception as e:
+        logger.error(f"Error getting channel info: {e}")
+        return None
+
+def get_channel_members_count(channel_username):
+    if not BOT_TOKEN:
+        return 0
+    try:
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getChatMembersCount?chat_id={channel_username}"
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+        if data.get('ok'):
+            return data['result']
+        return 0
+    except Exception as e:
+        logger.error(f"Error getting members count: {e}")
+        return 0
+
+def send_telegram_message(channel_id, text):
+    if not BOT_TOKEN:
+        logger.error("BOT_TOKEN not set")
+        return None
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    payload = {
+        'chat_id': channel_id,
+        'text': text,
+        'parse_mode': 'Markdown',
+        'disable_web_page_preview': False
+    }
+    try:
+        response = requests.post(url, json=payload, timeout=30)
+        data = response.json()
+        if data.get('ok'):
+            return data['result']['message_id']
+        else:
+            logger.error(f"Telegram API error: {data}")
+            return None
+    except Exception as e:
+        logger.error(f"Error sending message: {e}")
+        return None
+
+def generate_post_content(content_id=None, custom_prompt=None):
+    prompt = None
+    
+    if content_id:
+        with get_db() as cur:
+            cur.execute("SELECT prompt FROM publish_contents WHERE id = %s", (content_id,))
+            row = cur.fetchone()
+            if row:
+                prompt = row['prompt']
+    
+    if not prompt and custom_prompt:
+        prompt = custom_prompt
+    
+    if not prompt:
+        prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
+    
+    headers = {
+        'Authorization': f'Bearer {OPENROUTER_API_KEY}',
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://evile.onrender.com',
+        'X-Title': 'EVILE Publisher'
+    }
+    
+    payload = {
+        'model': 'openai/gpt-4o-mini',
+        'messages': [
+            {'role': 'system', 'content': 'أنت كاتب محتوى تقني محترف. اكتب مقالة قصيرة وجذابة.'},
+            {'role': 'user', 'content': prompt}
+        ],
+        'temperature': 0.9,
+        'max_tokens': 400,
+        'top_p': 0.95
+    }
+    
+    try:
+        response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=60)
+        result = response.json()
+        if result and 'choices' in result and len(result['choices']) > 0:
+            message = result['choices'][0].get('message', {})
+            content = message.get('content')
+            if content:
+                return content.strip()
+        return None
+    except Exception as e:
+        logger.error(f"Error generating content: {e}")
+        return None
+
+# ==================== جدولة النشر ====================
+scheduler = BackgroundScheduler(timezone=TIMEZONE)
+scheduler.start()
+
+def schedule_posts():
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT * FROM publish_channels WHERE is_active = true AND is_paused = false")
+            channels = cur.fetchall()
+            cur.execute("SELECT * FROM publish_contents")
+            contents = cur.fetchall()
+            
+            for channel in channels:
+                for job in scheduler.get_jobs():
+                    if job.id.startswith(f'publish_{channel["id"]}_'):
+                        scheduler.remove_job(job.id)
                 
-                if (data.needs_login) {
-                    setPublishState('welcome');
-                    return;
-                }
-                
-                if (data.has_channel) {
-                    setPublishState('dashboard', data);
-                } else if (data.has_agreed) {
-                    setPublishState('register');
-                } else if (data.telegram_id) {
-                    setPublishState('terms');
-                } else {
-                    setPublishState('welcome');
-                }
-            } catch (e) {
-                console.error(e);
-                setPublishState('welcome');
-            }
-        }
+                for content in contents:
+                    content_id = content['id']
+                    publish_time = content['publish_time']
+                    hour = publish_time.hour
+                    minute = publish_time.minute
+                    
+                    job_id = f'publish_{channel["id"]}_{content_id}'
+                    trigger = CronTrigger(hour=hour, minute=minute, timezone=TIMEZONE)
+                    scheduler.add_job(
+                        func=publish_content_to_channel,
+                        trigger=trigger,
+                        id=job_id,
+                        args=[channel['channel_id'], content_id],
+                        replace_existing=True
+                    )
+                    logger.info(f"Scheduled content {content_id} for channel {channel['channel_id']} at {hour}:{minute}")
+    except Exception as e:
+        logger.error(f"Error scheduling posts: {e}")
 
-        function renderDashboard(data) {
-            const container = document.getElementById('dashboardContent');
-            if (!data.channel) return;
-            const ch = data.channel;
-            const contents = data.contents || [];
-            const posts = data.recent_posts || [];
+def publish_content_to_channel(channel_id, content_id):
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT * FROM publish_channels WHERE channel_id = %s AND is_active = true AND is_paused = false", (channel_id,))
+            channel = cur.fetchone()
+            if not channel:
+                return
             
-            container.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <span style="font-size:12px; color:#888;">🔹 لوحة النشر</span>
-                    <span class="status-badge ${ch.is_paused ? 'paused' : (!ch.is_active ? 'inactive' : '')}">
-                        ${ch.is_paused ? '⏸️ موقّت مؤقت' : (!ch.is_active ? '⛔ متوقف' : '✅ نشط')}
-                    </span>
-                </div>
-                <div class="channel-header">
-                    <div class="channel-avatar"><i class="bi bi-hash"></i></div>
-                    <div class="channel-info">
-                        <h2>${escapeHtml(ch.channel_name || 'قناة غير مسماة')}</h2>
-                        <div class="username">${escapeHtml(ch.channel_username)}</div>
-                        <div class="bio">${escapeHtml(ch.channel_bio || 'لا يوجد وصف')}</div>
-                    </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card"><i class="bi bi-people"></i><div class="number">${ch.members_count || 0}</div><div class="label">الأعضاء</div></div>
-                    <div class="stat-card"><i class="bi bi-file-text"></i><div class="number">${posts.length}</div><div class="label">آخر المنشورات</div></div>
-                    <div class="stat-card"><i class="bi bi-clock"></i><div class="number">${contents.length}</div><div class="label">محتوى متاح</div></div>
-                </div>
-                <div class="content-selector">
-                    <h3><i class="bi bi-file-text"></i> اختيار المحتوى</h3>
-                    <form id="selectContentForm" style="display:flex; flex-direction:column; gap:10px;">
-                        <div class="selector-row">
-                            <select name="content_id" id="contentSelect">
-                                <option value="">-- اختر محتوى --</option>
-                                ${contents.map(c => `
-                                    <option value="${c.id}" ${ch.selected_content_id == c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>
-                                `).join('')}
-                            </select>
-                            <button type="submit" class="btn-select"><i class="bi bi-check"></i> اختيار</button>
-                        </div>
-                    </form>
-                    ${ch.selected_content_id ? 
-                        contents.filter(c => c.id == ch.selected_content_id).map(c => `
-                            <div class="selected-content-info"><strong>${escapeHtml(c.name)}</strong><div style="font-size:11px; color:#666;">${escapeHtml(c.description || 'لا يوجد وصف')}</div></div>
-                        `).join('') :
-                        `<div class="selected-content-info" style="color:#888;"><i class="bi bi-info-circle"></i> لم يتم اختيار محتوى بعد</div>`
-                    }
-                </div>
-                <div class="actions">
-                    ${ch.is_active ? `
-                        <button class="btn btn-pause" id="pauseBtn">${ch.is_paused ? '<i class="bi bi-play"></i> استئناف' : '<i class="bi bi-pause"></i> إيقاف مؤقت'}</button>
-                        <button class="btn btn-publish" id="publishNowBtn"><i class="bi bi-send"></i> نشر الآن</button>
-                        <button class="btn btn-stop" id="stopBtn"><i class="bi bi-stop-circle"></i> إيقاف نهائي</button>
-                    ` : `<button class="btn btn-stop" disabled style="opacity:0.3;cursor:default;">القناة غير نشطة</button>`}
-                </div>
-                <div class="recent-posts">
-                    <h3><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
-                    ${posts.length ? 
-                        posts.map(p => `
-                            <div class="post-item"><span class="time">${escapeHtml(p.published_at)}</span>${escapeHtml(p.content.slice(0, 120))}${p.content.length > 120 ? '...' : ''}</div>
-                        `).join('') :
-                        `<p style="text-align:center; font-size:12px; color:#666;">لا توجد منشورات بعد</p>`
-                    }
-                </div>
-            `;
+            content_text = generate_post_content(content_id=content_id)
+            if not content_text:
+                logger.error(f"Failed to generate content for channel {channel_id}")
+                return
+            
+            message_id = send_telegram_message(channel_id, content_text)
+            if message_id:
+                cur.execute(
+                    "INSERT INTO published_posts (channel_id, content, content_id, message_id) VALUES (%s, %s, %s, %s)",
+                    (channel_id, content_text, content_id, message_id)
+                )
+                cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (channel_id,))
+                logger.info(f"Published content {content_id} to channel {channel_id}")
+            else:
+                logger.error(f"Failed to send message to channel {channel_id}")
+    except Exception as e:
+        logger.error(f"Error publishing content: {e}")
 
-            // ربط الأحداث
-            document.getElementById('selectContentForm')?.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const fd = new FormData(this);
-                const btn = this.querySelector('.btn-select');
-                btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-                try {
-                    const res = await fetch('/publish/select_content', { method: 'POST', body: fd });
-                    const d = await res.json();
-                    if (d.success) { showToast('✅ تم اختيار المحتوى'); setTimeout(loadPublishState, 1000); }
-                    else showToast(d.message || 'حدث خطأ');
-                } catch(e) { showToast('خطأ في الاتصال'); }
-                btn.disabled = false; btn.innerHTML = '<i class="bi bi-check"></i> اختيار';
-            });
+# ==================== Routes ====================
+@app.route('/')
+def index():
+    telegram_id = session.get('telegram_id')
+    characters = []
+    latest_notification = None
+    try:
+        with get_db() as cur:
+            cur.execute('SELECT * FROM characters ORDER BY id')
+            characters = cur.fetchall() or []
+            cur.execute('SELECT * FROM notifications WHERE show_in_chat = true ORDER BY created_at DESC LIMIT 1')
+            latest_notification = cur.fetchone()
+    except Exception as e:
+        logger.error(f"Index error: {e}")
+        characters = []
+        latest_notification = None
+    channel_url = "https://t.me/Evile_Prompts"
+    instagram_url = "https://www.instagram.com/bla6c7"
+    return render_template('index.html',
+                         characters=characters,
+                         telegram_id=telegram_id,
+                         latest_notification=latest_notification,
+                         channel_url=channel_url,
+                         instagram_url=instagram_url)
 
-            document.getElementById('pauseBtn')?.addEventListener('click', async function() {
-                try {
-                    const res = await fetch('/publish/toggle_pause');
-                    const d = await res.json();
-                    if (d.success) { showToast(d.is_paused ? '⏸️ إيقاف مؤقت' : '▶️ استئناف'); setTimeout(loadPublishState, 1000); }
-                    else showToast(d.message || 'حدث خطأ');
-                } catch(e) { showToast('خطأ في الاتصال'); }
-            });
+@app.route('/register', methods=['POST'])
+def register():
+    try:
+        telegram_id = request.form.get('telegram_id', '').strip()
+        if not telegram_id or not telegram_id.isdigit():
+            return jsonify({'success': False, 'message': 'معرّف غير صحيح'}), 400
+        with get_db() as cur:
+            cur.execute(
+                "INSERT INTO users (telegram_id) VALUES (%s) ON CONFLICT (telegram_id) DO UPDATE SET last_active = CURRENT_TIMESTAMP",
+                (telegram_id,)
+            )
+        session['telegram_id'] = telegram_id
+        session.permanent = True
+        logger.info(f"User {telegram_id} registered")
+        return jsonify({'success': True, 'redirect': '/publish'})
+    except Exception as e:
+        logger.error(f"Register error: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-            document.getElementById('stopBtn')?.addEventListener('click', async function() {
-                if (!confirm('هل أنت متأكد من إيقاف النشر نهائياً؟')) return;
-                try {
-                    const res = await fetch('/publish/stop');
-                    const d = await res.json();
-                    if (d.success) { showToast('⛔ تم الإيقاف'); setTimeout(loadPublishState, 1000); }
-                    else showToast(d.message || 'حدث خطأ');
-                } catch(e) { showToast('خطأ في الاتصال'); }
-            });
+@app.route('/api/active_users')
+def api_active_users():
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT COUNT(*) FROM users WHERE last_active > NOW() - INTERVAL '5 minutes'")
+            row = cur.fetchone()
+            count = row['count'] if row else 0
+        return jsonify({'count': count})
+    except Exception as e:
+        logger.error(f"Active users error: {e}")
+        return jsonify({'count': 0})
 
-            document.getElementById('publishNowBtn')?.addEventListener('click', async function() {
-                this.disabled = true; this.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-                try {
-                    const res = await fetch('/publish/force_publish');
-                    const d = await res.json();
-                    if (d.success) { showToast('✅ تم النشر'); setTimeout(loadPublishState, 1500); }
-                    else showToast(d.message || 'فشل النشر');
-                } catch(e) { showToast('خطأ في الاتصال'); }
-                this.disabled = false; this.innerHTML = '<i class="bi bi-send"></i> نشر الآن';
-            });
-        }
+@app.route('/health')
+def health_check():
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT 1")
+            row = cur.fetchone()
+            db_ok = row is not None
+        return jsonify({
+            'status': 'healthy' if db_ok else 'unhealthy',
+            'database': 'connected' if db_ok else 'disconnected',
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
-        // ====== أحداث النشر (المعدلة) ======
-        document.getElementById('publishStartBtn')?.addEventListener('click', async function() {
-            const input = document.getElementById('publishTelegramId');
-            const tid = input.value.trim();
-            if (!tid || !/^\d+$/.test(tid)) {
-                showToast('الرجاء إدخال معرف صحيح (أرقام فقط)');
-                return;
-            }
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-            try {
-                const fd = new FormData();
-                fd.append('telegram_id', tid);
-                const res = await fetch('/register', { method: 'POST', body: fd });
-                const d = await res.json();
-                if (d.success) {
-                    sessionTelegramId = tid;
-                    showToast('✅ تم تسجيل الدخول!', 1500);
-                    // إعادة تحميل الصفحة بدلاً من استدعاء loadPublishState()
-                    setTimeout(() => {
-                        window.location.href = '/publish';
-                    }, 1500);
-                } else {
-                    showToast(d.message || 'حدث خطأ');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="bi bi-arrow-left"></i> عرض بياناتي';
-                }
-            } catch(e) {
-                showToast('خطأ في الاتصال');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-arrow-left"></i> عرض بياناتي';
-            }
-        });
+# ==================== Routes النشر ====================
+@app.route('/publish/state')
+def publish_state():
+    telegram_id = session.get('telegram_id')
+    response = {
+        'telegram_id': telegram_id,
+        'has_channel': False,
+        'has_agreed': session.get('publish_agreed', False),
+        'needs_login': False
+    }
+    
+    if telegram_id:
+        with get_db() as cur:
+            cur.execute("SELECT * FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            channel = cur.fetchone()
+            if channel:
+                response['has_channel'] = True
+                channel_dict = dict(channel)
+                for key, value in channel_dict.items():
+                    if isinstance(value, datetime):
+                        channel_dict[key] = value.isoformat()
+                    elif isinstance(value, time):
+                        channel_dict[key] = value.isoformat()
+                response['channel'] = channel_dict
+                
+                cur.execute("SELECT * FROM publish_contents ORDER BY id")
+                contents = cur.fetchall()
+                contents_list = []
+                for c in contents:
+                    c_dict = dict(c)
+                    if isinstance(c_dict.get('publish_time'), (datetime, time)):
+                        if isinstance(c_dict['publish_time'], datetime):
+                            c_dict['publish_time'] = c_dict['publish_time'].isoformat()
+                        elif isinstance(c_dict['publish_time'], time):
+                            c_dict['publish_time'] = c_dict['publish_time'].isoformat()
+                    contents_list.append(c_dict)
+                response['contents'] = contents_list
+                
+                cur.execute("SELECT * FROM published_posts WHERE channel_id = %s ORDER BY published_at DESC LIMIT 5", (channel['channel_id'],))
+                recent_posts = cur.fetchall()
+                posts_list = []
+                for p in recent_posts:
+                    p_dict = dict(p)
+                    if isinstance(p_dict.get('published_at'), datetime):
+                        p_dict['published_at'] = p_dict['published_at'].isoformat()
+                    posts_list.append(p_dict)
+                response['recent_posts'] = posts_list
+            else:
+                response['has_channel'] = False
+    else:
+        response['needs_login'] = True
+    
+    return jsonify(response)
 
-        document.getElementById('publishAgreeBtn')?.addEventListener('click', async function() {
-            try {
-                const res = await fetch('/publish/agree', { method: 'POST' });
-                const d = await res.json();
-                if (d.success) { setPublishState('register'); }
-                else showToast(d.message || 'حدث خطأ');
-            } catch(e) { showToast('خطأ في الاتصال'); }
-        });
+@app.route('/publish/agree', methods=['POST'])
+def publish_agree():
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    session['publish_agreed'] = True
+    return jsonify({'success': True})
 
-        document.getElementById('publishRegisterForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const input = document.getElementById('publishChannelUsername');
-            const username = input.value.trim();
-            if (!username.startsWith('@')) {
-                const flash = document.getElementById('publishFlash');
-                flash.textContent = 'اسم المستخدم يجب أن يبدأ بـ @';
-                flash.className = 'publish-flash show';
-                return;
-            }
-            const btn = this.querySelector('.btn-register');
-            btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-            try {
-                const fd = new FormData(); fd.append('channel_username', username);
-                const res = await fetch('/publish/register', { method: 'POST', body: fd });
-                const d = await res.json();
-                if (d.success) {
-                    showToast('✅ تم تسجيل القناة!');
-                    setTimeout(() => window.location.href = '/publish', 1500);
-                } else {
-                    showToast(d.message || 'حدث خطأ');
-                }
-            } catch(e) { showToast('خطأ في الاتصال'); }
-            btn.disabled = false; btn.innerHTML = '<i class="bi bi-save"></i> تسجيل القناة';
-        });
+@app.route('/publish/register', methods=['POST'])
+def publish_register_channel():
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    channel_username = request.form.get('channel_username', '').strip()
+    if not channel_username.startswith('@'):
+        return jsonify({'success': False, 'message': 'اسم المستخدم يجب أن يبدأ بـ @'}), 400
+    
+    channel_info = get_telegram_channel_info(channel_username)
+    if not channel_info:
+        return jsonify({'success': False, 'message': 'لم يتم العثور على القناة. تأكد من إضافة البوت كمشرف.'}), 400
+    
+    members_count = get_channel_members_count(channel_username)
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            if cur.fetchone():
+                return jsonify({'success': False, 'message': 'لديك قناة مسجلة مسبقاً'}), 400
+            
+            cur.execute("""
+                INSERT INTO publish_channels 
+                (telegram_id, channel_id, channel_username, channel_name, channel_bio, members_count)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (telegram_id, channel_username, channel_username, channel_info['name'], channel_info['bio'], members_count))
+        
+        schedule_posts()
+        return jsonify({'success': True, 'message': 'تم تسجيل القناة بنجاح'})
+    except Exception as e:
+        logger.error(f"Error registering channel: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-        // ====== التهيئة ======
-        document.addEventListener('DOMContentLoaded', function() {
-            initScreen();
-            setInterval(updateActiveUsers, 30000);
-        });
-    </script>
-</body>
-</html>
+@app.route('/publish/select_content', methods=['POST'])
+def publish_select_content():
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    content_id = request.form.get('content_id')
+    if not content_id:
+        return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى'}), 400
+    
+    try:
+        with get_db() as cur:
+            cur.execute("UPDATE publish_channels SET selected_content_id = %s WHERE telegram_id = %s", (content_id, telegram_id))
+        return jsonify({'success': True, 'message': 'تم اختيار المحتوى بنجاح'})
+    except Exception as e:
+        logger.error(f"Error selecting content: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/publish/toggle_pause')
+def publish_toggle_pause():
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT is_paused, id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
+            
+            new_status = not row['is_paused']
+            cur.execute("UPDATE publish_channels SET is_paused = %s WHERE telegram_id = %s", (new_status, telegram_id))
+            
+            if not new_status:
+                schedule_posts()
+            else:
+                for job in scheduler.get_jobs():
+                    if job.id.startswith(f'publish_{row["id"]}_'):
+                        scheduler.remove_job(job.id)
+            
+        return jsonify({'success': True, 'is_paused': new_status})
+    except Exception as e:
+        logger.error(f"Error toggling pause: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/publish/stop')
+def publish_stop():
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT id FROM publish_channels WHERE telegram_id = %s", (telegram_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'لا توجد قناة مسجلة'}), 400
+            
+            for job in scheduler.get_jobs():
+                if job.id.startswith(f'publish_{row["id"]}_'):
+                    scheduler.remove_job(job.id)
+            
+            cur.execute("UPDATE publish_channels SET is_active = false WHERE id = %s", (row['id'],))
+        
+        return jsonify({'success': True, 'message': 'تم إيقاف النشر نهائياً'})
+    except Exception as e:
+        logger.error(f"Error stopping publishing: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/publish/force_publish')
+def publish_force():
+    telegram_id = session.get('telegram_id')
+    if not telegram_id:
+        return jsonify({'success': False, 'message': 'غير مصرح'}), 401
+    
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT channel_id, selected_content_id FROM publish_channels WHERE telegram_id = %s AND is_active = true", (telegram_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'message': 'لا توجد قناة نشطة'}), 400
+            
+            content_id = row['selected_content_id']
+            if not content_id:
+                return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى'}), 400
+            
+            content = generate_post_content(content_id=content_id)
+            if not content:
+                return jsonify({'success': False, 'message': 'فشل توليد المحتوى'}), 500
+            
+            message_id = send_telegram_message(row['channel_id'], content)
+            if message_id:
+                cur.execute(
+                    "INSERT INTO published_posts (channel_id, content, content_id, message_id) VALUES (%s, %s, %s, %s)",
+                    (row['channel_id'], content, content_id, message_id)
+                )
+                cur.execute("UPDATE publish_channels SET last_post_at = NOW() WHERE channel_id = %s", (row['channel_id'],))
+                return jsonify({'success': True, 'message': 'تم النشر بنجاح'})
+            else:
+                return jsonify({'success': False, 'message': 'فشل النشر'}), 500
+    except Exception as e:
+        logger.error(f"Error forcing publish: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ==================== Admin Routes ====================
+@app.route('/admin/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if request.form.get('password') == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('admin_panel'))
+        flash('كلمة المرور غير صحيحة', 'error')
+    return render_template('login.html')
+
+@app.route('/admin/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/admin')
+def admin_panel():
+    logged_in = session.get('logged_in', False)
+    if not logged_in:
+        return render_template('admin.html', logged_in=False)
+    
+    try:
+        with get_db() as cur:
+            cur.execute('SELECT * FROM characters ORDER BY id DESC')
+            characters = cur.fetchall()
+            cur.execute('SELECT * FROM notifications ORDER BY id DESC')
+            notifications = cur.fetchall()
+            cur.execute('SELECT COUNT(*) FROM users')
+            row = cur.fetchone()
+            users_count = row['count'] if row else 0
+            
+            cur.execute('SELECT * FROM publish_contents ORDER BY id DESC')
+            contents = cur.fetchall()
+            
+            cur.execute('SELECT * FROM publish_channels ORDER BY created_at DESC')
+            channels = cur.fetchall()
+    except Exception as e:
+        logger.error(f"Admin panel error: {e}")
+        characters, notifications, users_count, contents, channels = [], [], 0, [], []
+    
+    return render_template('admin.html',
+                         logged_in=True,
+                         characters=characters,
+                         notifications=notifications,
+                         users_count=users_count,
+                         contents=contents,
+                         channels=channels)
+
+# ==================== Admin: Characters ====================
+@app.route('/admin/character/add', methods=['POST'])
+@admin_required
+def add_character():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    prompt = request.form.get('prompt')
+    callback_key = request.form.get('callback_key', name.lower().replace(' ', '_'))
+    logo_url = request.form.get('logo_url', '')
+    if name and description and prompt:
+        try:
+            with get_db() as cur:
+                cur.execute("INSERT INTO characters (name, description, prompt, callback_key, logo_url) VALUES (%s, %s, %s, %s, %s)",
+                    (name, description, prompt, callback_key, logo_url))
+            flash('تمت إضافة الشخصية بنجاح', 'success')
+        except Exception as e:
+            flash('مفتاح الشخصية موجود مسبقاً' if 'unique' in str(e).lower() else str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/character/<int:char_id>/edit', methods=['POST'])
+@admin_required
+def edit_character(char_id):
+    name = request.form.get('name')
+    description = request.form.get('description')
+    prompt = request.form.get('prompt')
+    logo_url = request.form.get('logo_url', '')
+    if name and description and prompt:
+        try:
+            with get_db() as cur:
+                cur.execute("UPDATE characters SET name=%s, description=%s, prompt=%s, logo_url=%s WHERE id=%s",
+                    (name, description, prompt, logo_url, char_id))
+            flash('تم تعديل الشخصية بنجاح', 'success')
+        except Exception as e:
+            flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/character/<int:char_id>/delete')
+@admin_required
+def delete_character(char_id):
+    try:
+        with get_db() as cur:
+            cur.execute("DELETE FROM characters WHERE id=%s", (char_id,))
+        flash('تم حذف الشخصية', 'success')
+    except Exception as e:
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== Admin: Notifications ====================
+@app.route('/admin/notification/add', methods=['POST'])
+@admin_required
+def add_notification():
+    title = request.form.get('title')
+    text = request.form.get('text')
+    duration_hours = request.form.get('duration_hours', 1, type=int)
+    show_in_chat = request.form.get('show_in_chat') == 'on'
+    if title and text:
+        try:
+            with get_db() as cur:
+                cur.execute(
+                    "INSERT INTO notifications (title, text, duration_hours, show_in_chat) VALUES (%s, %s, %s, %s)",
+                    (title, text, duration_hours, show_in_chat)
+                )
+            flash('تم إرسال الإشعار بنجاح', 'success')
+        except Exception as e:
+            flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/notification/<int:notif_id>/delete')
+@admin_required
+def delete_notification(notif_id):
+    try:
+        with get_db() as cur:
+            cur.execute("DELETE FROM notifications WHERE id=%s", (notif_id,))
+        flash('تم حذف الإشعار', 'success')
+    except Exception as e:
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== Admin: Content Management ====================
+@app.route('/admin/content/add', methods=['POST'])
+@admin_required
+def admin_add_content():
+    name = request.form.get('name', '').strip()
+    description = request.form.get('description', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    publish_time = request.form.get('publish_time', '').strip()
+    
+    if not name or not prompt or not publish_time:
+        flash('جميع الحقول مطلوبة', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        time_obj = datetime.strptime(publish_time, '%H:%M').time()
+        with get_db() as cur:
+            cur.execute(
+                "INSERT INTO publish_contents (name, description, prompt, publish_time) VALUES (%s, %s, %s, %s)",
+                (name, description, prompt, time_obj)
+            )
+        flash('تم إضافة المحتوى بنجاح', 'success')
+        schedule_posts()
+    except Exception as e:
+        logger.error(f"Error adding content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/content/<int:content_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_content(content_id):
+    name = request.form.get('name', '').strip()
+    description = request.form.get('description', '').strip()
+    prompt = request.form.get('prompt', '').strip()
+    publish_time = request.form.get('publish_time', '').strip()
+    
+    if not name or not prompt or not publish_time:
+        flash('جميع الحقول مطلوبة', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        time_obj = datetime.strptime(publish_time, '%H:%M').time()
+        with get_db() as cur:
+            cur.execute(
+                "UPDATE publish_contents SET name = %s, description = %s, prompt = %s, publish_time = %s WHERE id = %s",
+                (name, description, prompt, time_obj, content_id)
+            )
+        flash('تم تعديل المحتوى بنجاح', 'success')
+        schedule_posts()
+    except Exception as e:
+        logger.error(f"Error editing content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/content/<int:content_id>/delete')
+@admin_required
+def admin_delete_content(content_id):
+    try:
+        with get_db() as cur:
+            for job in scheduler.get_jobs():
+                if job.id.endswith(f'_{content_id}'):
+                    scheduler.remove_job(job.id)
+            cur.execute("DELETE FROM publish_contents WHERE id = %s", (content_id,))
+        flash('تم حذف المحتوى بنجاح', 'success')
+        schedule_posts()
+    except Exception as e:
+        logger.error(f"Error deleting content: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== Admin: Channels ====================
+@app.route('/admin/channel/delete/<int:channel_id>')
+@admin_required
+def admin_delete_channel(channel_id):
+    try:
+        with get_db() as cur:
+            for job in scheduler.get_jobs():
+                if job.id.startswith(f'publish_{channel_id}_'):
+                    scheduler.remove_job(job.id)
+            cur.execute("DELETE FROM publish_channels WHERE id = %s", (channel_id,))
+        flash('تم حذف القناة بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting channel: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/channel/toggle/<int:channel_id>')
+@admin_required
+def admin_toggle_channel(channel_id):
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT is_active FROM publish_channels WHERE id = %s", (channel_id,))
+            row = cur.fetchone()
+            if row:
+                new_status = not row['is_active']
+                cur.execute("UPDATE publish_channels SET is_active = %s WHERE id = %s", (new_status, channel_id))
+                if new_status:
+                    schedule_posts()
+                else:
+                    for job in scheduler.get_jobs():
+                        if job.id.startswith(f'publish_{channel_id}_'):
+                            scheduler.remove_job(job.id)
+                flash('تم تحديث حالة القناة', 'success')
+    except Exception as e:
+        logger.error(f"Error toggling channel: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== API ====================
+@app.route('/api/characters')
+def api_characters():
+    now = time.time()
+    if _characters_cache['data'] and (now - _characters_cache['timestamp']) < CACHE_TTL:
+        return jsonify(_characters_cache['data'])
+    try:
+        with get_db() as cur:
+            cur.execute('SELECT * FROM characters ORDER BY id')
+            data = cur.fetchall()
+        _characters_cache['data'] = data
+        _characters_cache['timestamp'] = now
+        return jsonify(data)
+    except Exception as e:
+        logger.error(f"API characters error: {e}")
+        return jsonify([])
+
+@app.route('/api/notifications')
+def api_notifications():
+    try:
+        with get_db() as cur:
+            cur.execute('SELECT * FROM notifications ORDER BY id DESC')
+            return jsonify(cur.fetchall())
+    except Exception as e:
+        logger.error(f"API notifications error: {e}")
+        return jsonify([])
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    data = request.json
+    character_key = data.get('character', 'logo_maker')
+    message = data.get('message', '')
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT * FROM characters WHERE callback_key=%s", (character_key,))
+            character = cur.fetchone()
+    except Exception as e:
+        logger.error(f"Get character error: {e}")
+        return jsonify({'error': str(e)}), 500
+    if not character:
+        return jsonify({'error': 'Character not found'}), 404
+    headers = {
+        'Authorization': f'Bearer {OPENROUTER_API_KEY}',
+        'Content-Type': 'application/json',
+        'HTTP-Referer': request.url_root,
+        'X-Title': 'EVILE'
+    }
+    payload = {
+        'model': 'openrouter/auto',
+        'messages': [
+            {'role': 'system', 'content': character['prompt']},
+            {'role': 'user', 'content': message}
+        ],
+        'temperature': 0.7
+    }
+    try:
+        response = requests.post(OPENROUTER_URL, json=payload, headers=headers, timeout=30)
+        result = response.json()
+        return jsonify({'response': result['choices'][0]['message']['content']})
+    except Exception as e:
+        logger.error(f"API chat error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ==================== بدء التشغيل ====================
+if __name__ == '__main__':
+    init_db()
+    schedule_posts()
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=False)

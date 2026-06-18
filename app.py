@@ -1,9 +1,9 @@
 import os
 import logging
 import requests
-import time as time_module  # استيراد وحدة الوقت القياسية باسم مختلف لتجنب التعارض
+import time as time_module
 import json
-from datetime import datetime, timedelta, time  # استيراد time من datetime
+from datetime import datetime, timedelta, time
 from functools import wraps
 from contextlib import contextmanager
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -74,6 +74,17 @@ def ensure_notification_columns(cur):
         cur.execute("ALTER TABLE notifications ADD COLUMN show_in_chat BOOLEAN DEFAULT FALSE")
         logger.info("Added column show_in_chat to notifications table")
 
+def ensure_published_posts_columns(cur):
+    """التأكد من وجود عمود content_id في جدول published_posts"""
+    cur.execute("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='published_posts' AND column_name='content_id'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE published_posts ADD COLUMN content_id INTEGER DEFAULT NULL")
+        logger.info("Added column content_id to published_posts table")
+
 def init_db():
     try:
         with get_db() as cur:
@@ -133,6 +144,7 @@ def init_db():
             )''')
             
             ensure_notification_columns(cur)
+            ensure_published_posts_columns(cur)
             logger.info("Database initialized/updated successfully")
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
@@ -411,11 +423,10 @@ def publish_state():
             if channel:
                 response['has_channel'] = True
                 channel_dict = dict(channel)
-                # تحويل أي حقل من نوع datetime أو time إلى سلسلة
                 for key, value in channel_dict.items():
                     if isinstance(value, datetime):
                         channel_dict[key] = value.isoformat()
-                    elif isinstance(value, time):  # الآن time معرف من datetime
+                    elif isinstance(value, time):
                         channel_dict[key] = value.isoformat()
                 response['channel'] = channel_dict
                 
@@ -575,7 +586,7 @@ def publish_force():
             
             content_id = row['selected_content_id']
             if not content_id:
-                return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى'}), 400
+                return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى. اختر محتوى أولاً من لوحة التحكم.'}), 400
             
             content = generate_post_content(content_id=content_id)
             if not content:
@@ -831,7 +842,7 @@ def admin_toggle_channel(channel_id):
 # ==================== API ====================
 @app.route('/api/characters')
 def api_characters():
-    now = time_module.time()  # استخدام time_module لتجنب التعارض
+    now = time_module.time()
     if _characters_cache['data'] and (now - _characters_cache['timestamp']) < CACHE_TTL:
         return jsonify(_characters_cache['data'])
     try:

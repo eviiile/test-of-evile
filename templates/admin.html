@@ -10,9 +10,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tajawal', sans-serif;
-            background: #F3F4F4;
+            background: #0a0a0a;
             min-height: 100vh;
-            color: #1a1a1a;
+            color: #e0e0e0;
             padding: 20px;
         }
         .admin-container { max-width: 1200px; margin: 0 auto; }
@@ -21,18 +21,18 @@
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 24px;
-            background: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.05);
             backdrop-filter: blur(25px);
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 18px;
             padding: 8px 12px;
         }
         .tab-btn {
             padding: 8px 16px;
-            background: rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 40px;
-            color: #333;
+            color: #888;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -44,16 +44,16 @@
         }
         .tab-btn i { font-size: 14px; }
         .tab-btn.active {
-            background: rgba(132, 148, 255, 0.15);
-            border-color: #8494FF;
-            color: #000;
+            background: rgba(132, 148, 255, 0.1);
+            border-color: rgba(132, 148, 255, 0.15);
+            color: #8494FF;
         }
         .tab-btn:active { transform: scale(0.96); }
         .tab-content {
             display: none;
-            background: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.02);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.04);
             border-radius: 20px;
             padding: 20px;
         }
@@ -67,6 +67,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #e0e0e0;
         }
         .section-title i { font-size: 18px; color: #8494FF; }
         .form-grid {
@@ -80,16 +81,16 @@
             display: block;
             margin-bottom: 4px;
             font-size: 12px;
-            color: #555;
+            color: #888;
             font-weight: 600;
         }
         input, textarea, select {
             width: 100%;
             padding: 8px 12px;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 12px;
-            color: #1a1a1a;
+            color: #e0e0e0;
             font-family: 'Tajawal', sans-serif;
             font-size: 13px;
         }
@@ -110,10 +111,10 @@
         }
         .btn {
             padding: 8px 16px;
-            background: linear-gradient(135deg, #ddd, #bbb);
-            border: none;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 40px;
-            color: #333;
+            color: #ccc;
             font-weight: 600;
             font-size: 12px;
             cursor: pointer;
@@ -124,40 +125,46 @@
             font-family: 'Tajawal', sans-serif;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #8494FF, #6a7df0);
-            color: #fff;
+            background: rgba(132, 148, 255, 0.15);
+            border-color: rgba(132, 148, 255, 0.15);
+            color: #8494FF;
         }
-        .btn-primary i { color: #fff; }
+        .btn-primary i { color: #8494FF; }
+        .btn-primary:hover { background: rgba(132, 148, 255, 0.25); }
         .btn-danger {
-            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-            color: #721c24;
+            background: rgba(220,53,69,0.1);
+            border-color: rgba(220,53,69,0.1);
+            color: #ff6b7a;
         }
+        .btn-danger:hover { background: rgba(220,53,69,0.2); }
         .btn-success {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            color: #155724;
+            background: rgba(40,167,69,0.1);
+            border-color: rgba(40,167,69,0.1);
+            color: #5ddb7a;
         }
+        .btn-success:hover { background: rgba(40,167,69,0.2); }
         .btn:active { transform: scale(0.96); }
         .characters-grid, .channels-grid, .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 16px;
             margin-top: 16px;
         }
         .character-card, .channel-card, .content-card {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
             border-radius: 16px;
             padding: 12px;
         }
         .content-card .content-preview {
-            background: rgba(0,0,0,0.03);
+            background: rgba(255,255,255,0.02);
             padding: 8px;
             border-radius: 8px;
             font-size: 11px;
             max-height: 80px;
             overflow-y: auto;
             margin: 6px 0 10px;
-            color: #444;
+            color: #aaa;
             line-height: 1.5;
             white-space: pre-wrap;
         }
@@ -170,21 +177,21 @@
         .content-card .content-name {
             font-weight: 700;
             font-size: 15px;
-            color: #1a1a1a;
+            color: #e0e0e0;
         }
         .content-card .content-desc {
             font-size: 12px;
-            color: #666;
+            color: #888;
             margin: 2px 0 6px;
         }
         .channel-card .channel-id {
             font-size: 12px;
-            color: #555;
+            color: #888;
             margin-bottom: 4px;
         }
         .channel-card .admin-id {
             font-size: 11px;
-            color: #777;
+            color: #666;
         }
         .card-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .character-header {
@@ -197,7 +204,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.03);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -206,25 +213,26 @@
         .character-name {
             font-size: 15px;
             font-weight: 700;
+            color: #e0e0e0;
         }
         .character-desc {
             font-size: 11px;
-            color: #555;
+            color: #888;
             margin-bottom: 8px;
         }
         .character-prompt {
-            background: rgba(0,0,0,0.03);
+            background: rgba(255,255,255,0.02);
             padding: 6px;
             border-radius: 10px;
             font-size: 10px;
-            color: #444;
+            color: #888;
             max-height: 60px;
             overflow-y: auto;
             margin-bottom: 12px;
         }
         .notification-item {
-            background: rgba(255,255,255,0.7);
-            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
             border-radius: 14px;
             padding: 12px;
             margin-bottom: 10px;
@@ -232,17 +240,18 @@
         .notification-title {
             font-weight: 700;
             font-size: 13px;
+            color: #e0e0e0;
             margin-bottom: 4px;
         }
         .notification-text {
             font-size: 11px;
-            color: #555;
+            color: #888;
         }
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
@@ -251,8 +260,8 @@
         }
         .modal.active { display: flex; }
         .modal-content {
-            background: white;
-            border: 1px solid rgba(0,0,0,0.1);
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 20px;
             padding: 24px;
             max-width: 500px;
@@ -267,7 +276,7 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 16px;
-            color: #1a1a1a;
+            color: #e0e0e0;
         }
         .modal-content h3 i {
             color: #8494FF;
@@ -280,21 +289,21 @@
             color: #888;
             transition: all 0.2s;
         }
-        .modal-close:hover { color: #333; }
+        .modal-close:hover { color: #eee; }
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
         .spinner-small {
             display: inline-block;
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            border: 2px solid rgba(132,148,255,0.2);
+            border-top-color: #8494FF;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -307,7 +316,7 @@
             .content-grid { grid-template-columns: 1fr; }
         }
 
-        /* ====== صفحة تسجيل الدخول المدمجة ====== */
+        /* ====== صفحة تسجيل الدخول ====== */
         .login-wrapper {
             display: flex;
             align-items: center;
@@ -315,10 +324,10 @@
             min-height: 80vh;
         }
         .login-card {
-            background: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.05);
             backdrop-filter: blur(20px);
             border-radius: 32px;
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.05);
             padding: 40px 32px;
             width: 100%;
             max-width: 420px;
@@ -328,31 +337,31 @@
         .login-card .logo { text-align: center; margin-bottom: 32px; }
         .login-card .logo-icon {
             width: 64px; height: 64px;
-            background: linear-gradient(135deg, #ddd, #bbb);
+            background: rgba(132,148,255,0.1);
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 16px;
         }
-        .login-card .logo-icon i { font-size: 36px; color: #333; }
+        .login-card .logo-icon i { font-size: 36px; color: #8494FF; }
         .login-card h1 {
             font-size: 28px; font-weight: 800;
-            background: linear-gradient(135deg, #333, #888);
+            background: linear-gradient(135deg, #8494FF, #a8b4ff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 8px;
         }
-        .login-card .subtitle { color: #666; font-size: 14px; text-align: center; }
+        .login-card .subtitle { color: #888; font-size: 14px; text-align: center; }
         .login-card .form-group { margin-bottom: 24px; }
-        .login-card label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; font-size: 14px; }
+        .login-card label { display: block; margin-bottom: 8px; color: #888; font-weight: 500; font-size: 14px; }
         .login-card input {
             width: 100%; padding: 14px 18px;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
             border-radius: 16px;
-            color: #1a1a1a;
+            color: #e0e0e0;
             font-size: 16px;
             font-family: 'Tajawal', sans-serif;
             transition: all 0.2s;
@@ -360,27 +369,27 @@
         .login-card input:focus {
             outline: none;
             border-color: #8494FF;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255,255,255,0.06);
         }
         .login-card .btn-login {
             width: 100%; padding: 14px;
-            background: linear-gradient(135deg, #8494FF, #6a7df0);
-            border: none;
+            background: rgba(132, 148, 255, 0.15);
+            border: 1px solid rgba(132, 148, 255, 0.15);
             border-radius: 16px;
-            color: #fff;
+            color: #8494FF;
             font-weight: 700;
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
             font-family: 'Tajawal', sans-serif;
         }
-        .login-card .btn-login:hover { transform: translateY(-2px); filter: brightness(0.95); }
+        .login-card .btn-login:hover { transform: translateY(-2px); background: rgba(132, 148, 255, 0.25); }
         .login-card .flash {
             padding: 12px;
             background: rgba(220,53,69,0.1);
-            border: 1px solid rgba(220,53,69,0.3);
+            border: 1px solid rgba(220,53,69,0.1);
             border-radius: 14px;
-            color: #dc3545;
+            color: #ff6b7a;
             margin-bottom: 24px;
             text-align: center;
             font-size: 14px;
@@ -388,16 +397,17 @@
         .logout-btn {
             display: inline-block;
             padding: 8px 16px;
-            background: #dc3545;
-            color: #fff;
+            background: rgba(220,53,69,0.1);
+            border: 1px solid rgba(220,53,69,0.1);
+            color: #ff6b7a;
             border-radius: 40px;
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
-        .logout-btn i { color: #fff; }
-        .logout-btn:hover { opacity: 0.8; }
+        .logout-btn i { color: #ff6b7a; }
+        .logout-btn:hover { background: rgba(220,53,69,0.2); }
         .admin-header {
             display: flex;
             justify-content: space-between;
@@ -412,11 +422,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #e0e0e0;
         }
         .admin-header h2 i { color: #8494FF; }
         .empty-state {
             text-align: center;
-            color: #888;
+            color: #666;
             padding: 30px 20px;
             font-size: 14px;
             grid-column: 1 / -1;
@@ -425,7 +436,7 @@
             font-size: 40px;
             display: block;
             margin-bottom: 12px;
-            color: #ccc;
+            color: #444;
         }
     </style>
 </head>
@@ -526,9 +537,9 @@
             <div class="section-title" style="margin-top: 30px;"><i class="bi bi-clock-history"></i> الإشعارات المرسلة</div>
             {% for notif in notifications %}
             <div class="notification-item">
-                <div class="notification-title"><i class="bi bi-bell"></i> {{ notif.title }} <span style="font-size: 10px; color:#888;">({{ notif.created_at }})</span></div>
+                <div class="notification-title"><i class="bi bi-bell"></i> {{ notif.title }} <span style="font-size: 10px; color:#666;">({{ notif.created_at }})</span></div>
                 <div class="notification-text">{{ notif.text }}</div>
-                <div class="notification-meta" style="font-size: 10px; color:#888; margin-top: 5px;">
+                <div class="notification-meta" style="font-size: 10px; color:#666; margin-top: 5px;">
                     المدة: {{ notif.duration_hours }} ساعة | ظهور إجباري: {{ 'نعم' if notif.show_in_chat else 'لا' }}
                 </div>
                 <div class="card-actions" style="margin-top:8px;">
@@ -573,7 +584,7 @@
                 <div class="empty-state">
                     <i class="bi bi-file-text"></i>
                     لا يوجد محتوى مضاف<br>
-                    <span style="font-size:12px;">أضف محتوى جديداً لبدء النشر التلقائي</span>
+                    <span style="font-size:12px; color:#666;">أضف محتوى جديداً لبدء النشر التلقائي</span>
                 </div>
                 {% endfor %}
             </div>
@@ -588,15 +599,15 @@
                     <div class="channel-id"><i class="bi bi-hash"></i> {{ ch.channel_id }}</div>
                     <div class="admin-id"><i class="bi bi-at"></i> {{ ch.channel_username or 'لا يوجد' }}</div>
                     <div class="admin-id"><i class="bi bi-person"></i> المشرف: {{ ch.telegram_id }}</div>
-                    <div style="font-size:10px; color:#888; margin-top:4px;">تمت الإضافة: {{ ch.created_at }}</div>
+                    <div style="font-size:10px; color:#666; margin-top:4px;">تمت الإضافة: {{ ch.created_at }}</div>
                     <div style="font-size:11px; margin-top:4px;">
                         الحالة: 
                         {% if ch.is_paused %}
-                            <span style="color:#ffc107;">⏸️ موقّت مؤقت</span>
+                            <span style="color:#ffd966;">⏸️ موقّت مؤقت</span>
                         {% elif ch.is_active %}
-                            <span style="color:#28a745;">✅ نشط</span>
+                            <span style="color:#5ddb7a;">✅ نشط</span>
                         {% else %}
-                            <span style="color:#dc3545;">⛔ متوقف</span>
+                            <span style="color:#ff6b7a;">⛔ متوقف</span>
                         {% endif %}
                     </div>
                     <div class="card-actions">
@@ -688,15 +699,13 @@
             document.getElementById('contentEditModal').classList.remove('active');
         }
 
-        // ====== إغلاق المودالات بالنقر على الخلفية ======
+        // ====== إغلاق المودالات ======
         window.onclick = function(e) {
             const modal1 = document.getElementById('editModal');
             if (e.target === modal1) closeEditModal();
             const modal2 = document.getElementById('contentEditModal');
             if (e.target === modal2) closeContentEditModal();
         }
-
-        // ====== إغلاق المودالات بزر ESC ======
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeEditModal();

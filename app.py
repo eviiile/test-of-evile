@@ -75,7 +75,6 @@ def ensure_notification_columns(cur):
         logger.info("Added column show_in_chat to notifications table")
 
 def ensure_published_posts_columns(cur):
-    """التأكد من وجود عمود content_id في جدول published_posts"""
     cur.execute("""
         SELECT column_name 
         FROM information_schema.columns 
@@ -226,20 +225,36 @@ def send_telegram_message(channel_id, text):
         return None
 
 def generate_post_content(content_id=None, custom_prompt=None):
+    """توليد محتوى باستخدام البرومبت من admin"""
     prompt = None
     
+    # جلب البرومبت من قاعدة البيانات باستخدام content_id
     if content_id:
         with get_db() as cur:
             cur.execute("SELECT prompt FROM publish_contents WHERE id = %s", (content_id,))
             row = cur.fetchone()
-            if row:
+            if row and row['prompt']:
                 prompt = row['prompt']
+                logger.debug(f"Using prompt from content_id {content_id}")
     
+    # إذا لم يكن هناك برومبت من content_id، نبحث عن أي برومبت في قاعدة البيانات
+    if not prompt:
+        with get_db() as cur:
+            cur.execute("SELECT id, prompt FROM publish_contents ORDER BY id LIMIT 1")
+            row = cur.fetchone()
+            if row and row['prompt']:
+                prompt = row['prompt']
+                logger.debug(f"Using prompt from first content in database (id: {row['id']})")
+    
+    # إذا كان هناك برومبت مخصص من الطلب
     if not prompt and custom_prompt:
         prompt = custom_prompt
+        logger.debug("Using custom prompt from request")
     
+    # برومبت افتراضي - يستخدم فقط إذا لم يكن هناك أي محتوى في قاعدة البيانات
     if not prompt:
         prompt = """أنت الآن كاتب محتوى تقني لقناة تلغرام، مهمتك: توليد مقالة قصيرة جداً (بين 100 إلى 150 كلمة) بشكل عشوائي فوري، على أن تنتقي عشوائياً موضوعاً واحداً فقط حصراً من القائمة التالية: (الأمن السيبراني، لغات البرمجة مثل Rust أو Zig، مشاريع ساخنة على GitHub، منصات عالمية مثل AWS أو Cloudflare، نماذج الذكاء الاصطناعي الجديدة)، وتلتزم بهذا الموضوع الواحد بسياق سردي واحد متصل دون أي تشعب أو دمج مع مواضيع أخرى، مع أسلوب كتابة مشوق للغاية يجذب القارئ من أول جملة عبر البدء بتساؤل أو مفارقة أو حقيقة صادمة، مع الحفاظ على التدفق السردي المتصل دون أي عناوين فرعية أو نقاط تعداد أو إيموجي، واستخدم صياغة حوارية احترافية مختصرة، وقبل الصياغة نفذ بحثاً متعمقاً للتحقق من الأرقام والإصدارات والأخبار، وعند ذكر أي أداة أو مشروع أو منصة ادمج رابطها الرسمي بصيغة Markdown الخاصة بتلغرام [النص](الرابط) لتكون قابلة للنقر، وتجنب تماماً الوعود المبالغ فيها، واكتب المقالة الآن في ردك الأول دون انتظار مني."""
+        logger.debug("Using default fallback prompt (no content in database)")
     
     headers = {
         'Authorization': f'Bearer {OPENROUTER_API_KEY}',
@@ -586,7 +601,13 @@ def publish_force():
             
             content_id = row['selected_content_id']
             if not content_id:
-                return jsonify({'success': False, 'message': 'لم يتم اختيار محتوى. اختر محتوى أولاً من لوحة التحكم.'}), 400
+                # جلب أول محتوى متاح كاحتياطي
+                cur.execute("SELECT id FROM publish_contents ORDER BY id LIMIT 1")
+                content_row = cur.fetchone()
+                if content_row:
+                    content_id = content_row['id']
+                else:
+                    return jsonify({'success': False, 'message': 'لا يوجد محتوى متاح. أضف محتوى من لوحة الإدارة.'}), 400
             
             content = generate_post_content(content_id=content_id)
             if not content:
@@ -790,9 +811,13 @@ def admin_edit_content(content_id):
 def admin_delete_content(content_id):
     try:
         with get_db() as cur:
+            # إلغاء المهام المجدولة لهذا المحتوى
             for job in scheduler.get_jobs():
                 if job.id.endswith(f'_{content_id}'):
                     scheduler.remove_job(job.id)
+            # حذف من جدول scheduled_content
+            cur.execute("DELETE FROM scheduled_content WHERE content_id = %s", (content_id,))
+            # حذف من جدول publish_contents
             cur.execute("DELETE FROM publish_contents WHERE id = %s", (content_id,))
         flash('تم حذف المحتوى بنجاح', 'success')
         schedule_posts()

@@ -90,7 +90,6 @@
             .main-container { padding-top: 80px; }
         }
 
-        /* ====== الشريط السفلي (نشر محذوف) ====== */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -144,15 +143,15 @@
         .nav-item:hover { color: #aaa; }
         .nav-item:active { transform: scale(0.94); }
 
-        /* ====== الدردشة ====== */
         .welcome-section {
             flex: 1; display: none; flex-direction: column; align-items: center;
             justify-content: center; padding: 16px; text-align: center;
         }
         .welcome-section.active { display: flex; }
         .character-logo-full {
-            width: 120px;
-            height: 120px;
+            width: 360px;
+            max-width: 100%;
+            height: auto;
             object-fit: contain;
             border-radius: 20px;
             margin-bottom: 20px;
@@ -207,6 +206,11 @@
         .send-btn:hover { background: rgba(132, 148, 255, 0.25); }
         .send-btn:disabled { opacity: 0.4; }
         .send-btn i { font-size: 18px; }
+        .send-btn.stop-btn {
+            background: rgba(220,53,69,0.15);
+            color: #ff6b7a;
+        }
+        .send-btn.stop-btn:hover { background: rgba(220,53,69,0.25); }
         
         .spinner {
             width: 16px; height: 16px;
@@ -379,7 +383,7 @@
         }
 
         @media (max-width: 480px) {
-            .character-logo-full { width: 80px; height: 80px; }
+            .character-logo-full { width: 300px; }
         }
     </style>
 </head>
@@ -507,6 +511,7 @@
         let isFirstMessage = true;
         let isProcessing = false;
         let isAiEnabled = true;
+        let abortController = null;
 
         // ====== عناصر DOM ======
         const welcomeSection = document.getElementById('welcomeSection');
@@ -563,6 +568,13 @@
         observer.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
 
         window.goHome = function() {
+            // إلغاء أي طلب جاري
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+                isProcessing = false;
+                resetSendButtons();
+            }
             chatSection.classList.remove('active');
             welcomeSection.classList.add('active');
             isFirstMessage = true;
@@ -580,7 +592,6 @@
             renderCharactersSheet();
             updateWelcomeDisplay();
             
-            // تحميل الدردشة للشخصية الأولى
             if (characters.length > 0) {
                 loadChatHistory(characters[0].callback_key);
             }
@@ -698,7 +709,29 @@
         function setButtonLoading(btn, loading) {
             if (!btn) return;
             btn.disabled = loading;
-            btn.innerHTML = loading ? '<div class="spinner"></div>' : '<i class="bi bi-send"></i>';
+            if (loading) {
+                btn.innerHTML = '<div class="spinner"></div>';
+                btn.classList.remove('stop-btn');
+            } else {
+                btn.innerHTML = '<i class="bi bi-send"></i>';
+                btn.classList.remove('stop-btn');
+            }
+        }
+
+        function setStopButton(btn) {
+            if (!btn) return;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-stop-circle"></i>';
+            btn.classList.add('stop-btn');
+        }
+
+        function resetSendButtons() {
+            const btns = document.querySelectorAll('.send-btn');
+            btns.forEach(btn => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i>';
+                btn.classList.remove('stop-btn');
+            });
         }
 
         function addMessage(text, isOwn, save = true) {
@@ -773,7 +806,6 @@
                     } else {
                         clearInterval(interval);
                         cursor.remove();
-                        // حفظ الرد في التاريخ
                         const history = getChatHistory(currentCharacter);
                         history.push({ text: fullText, isOwn: false, time: time });
                         saveChatHistory(currentCharacter, history);
@@ -785,9 +817,18 @@
 
         async function actuallySendMessage(message) {
             if (isProcessing) return;
+            
+            // التحقق من وجود نص
+            if (!message.trim()) return;
+            
+            // إنشاء AbortController جديد
+            abortController = new AbortController();
+            
             isProcessing = true;
             const sendBtn = document.getElementById('sendBtn') || document.getElementById('welcomeSendBtn');
-            setButtonLoading(sendBtn, true);
+            // تحويل الزر إلى زر إيقاف
+            setStopButton(sendBtn);
+            
             addMessage(message, true);
             welcomeInput.value = '';
             chatInput.value = '';
@@ -796,7 +837,8 @@
             if (!isAiEnabled) {
                 showToast('⏸️ الردود التلقائية موقفة', 2000);
                 isProcessing = false;
-                setButtonLoading(sendBtn, false);
+                resetSendButtons();
+                abortController = null;
                 return;
             }
             
@@ -805,7 +847,8 @@
                 const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ character: currentCharacter, message })
+                    body: JSON.stringify({ character: currentCharacter, message }),
+                    signal: abortController.signal
                 });
                 const data = await res.json();
                 removeLoading();
@@ -815,15 +858,37 @@
                     addMessage('حدث خطأ. حاول مرة أخرى.', false);
                 }
             } catch (err) {
-                removeLoading();
-                addMessage('خطأ في الاتصال.', false);
+                if (err.name === 'AbortError') {
+                    showToast('⛔ تم إلغاء الرد', 2000);
+                } else {
+                    removeLoading();
+                    addMessage('خطأ في الاتصال.', false);
+                }
             }
             isProcessing = false;
-            setButtonLoading(sendBtn, false);
+            abortController = null;
+            resetSendButtons();
         }
 
-        window.sendWelcomeMessage = async function() {
-            if (isProcessing) return;
+        // دالة إلغاء الطلب عند الضغط على زر الإيقاف
+        function cancelRequest() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+                isProcessing = false;
+                resetSendButtons();
+                removeLoading();
+                showToast('⛔ تم إلغاء الرد', 2000);
+            }
+        }
+
+        // تعديل دالة الإرسال لترتبط بالزر
+        async function sendWelcomeMessage() {
+            if (isProcessing) {
+                // إذا كان قيد المعالجة، نلغي الطلب
+                cancelRequest();
+                return;
+            }
             const msg = welcomeInput.value.trim();
             if (!msg) return;
             if (isFirstMessage) {
@@ -833,17 +898,28 @@
                 updateNavVisibility();
             }
             await actuallySendMessage(msg);
-        };
+        }
 
         async function sendChatMessage() {
-            if (isProcessing) return;
+            if (isProcessing) {
+                cancelRequest();
+                return;
+            }
             const msg = chatInput.value.trim();
             if (!msg) return;
             await actuallySendMessage(msg);
         }
 
-        function handleWelcomeKey(e) { if (e.key === 'Enter' && !isProcessing) sendWelcomeMessage(); }
-        function handleChatKey(e) { if (e.key === 'Enter' && !isProcessing) sendChatMessage(); }
+        function handleWelcomeKey(e) { 
+            if (e.key === 'Enter' && !isProcessing) {
+                sendWelcomeMessage();
+            }
+        }
+        function handleChatKey(e) { 
+            if (e.key === 'Enter' && !isProcessing) {
+                sendChatMessage();
+            }
+        }
 
         function openCharactersSheet() { renderCharactersSheet(); document.getElementById('charactersSheet').classList.add('active'); }
         async function openNotificationsSheet() { await renderNotificationsSheet(); document.getElementById('notificationsSheet').classList.add('active'); document.getElementById('notifBadge').style.display = 'none'; }
@@ -851,6 +927,14 @@
         function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
         
         function selectCharacter(key) {
+            // إلغاء أي طلب جاري عند تبديل الشخصية
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+                isProcessing = false;
+                resetSendButtons();
+                removeLoading();
+            }
             currentCharacter = key;
             renderCharSelector();
             renderCharactersSheet();
@@ -861,9 +945,7 @@
                 welcomeInput.placeholder = `اكتب لـ ${char.name}...`;
                 chatInput.placeholder = `اكتب لـ ${char.name}...`;
             }
-            // تحميل الدردشة المحفوظة لهذه الشخصية
             loadChatHistory(key);
-            // إذا كانت الشاشة الرئيسية، ننقل إلى الدردشة
             if (!isFirstMessage) {
                 welcomeSection.classList.remove('active');
                 chatSection.classList.add('active');
@@ -875,7 +957,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             initScreen();
             setInterval(updateActiveUsers, 30000);
-            // ضبط زر الإيقاف الأولي
             document.querySelectorAll('.toggle-ai-btn').forEach(btn => {
                 btn.classList.add('active');
                 btn.innerHTML = '<i class="bi bi-cpu"></i>';

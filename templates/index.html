@@ -32,11 +32,11 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 6px 10px; border-radius: 16px; gap: 6px;
             max-width: 700px; margin: 0 auto;
-            background: rgba(10,10,10,0.75);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255,255,255,0.06);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
         @media (min-width: 768px) {
             .floating-header { left: 20px; right: 20px; top: 20px; }
@@ -45,11 +45,11 @@
             width: 36px; height: 36px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: all 0.25s ease;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            color: #aaa;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #ccc;
         }
-        .header-circle:hover { background: rgba(255,255,255,0.08); }
+        .header-circle:hover { background: rgba(255,255,255,0.12); }
         .header-circle:active { transform: scale(0.92); }
         .header-circle i { font-size: 18px; }
         .header-circle .notif-badge {
@@ -62,7 +62,7 @@
         .logo-center {
             flex: 1; height: 36px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
         }
         .logo-text {
             font-size: 18px; font-weight: 900; letter-spacing: 2px;
@@ -73,79 +73,93 @@
             height: 36px; padding: 0 12px; border-radius: 12px;
             display: flex; align-items: center; gap: 6px;
             font-size: 11px; font-weight: 700;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            color: #888;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #aaa;
         }
         .active-users-box i { font-size: 13px; color: #8494FF; }
-        .active-users-box span { color: #aaa; }
+        .active-users-box span { color: #ccc; }
 
         .main-container {
             width: 100%; min-height: 100vh;
             display: flex; flex-direction: column;
-            padding: 12px; padding-top: 70px;
-            max-width: 700px; margin: 0 auto;
+            padding: 12px;
+            padding-top: 70px;
+            max-width: 700px;
+            margin: 0 auto;
         }
         @media (min-width: 768px) {
             .main-container { padding-top: 80px; }
         }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 1000;
-            background: rgba(10,10,10,0.75);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 4px 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            height: 40px;
-            max-width: 200px;
-            margin: 0 auto;
-            transition: opacity 0.3s, transform 0.3s;
+        /* ====== الإعلان ====== */
+        .ad-container {
+            margin-bottom: 20px;
+            width: 100%;
         }
-        .bottom-nav.hidden {
-            opacity: 0;
-            transform: translateY(20px);
+        .ad-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 24px 20px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            text-align: right;
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 70% 30%, rgba(132,148,255,0.05) 0%, transparent 60%);
             pointer-events: none;
         }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            color: #666;
-            font-size: 9px;
-            font-weight: 600;
-            padding: 4px 14px;
-            border-radius: 20px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            height: 32px;
-            justify-content: center;
-            transition: all 0.25s ease;
+        .ad-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #e8e8e8;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
         }
-        .nav-item i { font-size: 16px; }
-        .nav-item span { font-size: 8px; }
-        .nav-item.active {
+        .ad-content {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.7;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        .ad-link-btn {
+            display: inline-block;
+            padding: 6px 18px;
+            background: rgba(132, 148, 255, 0.15);
+            border: 1px solid rgba(132, 148, 255, 0.2);
+            border-radius: 40px;
             color: #8494FF;
-            background: rgba(132, 148, 255, 0.12);
-            border: 1px solid rgba(132, 148, 255, 0.12);
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            position: relative;
+            z-index: 1;
         }
-        .nav-item:hover { color: #aaa; }
-        .nav-item:active { transform: scale(0.94); }
+        .ad-link-btn:hover {
+            background: rgba(132, 148, 255, 0.25);
+            transform: scale(1.02);
+        }
+        .ad-link-btn:active { transform: scale(0.96); }
+        .ad-link-btn i { margin-left: 6px; }
 
+        /* ====== واجهة الدردشة ====== */
         .welcome-section {
             flex: 1; display: none; flex-direction: column; align-items: center;
-            justify-content: center; padding: 16px; text-align: center;
+            justify-content: center; padding: 16px 0; text-align: center;
         }
         .welcome-section.active { display: flex; }
         .character-logo-full {
@@ -156,7 +170,7 @@
             border-radius: 20px;
             margin-bottom: 20px;
             background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
         }
         .sparkle-icon i { font-size: 56px; color: #8494FF; opacity: 0.5; }
         .welcome-title {
@@ -164,39 +178,28 @@
             background: linear-gradient(135deg, #8494FF, #a8b4ff);
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-        .welcome-subtitle { font-size: 12px; max-width: 260px; color: #888; line-height: 1.4; margin-bottom: 16px; }
+        .welcome-subtitle { font-size: 12px; max-width: 260px; color: #999; line-height: 1.4; margin-bottom: 16px; }
         .input-card {
             border-radius: 16px; padding: 4px 4px 4px 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
             display: flex;
             align-items: center;
             gap: 6px;
+            width: 100%;
+            max-width: 320px;
         }
         .message-input {
             flex: 1; background: transparent; border: none; padding: 10px 0;
             font-family: 'Tajawal', sans-serif; font-size: 14px; outline: none;
             color: #e8e8e8;
         }
-        .message-input::placeholder { color: #555; }
+        .message-input::placeholder { color: #666; }
         .input-actions {
             display: flex;
             align-items: center;
             gap: 4px;
         }
-        .toggle-ai-btn {
-            width: 36px; height: 36px; border-radius: 12px; border: none;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            background: rgba(255,255,255,0.04);
-            color: #888;
-            transition: all 0.25s ease;
-            font-size: 18px;
-        }
-        .toggle-ai-btn.active {
-            color: #8494FF;
-            background: rgba(132, 148, 255, 0.12);
-        }
-        .toggle-ai-btn:hover { background: rgba(255,255,255,0.08); }
         .send-btn {
             width: 36px; height: 36px; border-radius: 12px; border: none;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -204,13 +207,13 @@
             transition: all 0.25s ease;
         }
         .send-btn:hover { background: rgba(132, 148, 255, 0.25); }
-        .send-btn:disabled { opacity: 0.4; }
+        .send-btn:disabled { opacity: 0.5; }
         .send-btn i { font-size: 18px; }
         .send-btn.stop-btn {
-            background: rgba(220,53,69,0.15);
+            background: rgba(220, 53, 69, 0.15);
             color: #ff6b7a;
         }
-        .send-btn.stop-btn:hover { background: rgba(220,53,69,0.25); }
+        .send-btn.stop-btn:hover { background: rgba(220, 53, 69, 0.25); }
         
         .spinner {
             width: 16px; height: 16px;
@@ -235,7 +238,7 @@
             padding: 4px 14px; border-radius: 24px; cursor: pointer;
             transition: all 0.25s ease; white-space: nowrap; font-size: 11px;
             background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-            color: #888;
+            color: #999;
         }
         .char-selector-btn:hover { background: rgba(255,255,255,0.08); }
         .char-selector-btn.active {
@@ -256,7 +259,7 @@
         }
         .message { margin-bottom: 10px; animation: messageSlide 0.3s ease; }
         @keyframes messageSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message-time { font-size: 9px; color: #555; margin-bottom: 2px; }
+        .message-time { font-size: 9px; color: #666; margin-bottom: 2px; }
         .message-content {
             padding: 10px 14px; border-radius: 14px; font-size: 13px;
             line-height: 1.6; max-width: 85%;
@@ -384,6 +387,8 @@
 
         @media (max-width: 480px) {
             .character-logo-full { width: 300px; }
+            .ad-card { padding: 18px 16px; }
+            .ad-title { font-size: 16px; }
         }
     </style>
 </head>
@@ -410,6 +415,23 @@
     </header>
 
     <div class="main-container">
+        <!-- ====== الإعلانات ====== -->
+        {% if active_ads %}
+        <div class="ad-container">
+            {% for ad in active_ads %}
+            <div class="ad-card">
+                <div class="ad-title">{{ ad.title }}</div>
+                <div class="ad-content">{{ ad.content }}</div>
+                {% if ad.link %}
+                <a href="{{ ad.link }}" target="_blank" class="ad-link-btn">
+                    <i class="bi bi-box-arrow-up-right"></i> رابط
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- ====== واجهة الترحيب ====== -->
         <div class="welcome-section" id="welcomeSection">
             <div id="welcomeLogo">
@@ -422,9 +444,6 @@
                 <div class="input-card">
                     <input type="text" class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." onkeypress="handleWelcomeKey(event)">
                     <div class="input-actions">
-                        <button class="toggle-ai-btn active" id="welcomeToggleAi" onclick="toggleAi()" title="إيقاف/تشغيل الذكاء الاصطناعي">
-                            <i class="bi bi-cpu"></i>
-                        </button>
                         <button class="send-btn" id="welcomeSendBtn" onclick="sendWelcomeMessage()">
                             <i class="bi bi-send"></i>
                         </button>
@@ -449,9 +468,6 @@
                     </button>
                     <input type="text" class="message-input" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKey(event)">
                     <div class="input-actions">
-                        <button class="toggle-ai-btn active" id="chatToggleAi" onclick="toggleAi()" title="إيقاف/تشغيل الذكاء الاصطناعي">
-                            <i class="bi bi-cpu"></i>
-                        </button>
                         <button class="send-btn" id="sendBtn" onclick="sendChatMessage()">
                             <i class="bi bi-send"></i>
                         </button>
@@ -483,14 +499,6 @@
         </div>
     </div>
 
-    <!-- ====== الشريط السفلي (دردشة فقط) ====== -->
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" id="navChat" onclick="goHome()">
-            <i class="bi bi-chat-dots"></i>
-            <span>دردشة</span>
-        </button>
-    </nav>
-
     <div class="toast" id="toast"></div>
 
     <script>
@@ -510,13 +518,11 @@
         let currentCharacter = characters[0]?.callback_key || 'evile_default';
         let isFirstMessage = true;
         let isProcessing = false;
-        let isAiEnabled = true;
         let abortController = null;
 
         // ====== عناصر DOM ======
         const welcomeSection = document.getElementById('welcomeSection');
         const chatSection = document.getElementById('chatSection');
-        const bottomNav = document.getElementById('bottomNav');
         const charScrollWrapper = document.getElementById('charScrollWrapper');
         const messagesContainer = document.getElementById('messagesContainer');
         const welcomeInput = document.getElementById('welcomeInput');
@@ -545,30 +551,8 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // ====== إيقاف/تشغيل الـ AI ======
-        function toggleAi() {
-            isAiEnabled = !isAiEnabled;
-            const btns = document.querySelectorAll('.toggle-ai-btn');
-            btns.forEach(btn => {
-                btn.classList.toggle('active', isAiEnabled);
-                btn.innerHTML = isAiEnabled ? '<i class="bi bi-cpu"></i>' : '<i class="bi bi-cpu-slash"></i>';
-            });
-            showToast(isAiEnabled ? '✅ تم تشغيل الذكاء الاصطناعي' : '⛔ تم إيقاف الذكاء الاصطناعي');
-        }
-
         // ====== دوال الدردشة ======
-        function updateNavVisibility() {
-            if (chatSection.classList.contains('active')) {
-                bottomNav.classList.add('hidden');
-            } else {
-                bottomNav.classList.remove('hidden');
-            }
-        }
-        const observer = new MutationObserver(updateNavVisibility);
-        observer.observe(chatSection, { attributes: true, attributeFilter: ['class'] });
-
         window.goHome = function() {
-            // إلغاء أي طلب جاري
             if (abortController) {
                 abortController.abort();
                 abortController = null;
@@ -578,20 +562,15 @@
             chatSection.classList.remove('active');
             welcomeSection.classList.add('active');
             isFirstMessage = true;
-            updateNavVisibility();
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('navChat').classList.add('active');
         };
 
         function initScreen() {
             welcomeSection.classList.add('active');
             chatSection.classList.remove('active');
-            updateNavVisibility();
             updateActiveUsers();
             renderCharSelector();
             renderCharactersSheet();
             updateWelcomeDisplay();
-            
             if (characters.length > 0) {
                 loadChatHistory(characters[0].callback_key);
             }
@@ -815,32 +794,29 @@
             });
         }
 
+        function cancelRequest() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+                isProcessing = false;
+                resetSendButtons();
+                removeLoading();
+                showToast('⛔ تم إلغاء الرد', 2000);
+            }
+        }
+
         async function actuallySendMessage(message) {
             if (isProcessing) return;
-            
-            // التحقق من وجود نص
             if (!message.trim()) return;
             
-            // إنشاء AbortController جديد
             abortController = new AbortController();
-            
             isProcessing = true;
             const sendBtn = document.getElementById('sendBtn') || document.getElementById('welcomeSendBtn');
-            // تحويل الزر إلى زر إيقاف
             setStopButton(sendBtn);
             
             addMessage(message, true);
             welcomeInput.value = '';
             chatInput.value = '';
-            
-            // إذا كان الـ AI مطفأ، نوقف المعالجة هنا
-            if (!isAiEnabled) {
-                showToast('⏸️ الردود التلقائية موقفة', 2000);
-                isProcessing = false;
-                resetSendButtons();
-                abortController = null;
-                return;
-            }
             
             showLoading();
             try {
@@ -859,7 +835,7 @@
                 }
             } catch (err) {
                 if (err.name === 'AbortError') {
-                    showToast('⛔ تم إلغاء الرد', 2000);
+                    // تم الإلغاء بواسطة المستخدم
                 } else {
                     removeLoading();
                     addMessage('خطأ في الاتصال.', false);
@@ -870,22 +846,8 @@
             resetSendButtons();
         }
 
-        // دالة إلغاء الطلب عند الضغط على زر الإيقاف
-        function cancelRequest() {
-            if (abortController) {
-                abortController.abort();
-                abortController = null;
-                isProcessing = false;
-                resetSendButtons();
-                removeLoading();
-                showToast('⛔ تم إلغاء الرد', 2000);
-            }
-        }
-
-        // تعديل دالة الإرسال لترتبط بالزر
         async function sendWelcomeMessage() {
             if (isProcessing) {
-                // إذا كان قيد المعالجة، نلغي الطلب
                 cancelRequest();
                 return;
             }
@@ -895,7 +857,6 @@
                 welcomeSection.classList.remove('active');
                 chatSection.classList.add('active');
                 isFirstMessage = false;
-                updateNavVisibility();
             }
             await actuallySendMessage(msg);
         }
@@ -927,7 +888,6 @@
         function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
         
         function selectCharacter(key) {
-            // إلغاء أي طلب جاري عند تبديل الشخصية
             if (abortController) {
                 abortController.abort();
                 abortController = null;
@@ -949,7 +909,6 @@
             if (!isFirstMessage) {
                 welcomeSection.classList.remove('active');
                 chatSection.classList.add('active');
-                updateNavVisibility();
             }
         }
 
@@ -957,10 +916,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             initScreen();
             setInterval(updateActiveUsers, 30000);
-            document.querySelectorAll('.toggle-ai-btn').forEach(btn => {
-                btn.classList.add('active');
-                btn.innerHTML = '<i class="bi bi-cpu"></i>';
-            });
         });
     </script>
 </body>

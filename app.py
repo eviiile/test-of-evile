@@ -71,6 +71,16 @@ def ensure_notification_columns(cur):
         cur.execute("ALTER TABLE notifications ADD COLUMN show_in_chat BOOLEAN DEFAULT FALSE")
         logger.info("Added column show_in_chat to notifications table")
 
+def ensure_ad_columns(cur):
+    cur.execute("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name='ads' AND column_name='is_active'
+    """)
+    if not cur.fetchone():
+        cur.execute("ALTER TABLE ads ADD COLUMN is_active BOOLEAN DEFAULT TRUE")
+        logger.info("Added column is_active to ads table")
+
 def init_db():
     try:
         with get_db() as cur:
@@ -96,7 +106,17 @@ def init_db():
                 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
             
+            cur.execute('''CREATE TABLE IF NOT EXISTS ads (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                link TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
+            
             ensure_notification_columns(cur)
+            ensure_ad_columns(cur)
             logger.info("Database initialized/updated successfully")
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
@@ -126,16 +146,20 @@ def index():
     telegram_id = session.get('telegram_id')
     characters = []
     latest_notification = None
+    active_ads = []
     try:
         with get_db() as cur:
             cur.execute('SELECT * FROM characters ORDER BY id')
             characters = cur.fetchall() or []
             cur.execute('SELECT * FROM notifications WHERE show_in_chat = true ORDER BY created_at DESC LIMIT 1')
             latest_notification = cur.fetchone()
+            cur.execute('SELECT * FROM ads WHERE is_active = true ORDER BY id')
+            active_ads = cur.fetchall() or []
     except Exception as e:
         logger.error(f"Index error: {e}")
         characters = []
         latest_notification = None
+        active_ads = []
     channel_url = "https://t.me/Evile_Prompts"
     instagram_url = "https://www.instagram.com/bla6c7"
     return render_template('index.html',
@@ -143,7 +167,8 @@ def index():
                          telegram_id=telegram_id,
                          latest_notification=latest_notification,
                          channel_url=channel_url,
-                         instagram_url=instagram_url)
+                         instagram_url=instagram_url,
+                         active_ads=active_ads)
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -221,15 +246,18 @@ def admin_panel():
             cur.execute('SELECT COUNT(*) FROM users')
             row = cur.fetchone()
             users_count = row['count'] if row else 0
+            cur.execute('SELECT * FROM ads ORDER BY id DESC')
+            ads = cur.fetchall()
     except Exception as e:
         logger.error(f"Admin panel error: {e}")
-        characters, notifications, users_count = [], [], 0
+        characters, notifications, users_count, ads = [], [], 0, []
     
     return render_template('admin.html',
                          logged_in=True,
                          characters=characters,
                          notifications=notifications,
-                         users_count=users_count)
+                         users_count=users_count,
+                         ads=ads)
 
 # ==================== Admin: Characters ====================
 @app.route('/admin/character/add', methods=['POST'])
@@ -306,6 +334,83 @@ def delete_notification(notif_id):
             cur.execute("DELETE FROM notifications WHERE id=%s", (notif_id,))
         flash('تم حذف الإشعار', 'success')
     except Exception as e:
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+# ==================== Admin: Ads ====================
+@app.route('/admin/ad/add', methods=['POST'])
+@admin_required
+def admin_add_ad():
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    link = request.form.get('link', '').strip()
+    is_active = request.form.get('is_active') == 'on'
+    
+    if not title or not content:
+        flash('العنوان والنص مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "INSERT INTO ads (title, content, link, is_active) VALUES (%s, %s, %s, %s)",
+                (title, content, link or None, is_active)
+            )
+        flash('تم إضافة الإعلان بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error adding ad: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/ad/<int:ad_id>/edit', methods=['POST'])
+@admin_required
+def admin_edit_ad(ad_id):
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    link = request.form.get('link', '').strip()
+    is_active = request.form.get('is_active') == 'on'
+    
+    if not title or not content:
+        flash('العنوان والنص مطلوبان', 'error')
+        return redirect(url_for('admin_panel'))
+    
+    try:
+        with get_db() as cur:
+            cur.execute(
+                "UPDATE ads SET title = %s, content = %s, link = %s, is_active = %s WHERE id = %s",
+                (title, content, link or None, is_active, ad_id)
+            )
+        flash('تم تعديل الإعلان بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error editing ad: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/ad/<int:ad_id>/delete')
+@admin_required
+def admin_delete_ad(ad_id):
+    try:
+        with get_db() as cur:
+            cur.execute("DELETE FROM ads WHERE id = %s", (ad_id,))
+        flash('تم حذف الإعلان بنجاح', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting ad: {e}")
+        flash(str(e), 'error')
+    return redirect(url_for('admin_panel'))
+
+@app.route('/admin/ad/<int:ad_id>/toggle')
+@admin_required
+def admin_toggle_ad(ad_id):
+    try:
+        with get_db() as cur:
+            cur.execute("SELECT is_active FROM ads WHERE id = %s", (ad_id,))
+            row = cur.fetchone()
+            if row:
+                new_status = not row['is_active']
+                cur.execute("UPDATE ads SET is_active = %s WHERE id = %s", (new_status, ad_id))
+                flash(f'تم {"تفعيل" if new_status else "إيقاف"} الإعلان', 'success')
+    except Exception as e:
+        logger.error(f"Error toggling ad: {e}")
         flash(str(e), 'error')
     return redirect(url_for('admin_panel'))
 

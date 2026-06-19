@@ -26,26 +26,6 @@
                         radial-gradient(circle at 80% 20%, rgba(255,240,217,0.05) 0%, transparent 50%),
                         #0a0a0a;
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-        .glass-light {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .glass-blue {
-            background: rgba(132, 148, 255, 0.08);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(132, 148, 255, 0.12);
-            box-shadow: 0 8px 32px rgba(132, 148, 255, 0.05);
-        }
         
         .floating-header {
             position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
@@ -110,6 +90,7 @@
             .main-container { padding-top: 80px; }
         }
 
+        /* ====== الشريط السفلي (نشر محذوف) ====== */
         .bottom-nav {
             position: fixed;
             bottom: 12px;
@@ -123,11 +104,11 @@
             border-radius: 16px;
             padding: 4px 6px;
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             align-items: center;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
             height: 40px;
-            max-width: 400px;
+            max-width: 200px;
             margin: 0 auto;
             transition: opacity 0.3s, transform 0.3s;
         }
@@ -150,8 +131,6 @@
             border: none;
             cursor: pointer;
             height: 32px;
-            flex: 1;
-            max-width: 90px;
             justify-content: center;
             transition: all 0.25s ease;
         }
@@ -165,11 +144,21 @@
         .nav-item:hover { color: #aaa; }
         .nav-item:active { transform: scale(0.94); }
 
+        /* ====== الدردشة ====== */
         .welcome-section {
             flex: 1; display: none; flex-direction: column; align-items: center;
             justify-content: center; padding: 16px; text-align: center;
         }
         .welcome-section.active { display: flex; }
+        .character-logo-full {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
         .sparkle-icon i { font-size: 56px; color: #8494FF; opacity: 0.5; }
         .welcome-title {
             font-size: 24px; font-weight: 800; margin-bottom: 6px;
@@ -181,14 +170,34 @@
             border-radius: 16px; padding: 4px 4px 4px 16px;
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .input-wrapper { display: flex; align-items: center; gap: 6px; }
         .message-input {
             flex: 1; background: transparent; border: none; padding: 10px 0;
             font-family: 'Tajawal', sans-serif; font-size: 14px; outline: none;
             color: #e8e8e8;
         }
         .message-input::placeholder { color: #555; }
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .toggle-ai-btn {
+            width: 36px; height: 36px; border-radius: 12px; border: none;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            background: rgba(255,255,255,0.04);
+            color: #888;
+            transition: all 0.25s ease;
+            font-size: 18px;
+        }
+        .toggle-ai-btn.active {
+            color: #8494FF;
+            background: rgba(132, 148, 255, 0.12);
+        }
+        .toggle-ai-btn:hover { background: rgba(255,255,255,0.08); }
         .send-btn {
             width: 36px; height: 36px; border-radius: 12px; border: none;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -290,256 +299,16 @@
         .home-btn:active { transform: scale(0.9); }
         .home-btn i { font-size: 18px; }
 
-        .publish-section {
-            display: none; flex-direction: column; flex: 1; overflow-y: auto;
-        }
-        .publish-section.active { display: flex; }
-        
-        .publish-container {
-            width: 100%; border-radius: 24px; overflow: hidden; flex: 1;
-            min-height: 500px;
-            background: radial-gradient(ellipse at 50% 30%, rgba(132,148,255,0.04) 0%, transparent 70%), #0a0a0a;
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        .publish-overlay {
-            padding: 30px 24px; text-align: center; min-height: 500px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .publish-overlay .icon-center {
-            width: 80px; height: 80px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin-bottom: 20px;
-            background: rgba(132, 148, 255, 0.06);
-            border: 1px solid rgba(132, 148, 255, 0.08);
-        }
-        .publish-overlay .icon-center i { font-size: 40px; color: #8494FF; }
-        .publish-overlay h2 { font-size: 24px; font-weight: 800; color: #e8e8e8; margin-bottom: 8px; }
-        .publish-overlay .sub { color: #888; font-size: 14px; max-width: 320px; margin-bottom: 20px; line-height: 1.8; }
-        
-        .publish-input-group {
-            width: 100%; max-width: 320px; display: flex; align-items: center;
-            border-radius: 16px; padding: 4px 4px 4px 16px; margin-bottom: 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .publish-input-group .telegram-icon { font-size: 20px; margin-left: 10px; color: #8494FF; }
-        .publish-input-group input {
-            flex: 1; background: transparent; border: none; padding: 14px 0;
-            color: #e8e8e8; font-size: 16px; font-family: 'Tajawal', sans-serif; outline: none;
-        }
-        .publish-input-group input::placeholder { color: #555; }
-        
-        .btn-start, .btn-agree, .btn-register {
-            width: 100%; max-width: 320px; padding: 10px 20px;
-            border-radius: 40px; font-weight: 700; font-size: 14px;
-            cursor: pointer; transition: all 0.3s ease;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: 'Tajawal', sans-serif; margin-bottom: 8px;
-            background: rgba(132, 148, 255, 0.08);
-            border: 1px solid rgba(132, 148, 255, 0.1);
-            color: #8494FF;
-        }
-        .btn-start:hover, .btn-agree:hover, .btn-register:hover {
-            background: rgba(132, 148, 255, 0.15);
-            transform: scale(1.02);
-        }
-        .btn-start:active, .btn-agree:active, .btn-register:active { transform: scale(0.96); }
-        .btn-start:disabled, .btn-agree:disabled, .btn-register:disabled { opacity: 0.4; pointer-events: none; }
-        
-        .terms-box {
-            border-radius: 16px; padding: 16px 20px; margin-bottom: 20px;
-            max-width: 380px; width: 100%; text-align: right;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .terms-box p { color: #999; font-size: 13px; line-height: 1.8; }
-        .terms-box p i { color: #8494FF; margin-left: 6px; }
-        .terms-box p strong { color: #ccc; }
-        
-        .publish-form {
-            width: 100%; max-width: 320px; display: none; flex-direction: column; gap: 12px;
-        }
-        .publish-form.show { display: flex; }
-        .publish-form .form-group { text-align: right; }
-        .publish-form label { color: #999; font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block; }
-        .publish-form input {
-            width: 100%; padding: 12px 16px;
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 14px; color: #e8e8e8; font-size: 14px;
-            font-family: 'Tajawal', sans-serif; outline: none;
-        }
-        .publish-form input::placeholder { color: #555; }
-        .publish-form input:focus { border-color: rgba(132,148,255,0.2); background: rgba(255,255,255,0.06); }
-        
-        .btn-add-bot {
-            width: 100%; padding: 12px;
-            background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.1);
-            border-radius: 40px; color: #00aaff; font-weight: 700; font-size: 14px;
-            cursor: pointer; transition: all 0.3s ease; text-decoration: none;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: 'Tajawal', sans-serif;
-        }
-        .btn-add-bot:hover { background: rgba(0, 136, 204, 0.15); transform: scale(1.02); }
-        .btn-add-bot:active { transform: scale(0.96); }
-        
-        .publish-flash {
-            background: rgba(220,53,69,0.1); padding: 10px 16px; border-radius: 12px;
-            color: #ff6b7a; margin-bottom: 12px; font-size: 13px; display: none;
-            max-width: 320px; width: 100%;
-        }
-        .publish-flash.show { display: block; }
-        .publish-flash.success { background: rgba(40,167,69,0.1); color: #5ddb7a; }
-        .publish-hint { margin-top: 8px; color: #555; font-size: 11px; }
-
-        .dashboard-container {
-            width: 100%; border-radius: 24px; padding: 20px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .dashboard-container .channel-header {
-            display: flex; align-items: center; gap: 16px;
-            margin-bottom: 20px; padding-bottom: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .dashboard-container .channel-avatar {
-            width: 56px; height: 56px; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; flex-shrink: 0;
-            background: rgba(132, 148, 255, 0.08);
-            color: #8494FF;
-        }
-        .dashboard-container .channel-info h2 { font-size: 18px; font-weight: 800; color: #e8e8e8; }
-        .dashboard-container .channel-info .username { font-size: 13px; color: #888; }
-        .dashboard-container .channel-info .bio { font-size: 12px; color: #666; margin-top: 4px; }
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px;
-        }
-        .stat-card {
-            border-radius: 12px; padding: 12px; text-align: center;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .stat-card .number { font-size: 20px; font-weight: 800; color: #e8e8e8; }
-        .stat-card .label { font-size: 10px; color: #888; margin-top: 2px; }
-        .stat-card i { font-size: 16px; color: #8494FF; display: block; margin-bottom: 4px; }
-        
-        .content-selector {
-            border-radius: 16px; padding: 16px; margin-bottom: 20px;
-            background: rgba(255, 240, 217, 0.04);
-            border: 1px solid rgba(255, 240, 217, 0.06);
-        }
-        .content-selector h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; color: #aaa; }
-        .content-selector h3 i { color: #8494FF; }
-        .content-scroll {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 8px 0;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-        }
-        .content-scroll::-webkit-scrollbar {
-            height: 4px;
-        }
-        .content-scroll::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.04);
-            border-radius: 4px;
-        }
-        .content-scroll::-webkit-scrollbar-thumb {
-            background: rgba(132, 148, 255, 0.3);
-            border-radius: 4px;
-        }
-        .content-item {
-            min-width: 130px;
-            flex-shrink: 0;
-            border-radius: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-align: center;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .content-item:hover {
-            background: rgba(255,255,255,0.08);
-            transform: translateY(-2px);
-        }
-        .content-item.active {
-            background: rgba(132, 148, 255, 0.12);
-            border: 1px solid rgba(132, 148, 255, 0.2);
-        }
-        .content-item .name {
-            font-weight: 700;
-            font-size: 13px;
-            color: #e8e8e8;
-        }
-        .content-item .channels {
-            font-size: 10px;
-            color: #888;
-            margin-top: 4px;
-        }
-        .content-item .channels i {
-            color: #8494FF;
-            font-size: 10px;
-        }
-        .content-item .check {
-            margin-top: 6px;
-            font-size: 10px;
-            color: #8494FF;
-        }
-        .content-scroll-hint {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #666;
-            text-align: center;
-        }
-        
-        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .actions .btn {
-            flex: 1; padding: 10px 16px; border: none; border-radius: 40px;
-            font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.25s ease;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            font-family: 'Tajawal', sans-serif; min-width: 80px;
-        }
-        .btn-pause { background: rgba(255, 240, 217, 0.08); color: #ffd966; border: 1px solid rgba(255, 240, 217, 0.08); }
-        .btn-pause:hover { background: rgba(255, 240, 217, 0.15); }
-        .btn-stop { background: rgba(220,53,69,0.08); color: #ff6b7a; border: 1px solid rgba(220,53,69,0.08); }
-        .btn-stop:hover { background: rgba(220,53,69,0.15); }
-        .btn-publish { background: rgba(132, 148, 255, 0.08); color: #8494FF; border: 1px solid rgba(132, 148, 255, 0.08); }
-        .btn-publish:hover { background: rgba(132, 148, 255, 0.15); }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn:active { transform: scale(0.96); }
-        
-        .recent-posts {
-            border-radius: 16px; padding: 16px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        .recent-posts h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; color: #888; }
-        .recent-posts h3 i { color: #8494FF; }
-        .post-item {
-            padding: 8px 0; font-size: 12px; line-height: 1.5;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            color: #aaa;
-        }
-        .post-item .time { font-size: 10px; color: #666; display: block; margin-bottom: 2px; }
-        .post-item:last-child { border-bottom: none; }
-        
-        .status-badge {
-            display: inline-block; padding: 3px 12px; border-radius: 40px;
-            font-size: 11px; font-weight: 600;
-            background: rgba(40,167,69,0.08); color: #5ddb7a;
-        }
-        .status-badge.paused { background: rgba(255,193,7,0.08); color: #ffd966; }
-        .status-badge.inactive { background: rgba(220,53,69,0.08); color: #ff6b7a; }
-        
-        .toast {
-            position: fixed; bottom: 70px; left: 20px; right: 20px;
+        .toast-notification {
+            position: fixed; bottom: 80px; left: 20px; right: 20px;
             background: rgba(0,0,0,0.85); backdrop-filter: blur(20px);
             color: #e8e8e8; padding: 12px 18px; border-radius: 14px;
-            text-align: center; z-index: 1000; display: none; font-size: 13px;
-            max-width: 500px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.04);
+            text-align: center; z-index: 200; animation: fadeInUp 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .bottom-sheet-overlay {
@@ -601,12 +370,16 @@
         }
         .char-list-item.active .char-list-check { opacity: 1; }
         
+        .toast {
+            position: fixed; bottom: 70px; left: 20px; right: 20px;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(20px);
+            color: #e8e8e8; padding: 12px 18px; border-radius: 14px;
+            text-align: center; z-index: 1000; display: none; font-size: 13px;
+            max-width: 500px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.04);
+        }
+
         @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr 1fr 1fr; }
-            .actions .btn { flex: 1 1 45%; }
-            .publish-overlay { padding: 20px; }
-            .publish-overlay h2 { font-size: 20px; }
-            .content-item { min-width: 110px; padding: 10px 12px; }
+            .character-logo-full { width: 80px; height: 80px; }
         }
     </style>
 </head>
@@ -633,23 +406,28 @@
     </header>
 
     <div class="main-container">
-        <!-- ====== الدردشة ====== -->
+        <!-- ====== واجهة الترحيب ====== -->
         <div class="welcome-section" id="welcomeSection">
             <div id="welcomeLogo">
                 <div class="sparkle-icon"><i class="bi bi-stars"></i></div>
             </div>
             <h1 class="welcome-title" id="welcomeTitle">ابنِ أفكارك مع EVILE</h1>
             <p class="welcome-subtitle" id="welcomeSubtitle">اختر شخصية وابدأ محادثة إبداعية</p>
+            
             <div class="welcome-input-card" style="width:100%; max-width:320px;">
                 <div class="input-card">
-                    <div class="input-wrapper">
-                        <input type="text" class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." onkeypress="handleWelcomeKey(event)">
+                    <input type="text" class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." onkeypress="handleWelcomeKey(event)">
+                    <div class="input-actions">
+                        <button class="toggle-ai-btn active" id="welcomeToggleAi" onclick="toggleAi()" title="إيقاف/تشغيل الذكاء الاصطناعي">
+                            <i class="bi bi-cpu"></i>
+                        </button>
                         <button class="send-btn" id="welcomeSendBtn" onclick="sendWelcomeMessage()">
                             <i class="bi bi-send"></i>
                         </button>
                     </div>
                 </div>
             </div>
+
             <div class="char-scroll-container">
                 <div class="char-scroll-wrapper" id="charScrollWrapper">
                     <div class="char-selector" id="charSelector"></div>
@@ -657,85 +435,22 @@
             </div>
         </div>
 
+        <!-- ====== واجهة الدردشة ====== -->
         <div class="chat-section" id="chatSection">
             <div class="messages-container" id="messagesContainer"></div>
             <div class="input-section">
                 <div class="input-card">
-                    <div class="input-wrapper">
-                        <button class="home-btn" onclick="goHome()" title="الرئيسية">
-                            <i class="bi bi-house-door"></i>
+                    <button class="home-btn" onclick="goHome()" title="الرئيسية">
+                        <i class="bi bi-house-door"></i>
+                    </button>
+                    <input type="text" class="message-input" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKey(event)">
+                    <div class="input-actions">
+                        <button class="toggle-ai-btn active" id="chatToggleAi" onclick="toggleAi()" title="إيقاف/تشغيل الذكاء الاصطناعي">
+                            <i class="bi bi-cpu"></i>
                         </button>
-                        <input type="text" class="message-input" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKey(event)">
                         <button class="send-btn" id="sendBtn" onclick="sendChatMessage()">
                             <i class="bi bi-send"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== النشر ====== -->
-        <div class="publish-section" id="publishSection">
-            <div class="publish-container">
-                <div class="publish-overlay" id="publishOverlay">
-                    <!-- الحالة 1: الترحيب / طلب ID -->
-                    <div id="publishWelcome" style="display:flex; flex-direction:column; align-items:center; width:100%;">
-                        <div class="icon-center"><i class="bi bi-megaphone"></i></div>
-                        <h2>🚀 نشر تلقائي</h2>
-                        <p class="sub">أدخل معرف التلغرام لعرض بيانات قناتك أو تسجيل قناة جديدة</p>
-                        <div class="publish-input-group">
-                            <i class="bi bi-telegram telegram-icon"></i>
-                            <input type="text" id="publishTelegramId" placeholder="أدخل معرف التلغرام" value="{{ telegram_id or '' }}">
-                        </div>
-                        <button class="btn-start" id="publishStartBtn">
-                            <i class="bi bi-arrow-left"></i> عرض بياناتي
-                        </button>
-                        <div style="margin-top:12px; font-size:11px; color:#666;">
-                            <i class="bi bi-info-circle"></i> سيتم تذكر جلسة الدخول تلقائياً
-                        </div>
-                    </div>
-
-                    <!-- الحالة 2: الموافقة على الشروط -->
-                    <div id="publishTerms" style="display:none; flex-direction:column; align-items:center; width:100%;">
-                        <div class="icon-center"><i class="bi bi-check-circle"></i></div>
-                        <h2>شروط الخدمة</h2>
-                        <p class="sub">يرجى قراءة الشروط قبل الموافقة</p>
-                        <div class="terms-box">
-                            <p><i class="bi bi-check-circle"></i> <strong>شروط الخدمة:</strong></p>
-                            <p>• بالموافقة، أنت توافق على نشر الإعلانات داخل قناتك كجزء من الخدمة.</p>
-                            <p>• سيتم نشر محتوى تقني يومي بتوقيت محدد.</p>
-                            <p>• يمكنك إيقاف الخدمة في أي وقت عبر لوحة التحكم.</p>
-                            <p>• نضمن جودة المحتوى وملاءمته للقنوات التقنية.</p>
-                        </div>
-                        <button class="btn-agree" id="publishAgreeBtn">
-                            <i class="bi bi-check-lg"></i> أوافق على الشروط
-                        </button>
-                    </div>
-
-                    <!-- الحالة 3: تسجيل القناة -->
-                    <div id="publishRegister" style="display:none; flex-direction:column; align-items:center; width:100%;">
-                        <div class="icon-center"><i class="bi bi-plus-circle"></i></div>
-                        <h2>تسجيل القناة</h2>
-                        <p class="sub">أضف البوت وسجل قناتك للبدء</p>
-                        <div class="publish-flash" id="publishFlash"></div>
-                        <a href="https://t.me/eV7Ile_bot?startchannel=start" target="_blank" class="btn-add-bot">
-                            <i class="bi bi-plus-circle"></i> إضافة البوت @eV7Ile_bot إلى القناة
-                        </a>
-                        <form id="publishRegisterForm" style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:12px; margin-top:8px;">
-                            <div class="form-group">
-                                <label>اسم المستخدم (يبدأ بـ @)</label>
-                                <input type="text" id="publishChannelUsername" placeholder="@my_channel" required>
-                            </div>
-                            <button type="submit" class="btn-register">
-                                <i class="bi bi-save"></i> تسجيل القناة
-                            </button>
-                        </form>
-                        <div class="publish-hint">تأكد من إضافة البوت كمشرف في قناتك</div>
-                    </div>
-
-                    <!-- الحالة 4: لوحة التحكم -->
-                    <div id="publishDashboard" style="display:none; width:100%;">
-                        <div id="dashboardContent"></div>
                     </div>
                 </div>
             </div>
@@ -764,15 +479,11 @@
         </div>
     </div>
 
-    <!-- ====== الشريط السفلي ====== -->
+    <!-- ====== الشريط السفلي (دردشة فقط) ====== -->
     <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" id="navChat" onclick="switchTab('chat')">
+        <button class="nav-item active" id="navChat" onclick="goHome()">
             <i class="bi bi-chat-dots"></i>
             <span>دردشة</span>
-        </button>
-        <button class="nav-item" id="navPublish" onclick="switchTab('publish')">
-            <i class="bi bi-megaphone"></i>
-            <span>نشر</span>
         </button>
     </nav>
 
@@ -793,35 +504,51 @@
             }];
         }
         let currentCharacter = characters[0]?.callback_key || 'evile_default';
-        let isFirstMessage = true, isProcessing = false;
-        let publishState = 'welcome';
-        let sessionTelegramId = null;
-        try { sessionTelegramId = {{ telegram_id|tojson }}; } catch(e) { sessionTelegramId = null; }
+        let isFirstMessage = true;
+        let isProcessing = false;
+        let isAiEnabled = true;
 
         // ====== عناصر DOM ======
         const welcomeSection = document.getElementById('welcomeSection');
         const chatSection = document.getElementById('chatSection');
-        const publishSection = document.getElementById('publishSection');
         const bottomNav = document.getElementById('bottomNav');
         const charScrollWrapper = document.getElementById('charScrollWrapper');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const welcomeInput = document.getElementById('welcomeInput');
+        const chatInput = document.getElementById('chatInput');
 
-        // ====== تبديل التبويبات ======
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if (tab === 'chat') {
-                document.getElementById('navChat').classList.add('active');
-                welcomeSection.classList.add('active');
-                chatSection.classList.remove('active');
-                publishSection.classList.remove('active');
-                bottomNav.classList.remove('hidden');
-            } else {
-                document.getElementById('navPublish').classList.add('active');
-                welcomeSection.classList.remove('active');
-                chatSection.classList.remove('active');
-                publishSection.classList.add('active');
-                bottomNav.classList.remove('hidden');
-                loadPublishState();
-            }
+        // ====== حفظ واسترجاع الدردشات ======
+        function getChatHistory(characterKey) {
+            try {
+                const data = localStorage.getItem('chat_history_' + characterKey);
+                return data ? JSON.parse(data) : [];
+            } catch(e) { return []; }
+        }
+
+        function saveChatHistory(characterKey, messages) {
+            try {
+                localStorage.setItem('chat_history_' + characterKey, JSON.stringify(messages));
+            } catch(e) {}
+        }
+
+        function loadChatHistory(characterKey) {
+            const history = getChatHistory(characterKey);
+            messagesContainer.innerHTML = '';
+            history.forEach(msg => {
+                addMessage(msg.text, msg.isOwn, false);
+            });
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // ====== إيقاف/تشغيل الـ AI ======
+        function toggleAi() {
+            isAiEnabled = !isAiEnabled;
+            const btns = document.querySelectorAll('.toggle-ai-btn');
+            btns.forEach(btn => {
+                btn.classList.toggle('active', isAiEnabled);
+                btn.innerHTML = isAiEnabled ? '<i class="bi bi-cpu"></i>' : '<i class="bi bi-cpu-slash"></i>';
+            });
+            showToast(isAiEnabled ? '✅ تم تشغيل الذكاء الاصطناعي' : '⛔ تم إيقاف الذكاء الاصطناعي');
         }
 
         // ====== دوال الدردشة ======
@@ -838,7 +565,6 @@
         window.goHome = function() {
             chatSection.classList.remove('active');
             welcomeSection.classList.add('active');
-            document.getElementById('messagesContainer').innerHTML = '';
             isFirstMessage = true;
             updateNavVisibility();
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -848,15 +574,15 @@
         function initScreen() {
             welcomeSection.classList.add('active');
             chatSection.classList.remove('active');
-            publishSection.classList.remove('active');
             updateNavVisibility();
             updateActiveUsers();
             renderCharSelector();
             renderCharactersSheet();
             updateWelcomeDisplay();
             
-            if (sessionTelegramId) {
-                setTimeout(loadPublishState, 500);
+            // تحميل الدردشة للشخصية الأولى
+            if (characters.length > 0) {
+                loadChatHistory(characters[0].callback_key);
             }
         }
 
@@ -945,7 +671,11 @@
             const title = document.getElementById('welcomeTitle');
             const sub = document.getElementById('welcomeSubtitle');
             if (char) {
-                logo.innerHTML = `<div class="sparkle-icon"><i class="bi bi-robot"></i></div>`;
+                if (char.logo_url) {
+                    logo.innerHTML = `<img src="${escapeHtml(char.logo_url)}" class="character-logo-full" alt="${escapeHtml(char.name)}">`;
+                } else {
+                    logo.innerHTML = `<div class="sparkle-icon"><i class="bi bi-robot"></i></div>`;
+                }
                 title.textContent = char.name;
                 sub.textContent = char.description;
             } else {
@@ -957,13 +687,21 @@
 
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m] || m); }
 
+        function showToast(msg, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+
         function setButtonLoading(btn, loading) {
             if (!btn) return;
             btn.disabled = loading;
             btn.innerHTML = loading ? '<div class="spinner"></div>' : '<i class="bi bi-send"></i>';
         }
 
-        function addMessage(text, isOwn) {
+        function addMessage(text, isOwn, save = true) {
             const container = document.getElementById('messagesContainer');
             const time = new Date().toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' });
             const div = document.createElement('div');
@@ -971,6 +709,12 @@
             div.innerHTML = `<div class="message-time">${time}</div><div class="message-content">${escapeHtml(text)}</div>`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
+            
+            if (save) {
+                const history = getChatHistory(currentCharacter);
+                history.push({ text, isOwn, time });
+                saveChatHistory(currentCharacter, history);
+            }
         }
 
         function showLoading() {
@@ -1008,8 +752,9 @@
                 msgDiv.appendChild(bubble);
                 const textEl = bubble.querySelector('.ai-bubble-text');
                 const copyBtn = bubble.querySelector('.ai-bubble-copy');
+                const fullText = text;
                 copyBtn.onclick = () => {
-                    navigator.clipboard.writeText(textEl.innerText).then(() => {
+                    navigator.clipboard.writeText(fullText).then(() => {
                         copyBtn.innerHTML = '<i class="bi bi-check-lg"></i> <span>تم</span>';
                         setTimeout(() => { copyBtn.innerHTML = '<i class="bi bi-files"></i> <span>نسخ</span>'; }, 1500);
                     });
@@ -1028,6 +773,10 @@
                     } else {
                         clearInterval(interval);
                         cursor.remove();
+                        // حفظ الرد في التاريخ
+                        const history = getChatHistory(currentCharacter);
+                        history.push({ text: fullText, isOwn: false, time: time });
+                        saveChatHistory(currentCharacter, history);
                         resolve();
                     }
                 }, 20);
@@ -1040,7 +789,17 @@
             const sendBtn = document.getElementById('sendBtn') || document.getElementById('welcomeSendBtn');
             setButtonLoading(sendBtn, true);
             addMessage(message, true);
-            document.getElementById('welcomeInput').value = '';
+            welcomeInput.value = '';
+            chatInput.value = '';
+            
+            // إذا كان الـ AI مطفأ، نوقف المعالجة هنا
+            if (!isAiEnabled) {
+                showToast('⏸️ الردود التلقائية موقفة', 2000);
+                isProcessing = false;
+                setButtonLoading(sendBtn, false);
+                return;
+            }
+            
             showLoading();
             try {
                 const res = await fetch('/api/chat', {
@@ -1050,8 +809,11 @@
                 });
                 const data = await res.json();
                 removeLoading();
-                if (data.response) await streamResponse(data.response);
-                else addMessage('حدث خطأ. حاول مرة أخرى.', false);
+                if (data.response) {
+                    await streamResponse(data.response);
+                } else {
+                    addMessage('حدث خطأ. حاول مرة أخرى.', false);
+                }
             } catch (err) {
                 removeLoading();
                 addMessage('خطأ في الاتصال.', false);
@@ -1062,8 +824,7 @@
 
         window.sendWelcomeMessage = async function() {
             if (isProcessing) return;
-            const input = document.getElementById('welcomeInput');
-            const msg = input.value.trim();
+            const msg = welcomeInput.value.trim();
             if (!msg) return;
             if (isFirstMessage) {
                 welcomeSection.classList.remove('active');
@@ -1076,19 +837,19 @@
 
         async function sendChatMessage() {
             if (isProcessing) return;
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
+            const msg = chatInput.value.trim();
             if (!msg) return;
             await actuallySendMessage(msg);
         }
 
-        function handleWelcomeKey(e) { if (e.key === 'Enter') sendWelcomeMessage(); }
-        function handleChatKey(e) { if (e.key === 'Enter') sendChatMessage(); }
+        function handleWelcomeKey(e) { if (e.key === 'Enter' && !isProcessing) sendWelcomeMessage(); }
+        function handleChatKey(e) { if (e.key === 'Enter' && !isProcessing) sendChatMessage(); }
 
         function openCharactersSheet() { renderCharactersSheet(); document.getElementById('charactersSheet').classList.add('active'); }
         async function openNotificationsSheet() { await renderNotificationsSheet(); document.getElementById('notificationsSheet').classList.add('active'); document.getElementById('notifBadge').style.display = 'none'; }
         function closeSheet(id) { document.getElementById(id).classList.remove('active'); }
         function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
+        
         function selectCharacter(key) {
             currentCharacter = key;
             renderCharSelector();
@@ -1097,292 +858,28 @@
             closeSheet('charactersSheet');
             const char = characters.find(c => c.callback_key === key);
             if (char) {
-                document.getElementById('welcomeInput').placeholder = `اكتب لـ ${char.name}...`;
-                document.getElementById('chatInput').placeholder = `اكتب لـ ${char.name}...`;
+                welcomeInput.placeholder = `اكتب لـ ${char.name}...`;
+                chatInput.placeholder = `اكتب لـ ${char.name}...`;
+            }
+            // تحميل الدردشة المحفوظة لهذه الشخصية
+            loadChatHistory(key);
+            // إذا كانت الشاشة الرئيسية، ننقل إلى الدردشة
+            if (!isFirstMessage) {
+                welcomeSection.classList.remove('active');
+                chatSection.classList.add('active');
+                updateNavVisibility();
             }
         }
-
-        // ====== دوال النشر ======
-        function showToast(msg, duration = 3000) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.display = 'block';
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, duration);
-        }
-
-        function setPublishState(state, data = null) {
-            publishState = state;
-            const welcome = document.getElementById('publishWelcome');
-            const terms = document.getElementById('publishTerms');
-            const register = document.getElementById('publishRegister');
-            const dashboard = document.getElementById('publishDashboard');
-            
-            [welcome, terms, register, dashboard].forEach(el => el.style.display = 'none');
-            
-            if (state === 'welcome') {
-                welcome.style.display = 'flex';
-                welcome.style.flexDirection = 'column';
-                welcome.style.alignItems = 'center';
-                welcome.style.width = '100%';
-                const idInput = document.getElementById('publishTelegramId');
-                if (sessionTelegramId && !idInput.value) {
-                    idInput.value = sessionTelegramId;
-                }
-            } else if (state === 'terms') {
-                terms.style.display = 'flex';
-                terms.style.flexDirection = 'column';
-                terms.style.alignItems = 'center';
-                terms.style.width = '100%';
-            } else if (state === 'register') {
-                register.style.display = 'flex';
-                register.style.flexDirection = 'column';
-                register.style.alignItems = 'center';
-                register.style.width = '100%';
-            } else if (state === 'dashboard') {
-                dashboard.style.display = 'block';
-                dashboard.style.width = '100%';
-                if (data) renderDashboard(data);
-            }
-        }
-
-        async function loadPublishState() {
-            try {
-                const res = await fetch('/publish/state');
-                const data = await res.json();
-                
-                if (data.needs_login) {
-                    setPublishState('welcome');
-                    return;
-                }
-                
-                if (data.has_channel) {
-                    setPublishState('dashboard', data);
-                } else if (data.has_agreed) {
-                    setPublishState('register');
-                } else if (data.telegram_id) {
-                    setPublishState('terms');
-                } else {
-                    setPublishState('welcome');
-                }
-            } catch (e) {
-                console.error(e);
-                setPublishState('welcome');
-            }
-        }
-
-        function renderDashboard(data) {
-            const container = document.getElementById('dashboardContent');
-            if (!data.channel) return;
-            const ch = data.channel;
-            const contents = data.contents || [];
-            const posts = data.recent_posts || [];
-            
-            container.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <span style="font-size:12px; color:#888;">🔹 لوحة النشر</span>
-                    <span class="status-badge ${ch.is_paused ? 'paused' : (!ch.is_active ? 'inactive' : '')}">
-                        ${ch.is_paused ? '⏸️ موقّت مؤقت' : (!ch.is_active ? '⛔ متوقف' : '✅ نشط')}
-                    </span>
-                </div>
-                <div class="channel-header">
-                    <div class="channel-avatar"><i class="bi bi-hash"></i></div>
-                    <div class="channel-info">
-                        <h2>${escapeHtml(ch.channel_name || 'قناة غير مسماة')}</h2>
-                        <div class="username">${escapeHtml(ch.channel_username)}</div>
-                        <div class="bio">${escapeHtml(ch.channel_bio || 'لا يوجد وصف')}</div>
-                    </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card"><i class="bi bi-people"></i><div class="number">${ch.members_count || 0}</div><div class="label">الأعضاء</div></div>
-                    <div class="stat-card"><i class="bi bi-file-text"></i><div class="number">${posts.length}</div><div class="label">آخر المنشورات</div></div>
-                    <div class="stat-card"><i class="bi bi-clock"></i><div class="number">${contents.length}</div><div class="label">محتوى متاح</div></div>
-                </div>
-                <div class="content-selector">
-                    <h3><i class="bi bi-file-text"></i> المحتوى المتاح</h3>
-                    <div class="content-scroll" id="contentScroll">
-                        ${contents.map(c => `
-                            <div class="content-item ${ch.selected_content_id == c.id ? 'active' : ''}" onclick="selectContent(${c.id})" data-id="${c.id}">
-                                <div class="name">${escapeHtml(c.name)}</div>
-                                <div class="channels"><i class="bi bi-hash"></i> ${c.channels_count || 0} قناة</div>
-                                ${ch.selected_content_id == c.id ? `<div class="check"><i class="bi bi-check-circle-fill"></i> مختار</div>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="content-scroll-hint">
-                        <i class="bi bi-arrow-left-right"></i> اسحب للتمرير بين المحتويات
-                    </div>
-                </div>
-                <div class="actions">
-                    ${ch.is_active ? `
-                        <button class="btn btn-pause" id="pauseBtn">${ch.is_paused ? '<i class="bi bi-play"></i> استئناف' : '<i class="bi bi-pause"></i> إيقاف مؤقت'}</button>
-                        <button class="btn btn-publish" id="publishNowBtn"><i class="bi bi-send"></i> نشر الآن</button>
-                        <button class="btn btn-stop" id="stopBtn"><i class="bi bi-stop-circle"></i> إيقاف نهائي</button>
-                    ` : `<button class="btn btn-stop" disabled style="opacity:0.3;cursor:default;">القناة غير نشطة</button>`}
-                </div>
-                <div class="recent-posts">
-                    <h3><i class="bi bi-clock-history"></i> آخر المنشورات</h3>
-                    ${posts.length ? 
-                        posts.map(p => `
-                            <div class="post-item"><span class="time">${escapeHtml(p.published_at)}</span>${escapeHtml(p.content.slice(0, 120))}${p.content.length > 120 ? '...' : ''}</div>
-                        `).join('') :
-                        `<p style="text-align:center; font-size:12px; color:#666;">لا توجد منشورات بعد</p>`
-                    }
-                </div>
-            `;
-
-            // دالة اختيار المحتوى
-            window.selectContent = async function(contentId) {
-                const items = document.querySelectorAll('.content-item');
-                items.forEach(el => el.classList.remove('active'));
-                const selected = document.querySelector(`.content-item[data-id="${contentId}"]`);
-                if (selected) selected.classList.add('active');
-                
-                // إرسال طلب الاختيار
-                try {
-                    const fd = new FormData();
-                    fd.append('content_id', contentId);
-                    const res = await fetch('/publish/select_content', { method: 'POST', body: fd });
-                    const d = await res.json();
-                    if (d.success) {
-                        showToast('✅ تم اختيار المحتوى');
-                        // تحديث حالة الاختيار في الواجهة
-                        document.querySelectorAll('.content-item .check').forEach(el => el.remove());
-                        if (selected) {
-                            const check = document.createElement('div');
-                            check.className = 'check';
-                            check.innerHTML = '<i class="bi bi-check-circle-fill"></i> مختار';
-                            selected.appendChild(check);
-                        }
-                    } else {
-                        showToast(d.message || 'حدث خطأ');
-                    }
-                } catch(e) {
-                    showToast('خطأ في الاتصال');
-                }
-            };
-
-            // باقي الأحداث
-            document.getElementById('pauseBtn')?.addEventListener('click', async function() {
-                try {
-                    const res = await fetch('/publish/toggle_pause');
-                    const d = await res.json();
-                    if (d.success) {
-                        showToast(d.is_paused ? '⏸️ إيقاف مؤقت' : '▶️ استئناف');
-                        setTimeout(() => loadPublishState(), 1000);
-                    } else {
-                        showToast(d.message || 'حدث خطأ');
-                    }
-                } catch(e) { showToast('خطأ في الاتصال'); }
-            });
-
-            document.getElementById('stopBtn')?.addEventListener('click', async function() {
-                if (!confirm('هل أنت متأكد من إيقاف النشر نهائياً؟')) return;
-                try {
-                    const res = await fetch('/publish/stop');
-                    const d = await res.json();
-                    if (d.success) {
-                        showToast('⛔ تم الإيقاف');
-                        setTimeout(() => loadPublishState(), 1000);
-                    } else {
-                        showToast(d.message || 'حدث خطأ');
-                    }
-                } catch(e) { showToast('خطأ في الاتصال'); }
-            });
-
-            document.getElementById('publishNowBtn')?.addEventListener('click', async function() {
-                this.disabled = true;
-                this.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-                try {
-                    const res = await fetch('/publish/force_publish');
-                    const d = await res.json();
-                    if (d.success) {
-                        showToast('✅ تم النشر');
-                        setTimeout(() => loadPublishState(), 1500);
-                    } else {
-                        showToast(d.message || 'فشل النشر');
-                    }
-                } catch(e) {
-                    showToast('خطأ في الاتصال');
-                }
-                this.disabled = false;
-                this.innerHTML = '<i class="bi bi-send"></i> نشر الآن';
-            });
-        }
-
-        // ====== أحداث النشر ======
-        document.getElementById('publishStartBtn')?.addEventListener('click', async function() {
-            const input = document.getElementById('publishTelegramId');
-            const tid = input.value.trim();
-            if (!tid || !/^\d+$/.test(tid)) {
-                showToast('الرجاء إدخال معرف صحيح (أرقام فقط)');
-                return;
-            }
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-            try {
-                const fd = new FormData();
-                fd.append('telegram_id', tid);
-                const res = await fetch('/register', { method: 'POST', body: fd });
-                const d = await res.json();
-                if (d.success) {
-                    sessionTelegramId = tid;
-                    showToast('✅ تم تسجيل الدخول!', 1500);
-                    setTimeout(() => {
-                        window.location.href = '/publish';
-                    }, 1500);
-                } else {
-                    showToast(d.message || 'حدث خطأ');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="bi bi-arrow-left"></i> عرض بياناتي';
-                }
-            } catch(e) {
-                showToast('خطأ في الاتصال');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-arrow-left"></i> عرض بياناتي';
-            }
-        });
-
-        document.getElementById('publishAgreeBtn')?.addEventListener('click', async function() {
-            try {
-                const res = await fetch('/publish/agree', { method: 'POST' });
-                const d = await res.json();
-                if (d.success) { setPublishState('register'); }
-                else showToast(d.message || 'حدث خطأ');
-            } catch(e) { showToast('خطأ في الاتصال'); }
-        });
-
-        document.getElementById('publishRegisterForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const input = document.getElementById('publishChannelUsername');
-            const username = input.value.trim();
-            if (!username.startsWith('@')) {
-                const flash = document.getElementById('publishFlash');
-                flash.textContent = 'اسم المستخدم يجب أن يبدأ بـ @';
-                flash.className = 'publish-flash show';
-                return;
-            }
-            const btn = this.querySelector('.btn-register');
-            btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري...';
-            try {
-                const fd = new FormData(); fd.append('channel_username', username);
-                const res = await fetch('/publish/register', { method: 'POST', body: fd });
-                const d = await res.json();
-                if (d.success) {
-                    showToast('✅ تم تسجيل القناة!');
-                    setTimeout(() => window.location.href = '/publish', 1500);
-                } else {
-                    showToast(d.message || 'حدث خطأ');
-                }
-            } catch(e) { showToast('خطأ في الاتصال'); }
-            btn.disabled = false; btn.innerHTML = '<i class="bi bi-save"></i> تسجيل القناة';
-        });
 
         // ====== التهيئة ======
         document.addEventListener('DOMContentLoaded', function() {
             initScreen();
             setInterval(updateActiveUsers, 30000);
+            // ضبط زر الإيقاف الأولي
+            document.querySelectorAll('.toggle-ai-btn').forEach(btn => {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="bi bi-cpu"></i>';
+            });
         });
     </script>
 </body>

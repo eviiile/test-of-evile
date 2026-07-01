@@ -2,748 +2,739 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ufuq - AI Bot Integration</title>
-    <!-- إضافة أيقونات حقيقية -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>EVILE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800&display=swap');
-
-        /* إعدادات الألوان الهادئة والتقنية */
-        :root {
-            --bg-color: #0d1117;
-            --section-bg: #161b22;
-            --border-color: #30363d;
-            --text-main: #f0f6fc;
-            --text-muted: #8b949e;
-            --accent-blue: #58a6ff;
-            --accent-green: #3fb950;
-            --accent-yellow: #d29922;
-            --shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            position: relative;
-        }
-
-        /* حاوية الصفحة المسطحة والهادئة */
-        .page {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 440px;
-            gap: 24px;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .page.active {
-            display: flex;
-        }
-
-        /* الشعار والأيقونات */
-        .logo-img {
-            max-width: 90px;
-            width: 100%;
-            height: auto;
-            border-radius: 16px;
-            margin-bottom: 5px;
-            /* ظل خفيف جدًا فقط للشعار */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-
-        .info-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-main);
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-        .info-title i {
-            color: var(--accent-blue);
-            margin: 0 6px;
-        }
-        .info-title span {
-            color: var(--accent-blue);
-        }
-
-        .info-desc {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            text-align: center;
-            line-height: 1.7;
-            max-width: 380px;
-        }
-
-        /* مسارات الخطوات */
-        .step-guide {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            width: 100%;
-            text-align: center;
-            background: var(--section-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .step-item {
-            padding: 10px 0;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            border-bottom: 1px dashed #21262d;
-        }
-        .step-item:last-child { border-bottom: none; }
-        .step-item.done { color: var(--text-main); }
-        .step-item .highlight { color: var(--accent-blue); font-weight: 600; }
-
-        /* الأزرار المسطحة والنظيفة */
-        .btn-flat {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            padding: 12px 0;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .btn-primary {
-            background: var(--accent-blue);
-            color: #0d1117;
-        }
-        .btn-primary:hover:not(:disabled) {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
-        }
-        .btn-primary:disabled {
-            background: #21262d;
-            color: #484f58;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-        }
-        .btn-outline:hover:not(:disabled) {
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-            background: rgba(88, 166, 255, 0.05);
-        }
-        .btn-outline:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-success {
-            background: var(--accent-green);
-            color: #0d1117;
-        }
-        .btn-success:hover:not(:disabled) {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(63, 185, 80, 0.3);
-        }
-        .btn-success:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .btn-secondary {
-            background: #21262d;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-        }
-
-        /* إحصائيات لوحة التحكم */
-        .stats-bar {
-            display: flex;
-            justify-content: center;
-            gap: 50px;
-            width: 100%;
-            padding: 16px 0;
-        }
-        .stat-item { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 6px; 
-        }
-        .stat-number { 
-            font-size: 1.6rem; 
-            font-weight: 800; 
-            color: var(--text-main); 
-            letter-spacing: -0.5px;
-        }
-        .stat-label { 
-            font-size: 0.75rem; 
-            color: var(--text-muted); 
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* معرض الصور الدائري */
-        .carousel-wrapper {
-            position: relative;
-            width: 130px;
-            height: 170px;
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #06143d 0%, #25819e 100%);
+            color: #ffffff;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 10px 0;
+            touch-action: manipulation;
+            height: 100vh; height: 100dvh;
         }
-        .carousel-track {
-            display: flex;
-            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            gap: 20px;
-            align-items: center;
+        .main-container { width: 100%; height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 12px; padding-top: 70px; }
+        
+        .glass-card, .floating-header, .input-card, .bottom-sheet, .message-content, .ai-bubble, .splash-input-wrapper {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+            border-radius: 18px;
         }
-        .carousel-item {
-            flex: 0 0 100px;
-            height: 100px;
-            border-radius: 10px;
-            background: var(--section-bg);
-            transition: all 0.5s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            filter: grayscale(100%) brightness(0.5);
-            opacity: 0.3;
-            transform: scale(0.7);
-            border: 1px solid transparent;
+        
+        .floating-header {
+            position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between; padding: 6px;
         }
-        .carousel-item.center {
-            filter: grayscale(0%) brightness(1);
-            opacity: 1;
-            transform: scale(1.1);
-            z-index: 2;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        .header-circle {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s; flex-shrink: 0; position: relative;
         }
-        .carousel-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
-        .content-title {
-            position: absolute;
-            bottom: -25px;
-            font-size: 0.6rem;
-            background: rgba(13, 17, 23, 0.9);
-            padding: 4px 12px;
-            border-radius: 20px;
-            color: var(--text-muted);
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.4s;
-            border: 1px solid var(--border-color);
+        .header-circle:active { transform: scale(0.9); }
+        .header-circle i { font-size: 20px; color: #fff; }
+        .header-circle .notif-badge {
+            position: absolute; top: -3px; right: -3px; width: 16px; height: 16px; background: #ff4d4d;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: bold; color: #fff; border: 2px solid #06143d;
         }
-        .carousel-item.center .content-title { opacity: 1; }
+        .logo-wrapper { flex: 1; display: flex; align-items: center; gap: 6px; }
+        .logo-center {
+            flex: 1; height: 40px; background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .logo-text { font-size: 20px; font-weight: 900; letter-spacing: 3px; color: #fff; user-select: none; }
+        .active-users-box {
+            height: 40px; padding: 0 10px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            font-size: 11px; font-weight: 700; white-space: nowrap;
+        }
+        .active-users-box i { font-size: 14px; color: #fff; }
+        .active-users-box span { color: #fff; }
 
-        /* صفحة التسجيل */
-        .form-group { 
-            width: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 6px; 
-            margin-bottom: 16px; 
-        }
-        .form-group label { 
-            font-size: 0.8rem; 
-            color: var(--text-muted); 
-            font-weight: 500; 
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .form-group input {
-            width: 100%; 
-            padding: 10px 14px; 
-            border-radius: 8px; 
-            background: var(--bg-color);
-            border: 1px solid var(--border-color); 
-            color: var(--text-main); 
-            font-size: 0.9rem; 
-            outline: none; 
-            transition: 0.2s;
-        }
-        .form-group input:focus { 
-            border-color: var(--accent-blue); 
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-        }
-        #message { 
-            font-size: 0.8rem; 
-            margin-top: 8px; 
-            display: none; 
-            text-align: center;
-        }
-        .msg-success { color: var(--accent-green) !important; display: block !important; }
-        .msg-error { color: #f85149 !important; display: block !important; }
-        .back-link { 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            font-size: 0.8rem; 
-            transition: 0.2s; 
-            margin-top: 8px; 
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .back-link:hover { color: var(--accent-blue); }
+        /* Splash Screen */
+        .splash-section { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .splash-section.active { display: flex; }
+        .splash-icon { width: 100px; height: 100px; background: rgba(255, 255, 255, 0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } }
+        .splash-icon i { font-size: 56px; color: #fff; }
+        .splash-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 16px; }
+        .splash-text { font-size: 16px; max-width: 280px; line-height: 1.6; margin-bottom: 32px; color: rgba(255,255,255,0.7); }
+        .splash-input-wrapper { width: 100%; max-width: 320px; display: flex; gap: 12px; border-radius: 48px; padding: 6px 6px 6px 16px; align-items: center; }
+        .splash-input { flex: 1; background: transparent; border: none; padding: 14px 0; font-size: 16px; font-family: 'Tajawal', sans-serif; outline: none; color: #fff; }
+        .splash-input::placeholder { font-size: 14px; color: rgba(255,255,255,0.5); }
+        .splash-btn { width: 48px; height: 48px; border-radius: 40px; background: rgba(255, 255, 255, 0.1); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .splash-btn:active { transform: scale(0.94); }
+        .splash-btn i { font-size: 24px; color: #fff; }
+        .splash-error { margin-top: 16px; font-size: 12px; color: #ff6b6b; background: rgba(255,0,0,0.1); border-radius: 40px; padding: 8px 16px; }
 
-        /* الشريط السفلي العائم */
-        .bottom-bar-floating {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(22, 27, 34, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            border-radius: 40px;
-            padding: 10px 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: var(--shadow);
-            max-width: 280px;
-            white-space: nowrap;
-        }
-        .channel-name { 
-            font-size: 0.85rem; 
-            font-weight: 500; 
-            color: var(--text-main); 
-        }
-        .channel-name i {
-            color: var(--accent-green);
-            margin-left: 6px;
-        }
-        .channel-name.inactive { 
-            color: var(--text-muted); 
-            font-weight: 400; 
-        }
-        .add-channel-btn {
-            background: var(--accent-blue); 
-            color: #0d1117; 
-            padding: 6px 14px; 
-            border-radius: 20px;
-            text-decoration: none; 
-            font-size: 0.75rem; 
-            font-weight: 700; 
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .add-channel-btn:hover { filter: brightness(1.1); }
-        .add-channel-btn:disabled {
-            background: #21262d;
-            color: #484f58;
-            cursor: not-allowed;
-            filter: none;
-        }
+        /* Welcome Section */
+        .welcome-section { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; }
+        .welcome-section.active { display: flex; }
+        .character-logo { width: 100%; max-width: 260px; height: auto; border-radius: 28px; object-fit: contain; margin-bottom: 20px; background: rgba(255, 255, 255, 0.02); padding: 5px; }
+        .sparkle-icon { width: 60px; height: 60px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; }
+        .sparkle-icon i { font-size: 60px; color: #fff; }
+        .welcome-title { font-size: 24px; font-weight: 800; margin-bottom: 6px; color: #fff; }
+        .welcome-subtitle { font-size: 12px; max-width: 260px; line-height: 1.4; margin-bottom: 16px; color: rgba(255,255,255,0.7); }
+        .welcome-input-card { width: 100%; max-width: 320px; margin-bottom: 8px; }
+        .input-card { padding: 6px 6px 6px 12px; transition: all 0.3s; }
+        .input-wrapper { display: flex; align-items: center; gap: 6px; }
+        .message-input { flex: 1; background: transparent; border: none; padding: 8px 0; font-family: 'Tajawal', sans-serif; font-size: 13px; outline: none; color: #fff; resize: none; min-height: 40px; max-height: 80px; }
+        .send-btn { width: 34px; height: 34px; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .send-btn:disabled { opacity: 0.5; }
+        .send-btn:active:not(:disabled) { transform: scale(0.94); }
+        
+        .send-btn-normal { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .send-btn-max { background: rgba(255, 0, 0, 0.4); color: #fff; border: 1px solid rgba(255, 0, 0, 0.5); box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); }
+        .send-btn-max i { color: #fff; }
+        .send-btn.stop-btn { background: rgba(255, 50, 50, 0.8); color: #fff; border: none; }
 
-        @media (max-width: 480px) {
-            .step-guide { padding: 16px; }
-            .bottom-bar-floating { max-width: 200px; padding: 8px 16px; gap: 8px; }
-            .carousel-wrapper { width: 100px; height: 140px; }
-            .carousel-item { flex: 0 0 80px; height: 80px; }
+        /* شريط الشخصيات */
+        .char-scroll-container { position: relative; width: 100%; max-width: 320px; margin: 8px auto 12px; overflow: hidden; }
+        .char-scroll-wrapper {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+        .char-scroll-wrapper::-webkit-scrollbar { display: none; }
+        .char-selector { display: flex; gap: 8px; padding: 6px 0; width: max-content; }
+        .char-selector-btn {
+            display: flex; align-items: center; gap: 4px; padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 24px; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 11px; color: rgba(255,255,255,0.7);
+        }
+        .char-selector-btn.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        .char-selector-btn i { font-size: 14px; }
+        .char-selector-name { font-size: 11px; font-weight: 500; }
+        .char-selector-badge-max { background: #ff4d4d; color: white; font-size: 8px; padding: 1px 5px; border-radius: 8px; margin-right: 3px; }
+
+        /* Chat Section */
+        .chat-section { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        .chat-section.active { display: flex; }
+        .messages-container { flex: 1; overflow-y: auto; padding: 12px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 20px; }
+        .message { margin-bottom: 10px; animation: messageSlide 0.3s ease; }
+        @keyframes messageSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message-time { font-size: 9px; margin-bottom: 3px; color: rgba(255,255,255,0.5); }
+        .message-content { padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.5; word-wrap: break-word; max-width: 85%; }
+        .message.own { text-align: left; }
+        .message.own .message-content { margin-right: auto; margin-left: 0; }
+        
+        .ai-bubble { border-radius: 12px; overflow: hidden; max-width: 85%; }
+        .ai-bubble-label { display: flex; align-items: center; gap: 4px; padding: 6px 10px 0; font-size: 9px; font-weight: 700; color: #8effa0; }
+        .ai-bubble-label i { font-size: 11px; }
+        .ai-bubble-text { padding: 4px 10px 8px; font-size: 12px; line-height: 1.5; word-wrap: break-word; color: #fff; }
+        .ai-bubble-footer { display: flex; align-items: center; justify-content: flex-end; padding: 4px 10px 6px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .ai-bubble-copy { cursor: pointer; display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.6); }
+        .ai-bubble-copy:active { opacity: 0.6; }
+        
+        /* نافذة MAX المنبثقة (تصميم جديد ودود وملون) */
+        .max-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px);
+            z-index: 9999; display: none; justify-content: center; align-items: center;
+        }
+        .max-modal-overlay.active { display: flex; }
+        .max-modal-box {
+            background: rgba(255, 255, 255, 0.08); /* زجاجي */
+            backdrop-filter: blur(16px); /* تمويه زجاجي قوي */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border-radius: 24px; /* زوايا ناعمة */
+            padding: 30px; max-width: 400px; width: 90%;
+            text-align: center; position: relative;
+            color: #fff;
+        }
+        .max-close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: rgba(255,255,255,0.5); transition: 0.2s; }
+        .max-close-x:hover { color: #fff; }
+        .max-modal-box h2 { color: #8effa0; font-weight: 700; margin-bottom: 12px; font-size: 22px; }
+        .max-modal-box p { color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+        .max-modal-box .input-field {
+            width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+            color: #fff; margin-bottom: 15px; text-align: center; outline: none;
+        }
+        .max-modal-box .input-field:focus { border-color: #8effa0; }
+        .btn-max-action {
+            display: block; width: 100%; padding: 14px; border: none;
+            border-radius: 14px; cursor: pointer; font-weight: bold; font-size: 15px;
+            text-decoration: none; transition: 0.2s; margin-bottom: 10px;
+        }
+        .btn-max-telegram { background: #0088cc; color: white; }
+        .btn-max-telegram:hover { background: #0077b3; }
+        .btn-max-save { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-max-save:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Bottom Sheets */
+        .bottom-sheet-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+        .bottom-sheet-overlay.active { display: flex; }
+        .bottom-sheet { width: 100%; max-width: 600px; max-height: 80vh; border-radius: 25px 25px 0 0; padding: 20px; animation: slideUp 0.4s ease; overflow-y: auto; display: flex; flex-direction: column; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sheet-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #fff; }
+        .sheet-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .sheet-close i { font-size: 16px; color: #fff; }
+        .sheet-instruction { font-size: 11px; text-align: center; margin-bottom: 16px; padding: 6px; border-radius: 30px; color: rgba(255,255,255,0.6); }
+        .characters-list, .notifications-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 50vh; }
+        .char-list-item, .notif-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; width: 100%; background: rgba(255,255,255,0.03); }
+        .char-list-icon, .notif-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .char-list-icon i, .notif-icon i { font-size: 20px; color: #fff; }
+        .char-list-info, .notif-content { flex: 1; text-align: right; }
+        .char-list-name, .notif-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; color: #fff; }
+        .char-list-desc, .notif-text { font-size: 10px; line-height: 1.3; color: rgba(255,255,255,0.6); }
+        .char-list-check { width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; opacity: 0; }
+        .char-list-item.active .char-list-check { opacity: 1; background: #8effa0; color: #06143d; }
+
+        @media (min-width: 768px) {
+            .main-container { max-width: 700px; margin: 0 auto; padding: 20px; padding-top: 80px; }
+            .floating-header { left: 20px; right: 20px; top: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- الصفحة 1: الترحيب والخطوات الإلزامية -->
-    <div id="page-welcome" class="page active">
-        <img src="https://img.sanishtech.com/u/ff30db1d7f364e4010b2998df522d2a5.png" alt="Ufuq Logo" class="logo-img">
-        
-        <div class="info-title">
-            <i class="fa-regular fa-compass"></i> أفق<br><span>لتكامل ذكي</span>
-        </div>
-        
-        <div class="info-desc">
-            أنشئ حضورًا دائمًا لقناتك. ابدأ رحلة التكامل عبر إكمال الخطوتين الأساسيتين.
-        </div>
-
-        <div class="step-guide">
-            <div class="step-item" id="step1Msg">
-                <i class="fa-regular fa-circle-check" style="color: var(--text-muted);"></i>
-                <span class="highlight">الخطوة 1:</span> الاشتراك في قناة الإشعارات للحصول على التحديثات.
+    <!-- نافذة منع MAX (نمط جديد ودود وزجاجي) -->
+    <div class="max-modal-overlay" id="maxModal">
+        <div class="max-modal-box">
+            <div class="max-close-x" onclick="closeMaxModal()">×</div>
+            <h2>✨ وصول حصري</h2>
+            <p>
+                عذراً، هذه الشخصية من فئة <strong>MAX</strong> وهي متاحة حصرياً للداعمين والمستخدمين المخولين.<br><br>
+                يرجى إدخال معرف تيليجرام الخاص بك للتواصل مع الإدارة للحصول على تصريح الوصول.
+            </p>
+            <div style="margin-bottom: 15px;">
+                <input type="text" class="input-field" id="maxTelegramIdInput" placeholder="معرف تيليجرام الخاص بك">
             </div>
-            <button id="step1Btn" class="btn-flat btn-primary" onclick="completeStep1()">
-                <i class="fa-regular fa-paper-plane"></i> اشترك الآن
-            </button>
-
-            <div class="step-item" id="step2Msg">
-                <i class="fa-regular fa-circle-check" style="color: var(--text-muted);"></i>
-                <span class="highlight">الخطوة 2:</span> رفع البوت إلى قناتك لتفعيل النشر التلقائي.
-            </div>
-            <button id="step2Btn" class="btn-flat btn-outline" onclick="completeStep2()" disabled>
-                <i class="fa-regular fa-arrow-up-from-bracket"></i> ارفع البوت الآن
-            </button>
-            
-            <div class="info-desc" style="font-size: 0.75rem; margin-top: 5px;">
-                <i class="fa-regular fa-lock"></i> سيتم تفعيل زر التسجيل بعد إتمام الخطوتين.
-            </div>
+            <a href="https://t.me/OlIiIl7" target="_blank" class="btn-max-action btn-max-telegram">
+                <i class="bi bi-telegram"></i> تواصل مع @OlIiIl7
+            </a>
+            <button class="btn-max-action btn-max-save" onclick="submitMaxRequest()">إرسال طلب الوصول</button>
         </div>
-        
-        <a href="#" onclick="showPage('page-index'); return false;" class="back-link">
-            <i class="fa-regular fa-arrow-left"></i> الانتقال للوحة التحكم
-        </a>
     </div>
 
-    <!-- الصفحة 2: لوحة التحكم والإحصائيات -->
-    <div id="page-index" class="page">
-        <div class="info-title" style="font-size: 1.2rem;">
-            لوحة <span>التحكم</span>
+    <header class="floating-header">
+        <div style="display: flex; gap: 6px;">
+            <div class="header-circle" onclick="openCharactersSheet()"><i class="bi bi-people"></i></div>
         </div>
-        
-        <div class="stats-bar">
-            <div class="stat-item">
-                <span class="stat-number" id="channelCount">0</span>
-                <span class="stat-label"><i class="fa-regular fa-users"></i> القنوات</span>
+        <div class="logo-wrapper">
+            <div class="logo-center" id="evileLogoBox" onclick="handleTripleClick()" oncontextmenu="return false;">
+                <span class="logo-text" id="evileLogoText">EVILE</span>
             </div>
-            <div class="stat-item">
-                <span class="stat-number" id="postCount">0</span>
-                <span class="stat-label"><i class="fa-regular fa-newspaper"></i> المنشورات</span>
+            <div class="active-users-box">
+                <i class="bi bi-person-friends"></i>
+                <span id="activeCount">0</span>
+            </div>
+        </div>
+        <div class="header-circle" onclick="openNotificationsSheet()">
+            <i class="bi bi-bell"></i>
+            <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Splash -->
+        <div class="splash-section" id="splashSection">
+            <div class="splash-icon"><i class="bi bi-chat-dots"></i></div>
+            <div class="splash-title">مرحباً بك في EVILE</div>
+            <div class="splash-text">أدخل معرف تيليجرام الخاص بك لبدء المحادثة</div>
+            <div class="splash-input-wrapper">
+                <input type="text" id="splashTelegramId" class="splash-input" placeholder="معرف تيليجرام (أرقام فقط)">
+                <button id="splashRegisterBtn" class="splash-btn"><i class="bi bi-arrow-left"></i></button>
+            </div>
+            <div id="splashError" class="splash-error" style="display: none;"></div>
+        </div>
+
+        <!-- Welcome -->
+        <div class="welcome-section" id="welcomeSection">
+            <div id="welcomeLogo"><div class="sparkle-icon"><i class="bi bi-stars"></i></div></div>
+            <h1 class="welcome-title" id="welcomeTitle">ابنِ أفكارك مع EVILE</h1>
+            <p class="welcome-subtitle" id="welcomeSubtitle">اختر شخصية وابدأ محادثة إبداعية</p>
+            <div class="welcome-input-card">
+                <div class="input-card">
+                    <div class="input-wrapper">
+                        <textarea class="message-input" id="welcomeInput" placeholder="اكتب رسالتك..." rows="1"></textarea>
+                        <button class="send-btn send-btn-normal" id="welcomeSendBtn" onclick="handleSendWelcome()"><i class="bi bi-send"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="char-scroll-container">
+                <div class="char-scroll-wrapper" id="charScrollWrapper">
+                    <div class="char-selector" id="charSelector"></div>
+                </div>
             </div>
         </div>
 
-        <!-- معرض الصور 360 -->
-        <div class="carousel-wrapper" id="carouselWrapper">
-            <div class="carousel-track" id="carouselTrack"></div>
+        <!-- Chat -->
+        <div class="chat-section" id="chatSection">
+            <div class="messages-container" id="messagesContainer"></div>
+            <div class="input-section">
+                <div class="input-card">
+                    <div class="input-wrapper">
+                        <button class="header-circle" style="width:34px;height:34px;" onclick="goHome()"><i class="bi bi-house-door" style="font-size:16px;"></i></button>
+                        <textarea class="message-input" id="chatInput" placeholder="اكتب رسالتك..." rows="1"></textarea>
+                        <button class="send-btn send-btn-normal" id="sendBtn" onclick="handleSendChat()"><i class="bi bi-send"></i></button>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div id="integrationStatus" class="info-desc" style="font-size: 0.9rem;">
-            <i class="fa-regular fa-circle-info" style="color: var(--accent-blue);"></i> 
-            لعرض إحصائيات قناتك، يرجى إكمال خطوات التكامل أولاً.
-        </div>
-        
-        <button id="goToRegisterBtn" class="btn-flat btn-primary" onclick="redirectToRegister()" disabled>
-            <i class="fa-regular fa-plus"></i> أضف قناتي
-        </button>
-        
-        <a href="#" onclick="showPage('page-welcome'); return false;" class="back-link">
-            <i class="fa-regular fa-arrow-left"></i> العودة لخطوات التكامل
-        </a>
     </div>
 
-    <!-- الصفحة 3: التسجيل -->
-    <div id="page-register" class="page">
-        <div class="info-title" style="font-size: 1.2rem;">
-            <i class="fa-regular fa-pen-to-square"></i> تسجيل <span>القناة</span>
-        </div>
-        
-        <div class="info-desc" style="font-size: 0.85rem;">
-            أدخل بيانات قناتك لربط البوت الذكي وبدء النشر التلقائي.
-        </div>
-        
-        <form id="registerForm" style="width:100%;">
-            <div class="form-group">
-                <label><i class="fa-regular fa-at"></i> اسم مستخدم القناة</label>
-                <input type="text" id="username" placeholder="@my_channel" required>
+    <!-- نافذة الشخصيات -->
+    <div class="bottom-sheet-overlay" id="charactersSheet" onclick="closeSheetOnBackdrop(event, 'charactersSheet')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <div class="sheet-title"><i class="bi bi-people"></i> الشخصيات</div>
+                <button class="sheet-close" onclick="closeSheet('charactersSheet')"><i class="bi bi-x-lg"></i></button>
             </div>
-            <div class="form-group">
-                <label><i class="fa-regular fa-hashtag"></i> معرف القناة (Chat ID)</label>
-                <input type="text" id="chatId" placeholder="-100123456789" required>
-            </div>
-            <button type="submit" class="btn-flat btn-success" id="submitBtn" style="font-size:0.9rem; padding:12px;">
-                <i class="fa-regular fa-check"></i> تسجيل وربط البوت
-            </button>
-        </form>
-        <div id="message"></div>
-        
-        <a href="#" onclick="showPage('page-index'); return false;" class="back-link">
-            <i class="fa-regular fa-arrow-left"></i> العودة للوحة
-        </a>
+            <div class="sheet-instruction">اختر الشخصية المناسبة لمحادثتك</div>
+            <div id="charactersList" class="characters-list"></div>
+        </div>
     </div>
 
-    <!-- الشريط السفلي العائم (لوحة التحكم) -->
-    <div class="bottom-bar-floating" id="bottomBar">
-        <span id="channelDisplay" class="channel-name inactive">
-            <i class="fa-regular fa-circle"></i> لم تضف قناة
-        </span>
-        <a href="#" onclick="redirectToRegister(); return false;" class="add-channel-btn" id="addChannelBtn">
-            <i class="fa-regular fa-plus"></i> أضف قناتي
-        </a>
+    <!-- نافذة الإشعارات -->
+    <div class="bottom-sheet-overlay" id="notificationsSheet" onclick="closeSheetOnBackdrop(event, 'notificationsSheet')">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <div class="sheet-title"><i class="bi bi-bell"></i> الإشعارات</div>
+                <button class="sheet-close" onclick="closeSheet('notificationsSheet')"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div id="notificationsList" class="notifications-list"></div>
+        </div>
     </div>
 
     <script>
-        // --- 1. نظام التنقل الهادئ بين الصفحات ---
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            const target = document.getElementById(pageId);
-            if(target) target.classList.add('active');
-
-            const bar = document.getElementById('bottomBar');
-            if(pageId === 'page-index') {
-                bar.style.display = 'flex';
-            } else {
-                bar.style.display = 'none';
-            }
-            history.pushState({page: pageId}, null, '#' + pageId);
-        }
-
-        window.addEventListener('popstate', (e) => {
-            if(e.state && e.state.page) showPage(e.state.page);
-        });
-
-        // --- 2. معرض الصور الكثيف الدائري (بدون أي فوضي) ---
-        const dummyImages = [
-            { url: 'https://picsum.photos/200/200?random=1', title: 'تصميم إبداعي' },
-            { url: 'https://picsum.photos/200/200?random=2', title: 'محتوى رقمي' },
-            { url: 'https://picsum.photos/200/200?random=3', title: 'فكر جديد' },
-            { url: 'https://picsum.photos/200/200?random=4', title: 'إلهام يومي' },
-            { url: 'https://picsum.photos/200/200?random=5', title: 'قصة ملهمة' },
-            { url: 'https://picsum.photos/200/200?random=6', title: 'جرافيك مميز' },
-            { url: 'https://picsum.photos/200/200?random=7', title: 'رسالة بصرية' },
-            { url: 'https://picsum.photos/200/200?random=8', title: 'تطور تقني' },
-            { url: 'https://picsum.photos/200/200?random=9', title: 'لحظة عابرة' },
-            { url: 'https://picsum.photos/200/200?random=10', title: 'أفق جديد' },
-            { url: 'https://picsum.photos/200/200?random=11', title: 'إبداع فني' },
-            { url: 'https://picsum.photos/200/200?random=12', title: 'توازن رقمي' },
-            { url: 'https://picsum.photos/200/200?random=13', title: 'فكرة سريعة' },
-            { url: 'https://picsum.photos/200/200?random=14', title: 'محتوى تفاعلي' },
-            { url: 'https://picsum.photos/200/200?random=15', title: 'قيمة مضافة' },
-            { url: 'https://picsum.photos/200/200?random=16', title: 'رؤية فنية' },
-            { url: 'https://picsum.photos/200/200?random=17', title: 'ابتكار اليوم' },
-            { url: 'https://picsum.photos/200/200?random=18', title: 'صورة و كلمة' },
-            { url: 'https://picsum.photos/200/200?random=19', title: 'تعبير حر' },
-            { url: 'https://picsum.photos/200/200?random=20', title: 'لحظة إلهام' },
-            { url: 'https://picsum.photos/200/200?random=21', title: 'تصميم مستقبلي' },
-            { url: 'https://picsum.photos/200/200?random=22', title: 'طاقة إيجابية' }
-        ];
+        const characters = {{ characters|tojson }};
+        let telegramId = {{ telegram_id|tojson }};
+        const latestNotification = {{ latest_notification|tojson }};
         
-        const track = document.getElementById('carouselTrack');
-        let items = [];
-        let currentIndex = 0;
+        let currentCharacter = characters.length > 0 ? characters[0].callback_key : 'logo_maker';
+        let isFirstMessage = true;
+        let isProcessing = false;
+        let isStreaming = false;
+        let abortController = null;
 
-        function initCarousel() {
-            track.innerHTML = '';
-            const loopItems = [...dummyImages, ...dummyImages, ...dummyImages]; // تكرار لانهائي لضمان التدفق
-            loopItems.forEach((img) => {
-                const div = document.createElement('div');
-                div.className = 'carousel-item';
-                div.innerHTML = `<img src="${img.url}" alt="${img.title}"><div class="content-title">${img.title}</div>`;
-                track.appendChild(div);
-            });
-            items = document.querySelectorAll('.carousel-item');
-            currentIndex = Math.floor(items.length / 2);
-            updateCarousel(currentIndex);
-            
-            setInterval(() => {
-                currentIndex = (currentIndex + 1) % items.length;
-                updateCarousel(currentIndex);
-            }, 2400);
-        }
+        // متغير النقرات الثلاث
+        let clickCount = 0;
 
-        function updateCarousel(index) {
-            items.forEach((item) => {
-                item.classList.remove('center');
-                item.style.filter = 'grayscale(100%) brightness(0.5)';
-                item.style.transform = 'scale(0.7)';
-                item.style.opacity = '0.3';
-            });
+        const splashSection = document.getElementById('splashSection');
+        const welcomeSection = document.getElementById('welcomeSection');
+        const chatSection = document.getElementById('chatSection');
+        const charScrollWrapper = document.getElementById('charScrollWrapper');
 
-            const centerItem = items[index];
-            if(centerItem) {
-                centerItem.classList.add('center');
-                centerItem.style.filter = 'grayscale(0%) brightness(1)';
-                centerItem.style.transform = 'scale(1.1)';
-                centerItem.style.opacity = '1';
-            }
-        }
-
-        // --- 3. منطق التكامل الإلزامي المحفوظ ---
-        let subscribed = localStorage.getItem('ufuq_subscribed') === 'true';
-        let botAdded = localStorage.getItem('ufuq_bot_added') === 'true';
-        let registeredChannel = localStorage.getItem('ufuq_channel');
-
-        function updateIntegrationUI() {
-            const s1Btn = document.getElementById('step1Btn');
-            const s2Btn = document.getElementById('step2Btn');
-            const statusMsg = document.getElementById('integrationStatus');
-            const registerBtn = document.getElementById('goToRegisterBtn');
-            const bottomBtn = document.getElementById('addChannelBtn');
-            const bottomDisplay = document.getElementById('channelDisplay');
-
-            // تحديث حالة صفحة الترحيب
-            if(subscribed) {
-                document.getElementById('step1Msg').innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--accent-green);"></i> تم الاشتراك بنجاح!`;
-                s1Btn.innerHTML = `<i class="fa-regular fa-check"></i> مكتمل`;
-                s1Btn.className = "btn-flat btn-success";
-                s1Btn.disabled = true;
-                s2Btn.disabled = false;
-                s2Btn.className = "btn-flat btn-primary";
-            } else {
-                s1Btn.innerHTML = `<i class="fa-regular fa-paper-plane"></i> اشترك الآن`;
-                s1Btn.className = "btn-flat btn-primary";
-                s1Btn.disabled = false;
-                s2Btn.disabled = true;
-                s2Btn.className = "btn-flat btn-outline";
-                document.getElementById('step1Msg').innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--text-muted);"></i> <span class="highlight">الخطوة 1:</span> الاشتراك في قناة الإشعارات.`;
-            }
-
-            if(botAdded) {
-                document.getElementById('step2Msg').innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--accent-green);"></i> تم رفع البوت بنجاح!`;
-                s2Btn.innerHTML = `<i class="fa-regular fa-check"></i> مكتمل`;
-                s2Btn.className = "btn-flat btn-success";
-                s2Btn.disabled = true;
-            } else if(subscribed) {
-                document.getElementById('step2Msg').innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--text-muted);"></i> <span class="highlight">الخطوة 2:</span> رفع البوت إلى قناتك.`;
-                s2Btn.innerHTML = `<i class="fa-regular fa-arrow-up-from-bracket"></i> ارفع البوت الآن`;
-                s2Btn.className = "btn-flat btn-primary";
-            }
-
-            // تحديث حالة لوحة التحكم والزر (إخفاء زر إدارة القناة عند التسجيل)
-            if(registeredChannel) {
-                statusMsg.innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--accent-green);"></i> قناتك <strong>@${registeredChannel}</strong> مرتبطة بنجاح!`;
-                registerBtn.style.display = 'none'; // إخفاء الزر بالكامل كما طلبت
-                
-                bottomDisplay.innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--accent-green);"></i> @${registeredChannel}`;
-                bottomDisplay.className = 'channel-name';
-                bottomBtn.style.display = 'none'; // إخفاء زر الشريط السفلي
-            } else if(subscribed && botAdded) {
-                statusMsg.innerHTML = `<i class="fa-regular fa-circle-check" style="color: var(--accent-blue);"></i> اكتملت الخطوات! اضغط على 'أضف قناتي' لإدخال البيانات.`;
-                registerBtn.style.display = 'flex';
-                registerBtn.innerHTML = `<i class="fa-regular fa-plus"></i> أضف قناتي`;
-                registerBtn.className = "btn-flat btn-primary";
-                registerBtn.disabled = false;
-                
-                bottomDisplay.innerHTML = `<i class="fa-regular fa-circle"></i> لم تضف قناة`;
-                bottomDisplay.className = 'channel-name inactive';
-                bottomBtn.style.display = 'flex';
-                bottomBtn.innerHTML = `<i class="fa-regular fa-plus"></i> أضف قناتي`;
-                bottomBtn.disabled = false;
-            } else {
-                statusMsg.innerHTML = `<i class="fa-regular fa-circle-info" style="color: var(--accent-blue);"></i> يجب إكمال الاشتراك ورفع البوت أولاً.`;
-                registerBtn.style.display = 'flex';
-                registerBtn.innerHTML = `<i class="fa-regular fa-lock"></i> أكمل الخطوات أولاً`;
-                registerBtn.className = "btn-flat btn-secondary";
-                registerBtn.disabled = true;
-                
-                bottomDisplay.innerHTML = `<i class="fa-regular fa-circle"></i> لم تضف قناة`;
-                bottomDisplay.className = 'channel-name inactive';
-                bottomBtn.style.display = 'flex';
-                bottomBtn.innerHTML = `<i class="fa-regular fa-plus"></i> أضف قناتي`;
-                bottomBtn.disabled = true; // تعطيل الزر في الشريط السفلي أيضًا
-            }
-        }
-
-        // دوال إكمال الخطوات
-        function completeStep1() {
-            localStorage.setItem('ufuq_subscribed', 'true');
-            subscribed = true;
-            updateIntegrationUI();
-        }
-
-        function completeStep2() {
-            window.open('https://t.me/eV7Ile_bot', '_blank');
-            localStorage.setItem('ufuq_bot_added', 'true');
-            botAdded = true;
-            updateIntegrationUI();
-        }
-
-        function redirectToRegister() {
-            if(subscribed && botAdded) {
-                showPage('page-register');
-            } else {
-                showPage('page-welcome');
-            }
-        }
-
-        // --- 4. نظام التسجيل المحاكى ---
-        document.getElementById('registerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('message');
-            const username = document.getElementById('username').value.trim();
-            const chatId = document.getElementById('chatId').value.trim();
-
-            btn.disabled = true; 
-            btn.innerHTML = `<i class="fa-regular fa-spinner fa-spin"></i> جاري التحقق...`; 
-            msg.style.display = 'none';
-
-            setTimeout(() => {
-                if(!username || !chatId) {
-                    msg.className = 'msg-error';
-                    msg.innerHTML = `<i class="fa-regular fa-circle-exclamation"></i> يرجى تعبئة جميع الحقول.`;
-                } else {
-                    // محاكاة نجاح التسجيل
-                    msg.className = 'msg-success';
-                    msg.innerHTML = `<i class="fa-regular fa-circle-check"></i> تم ربط البوت وتسجيل القناة بنجاح!`;
-                    btn.innerHTML = `<i class="fa-regular fa-check"></i> تم`;
-                    
-                    localStorage.setItem('ufuq_channel', username);
-                    registeredChannel = username;
-                    updateIntegrationUI();
-                    updateDashboardStats();
-                    
-                    setTimeout(() => {
-                        showPage('page-index');
-                        msg.style.display = 'none';
-                        btn.disabled = false;
-                        btn.innerHTML = `<i class="fa-regular fa-check"></i> تسجيل وربط البوت`;
-                        document.getElementById('registerForm').reset();
-                    }, 1500);
+        function initScreen() {
+            if (telegramId) {
+                splashSection.classList.remove('active');
+                welcomeSection.classList.add('active');
+                chatSection.classList.remove('active');
+                if (latestNotification && latestNotification.show_in_chat) {
+                    showToastNotification(latestNotification.title + ': ' + latestNotification.text, 10000);
                 }
-            }, 1000);
+            } else {
+                splashSection.classList.add('active');
+                welcomeSection.classList.remove('active');
+                chatSection.classList.remove('active');
+            }
+        }
+
+        function showToastNotification(message, duration = 10000) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, duration);
+        }
+
+        function updateActiveUsers() {
+            fetch('/api/active_users')
+                .then(res => res.json())
+                .then(data => { document.getElementById('activeCount').textContent = data.count; })
+                .catch(() => {});
+        }
+
+        // ---- وظيفة النقر 3 مرات لنسخ المعرف ----
+        function handleTripleClick() {
+            clickCount++;
+            if (clickCount === 3) {
+                clickCount = 0;
+                if (telegramId && telegramId !== 'null') {
+                    navigator.clipboard.writeText(telegramId).then(() => {
+                        showToastNotification('✅ تم نسخ معرف تيليجرام الخاص بك: ' + telegramId);
+                    }).catch(() => {
+                        showToastNotification('⚠️ فشل النسخ، حاول يدوياً: ' + telegramId);
+                    });
+                } else {
+                    showToastNotification('⚠️ لم يتم تسجيل حسابك بعد، سجل دخولك أولاً.');
+                }
+            }
+            setTimeout(() => { clickCount = 0; }, 1000);
+        }
+
+        // ---- دوال النافذة المنبثقة MAX (محدثة) ----
+        function openMaxModal() {
+            document.getElementById('maxModal').classList.add('active');
+        }
+        function closeMaxModal() {
+            document.getElementById('maxModal').classList.remove('active');
+        }
+        async function submitMaxRequest() {
+            const idInput = document.getElementById('maxTelegramIdInput').value.trim();
+            if (!idInput) {
+                showToastNotification('⚠️ يرجى إدخال معرف تيليجرام الخاص بك أولاً.');
+                return;
+            }
+            try {
+                const res = await fetch('/api/request_max', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telegram_id: idInput })
+                });
+                const data = await res.json();
+                showToastNotification(data.message || (data.success ? '📩 تم إرسال طلبك بنجاح' : 'حدث خطأ'));
+            } catch (err) {
+                showToastNotification('خطأ في الاتصال بالخادم.');
+            } finally {
+                closeMaxModal();
+            }
+        }
+
+        // ---- تحديث مظهر زر الإرسال بناءً على الشخصية ----
+        function updateSendButtonBasedOnCharacter() {
+            const char = characters.find(c => c.callback_key === currentCharacter);
+            const welcomeBtn = document.getElementById('welcomeSendBtn');
+            const chatBtn = document.getElementById('sendBtn');
+            const isMax = char && char.is_max === true;
+
+            [welcomeBtn, chatBtn].forEach(btn => {
+                if (!btn) return;
+                btn.classList.remove('send-btn-normal', 'send-btn-max');
+                if (isMax) {
+                    btn.classList.add('send-btn-max');
+                    btn.innerHTML = '<i class="bi bi-lock-fill"></i>';
+                } else {
+                    btn.classList.add('send-btn-normal');
+                    btn.innerHTML = '<i class="bi bi-send"></i>';
+                }
+            });
+        }
+
+        // ---- شريط الشخصيات ----
+        function renderCharSelector() {
+            const selector = document.getElementById('charSelector');
+            if (!characters || characters.length === 0) {
+                selector.innerHTML = '<div class="char-selector-btn" style="cursor:default; color:rgba(255,255,255,0.5);">لا توجد شخصيات</div>';
+                return;
+            }
+            selector.innerHTML = characters.map(char => `
+                <div class="char-selector-btn ${char.callback_key === currentCharacter ? 'active' : ''}" data-key="${char.callback_key}" data-is-max="${char.is_max}">
+                    ${char.is_max ? '<span class="char-selector-badge-max">MAX</span>' : ''}
+                    <i class="bi bi-robot"></i>
+                    <span class="char-selector-name">${escapeHtml(char.name)}</span>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.char-selector-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = btn.getAttribute('data-key');
+                    if (key) selectCharacter(key);
+                });
+            });
+            
+            if (charScrollWrapper) {
+                const isOverflowing = selector.scrollWidth > charScrollWrapper.clientWidth;
+                if (!isOverflowing) {
+                    charScrollWrapper.style.display = 'flex';
+                    charScrollWrapper.style.justifyContent = 'center';
+                }
+            }
+        }
+
+        function updateWelcomeDisplay() {
+            const char = characters.find(c => c.callback_key === currentCharacter);
+            const logoContainer = document.getElementById('welcomeLogo');
+            const title = document.getElementById('welcomeTitle');
+            const subtitle = document.getElementById('welcomeSubtitle');
+            if (char) {
+                if (char.logo_url) {
+                    logoContainer.innerHTML = `<img src="${escapeHtml(char.logo_url)}" class="character-logo" alt="${escapeHtml(char.name)}">`;
+                } else {
+                    logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
+                }
+                title.textContent = char.name;
+                subtitle.textContent = char.description;
+            } else {
+                logoContainer.innerHTML = `<div class="sparkle-icon"><i class="bi bi-stars"></i></div>`;
+                title.textContent = "ابنِ أفكارك مع EVILE";
+                subtitle.textContent = "أضف شخصيات من لوحة التحكم";
+            }
+            updateSendButtonBasedOnCharacter();
+        }
+
+        function renderCharactersSheet() {
+            const list = document.getElementById('charactersList');
+            if (!characters || characters.length === 0) {
+                list.innerHTML = '<div class="char-list-item" style="justify-content:center;">لا توجد شخصيات بعد</div>';
+                return;
+            }
+            list.innerHTML = characters.map(char => `
+                <div class="char-list-item ${char.callback_key === currentCharacter ? 'active' : ''}" onclick="selectCharacter('${char.callback_key}')">
+                    <div class="char-list-icon"><i class="bi bi-robot"></i></div>
+                    <div class="char-list-info">
+                        <div class="char-list-name">${escapeHtml(char.name)} ${char.is_max ? '<span style="background:#ff4d4d;color:white;font-size:9px;padding:0 6px;border-radius:8px;margin-right:5px;">MAX</span>' : ''}</div>
+                        <div class="char-list-desc">${escapeHtml(char.description)}</div>
+                    </div>
+                    <div class="char-list-check"><i class="bi bi-check-lg"></i></div>
+                </div>
+            `).join('');
+        }
+
+        async function renderNotificationsSheet() {
+            try {
+                const res = await fetch('/api/notifications');
+                const notifications = await res.json();
+                const list = document.getElementById('notificationsList');
+                const badge = document.getElementById('notifBadge');
+                if (notifications.length === 0) {
+                    list.innerHTML = '<div class="notif-item" style="justify-content: center; text-align: center; color:rgba(255,255,255,0.5);">لا توجد إشعارات</div>';
+                    badge.style.display = 'none'; return;
+                }
+                badge.textContent = notifications.length; badge.style.display = 'flex';
+                list.innerHTML = notifications.map(notif => `
+                    <div class="notif-item">
+                        <div class="notif-icon"><i class="bi bi-bell"></i></div>
+                        <div class="notif-content">
+                            <div class="notif-title">${escapeHtml(notif.title)}</div>
+                            <div class="notif-text">${escapeHtml(notif.text)}</div>
+                            <div class="notif-time" style="font-size:10px; color:rgba(255,255,255,0.5);">${escapeHtml(notif.created_at)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { console.error('Failed to load notifications', err); }
+        }
+
+        function updateSendButton(isStreamingActive) {
+            const welcomeBtn = document.getElementById('welcomeSendBtn');
+            const chatBtn = document.getElementById('sendBtn');
+            [welcomeBtn, chatBtn].forEach(btn => {
+                if (!btn) return;
+                if (isStreamingActive) {
+                    btn.disabled = false;
+                    btn.classList.remove('send-btn-normal', 'send-btn-max');
+                    btn.classList.add('stop-btn');
+                    btn.innerHTML = '<i class="bi bi-stop-circle"></i>';
+                } else {
+                    btn.classList.remove('stop-btn');
+                    updateSendButtonBasedOnCharacter();
+                }
+            });
+        }
+
+        function stopStreaming() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+                isStreaming = false; isProcessing = false;
+                updateSendButton(false);
+                removeLoading();
+                addMessage('تم إيقاف توليد الرد.', false);
+            }
+        }
+
+        function showSplashError(msg) {
+            const errDiv = document.getElementById('splashError');
+            errDiv.textContent = msg; errDiv.style.display = 'block';
+            setTimeout(() => errDiv.style.display = 'none', 4000);
+        }
+
+        async function performSplashRegister() {
+            const id = document.getElementById('splashTelegramId').value.trim();
+            if (!/^\d+$/.test(id)) { showSplashError('المعرف يجب أن يحتوي على أرقام فقط'); return; }
+            const btn = document.getElementById('splashRegisterBtn');
+            btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>';
+            try {
+                let res = await fetch('/register', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: `telegram_id=${id}` });
+                let data = await res.json();
+                if (data.success) { location.reload(); } else { showSplashError(data.message || 'فشل التسجيل'); }
+            } catch (err) { showSplashError('خطأ في الاتصال'); } finally { btn.disabled = false; btn.innerHTML = '<i class="bi bi-arrow-left"></i>'; }
+        }
+
+        function addMessage(text, isOwn) {
+            const container = document.getElementById('messagesContainer');
+            const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            const div = document.createElement('div');
+            div.className = `message ${isOwn ? 'own' : ''}`;
+            div.innerHTML = `<div class="message-time">${time}</div><div class="message-content">${escapeHtml(text)}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showLoading() {
+            const container = document.getElementById('messagesContainer');
+            const div = document.createElement('div'); div.id = 'loadingMessage'; div.className = 'message';
+            div.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>';
+            container.appendChild(div); container.scrollTop = container.scrollHeight;
+        }
+
+        function removeLoading() {
+            const el = document.getElementById('loadingMessage'); if (el) el.remove();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m;
+            });
+        }
+
+        async function streamResponse(text) {
+            return new Promise((resolve, reject) => {
+                if (!isStreaming) return reject(new Error('Stream cancelled'));
+                const container = document.getElementById('messagesContainer');
+                const time = new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                const msgDiv = document.createElement('div'); msgDiv.className = 'message';
+                msgDiv.innerHTML = `<div class="message-time">${time}</div>`;
+                container.appendChild(msgDiv);
+                const bubble = document.createElement('div'); bubble.className = 'ai-bubble';
+                bubble.innerHTML = `<div class="ai-bubble-label"><i class="bi bi-cpu"></i> AI</div><div class="ai-bubble-text"></div><div class="ai-bubble-footer"><div class="ai-bubble-copy"><i class="bi bi-files"></i><span>نسخ</span></div></div>`;
+                msgDiv.appendChild(bubble);
+                const textEl = bubble.querySelector('.ai-bubble-text');
+                const copyBtn = bubble.querySelector('.ai-bubble-copy');
+                copyBtn.onclick = () => copyBubbleContent(copyBtn, textEl.innerText);
+                
+                let idx = 0;
+                const interval = setInterval(() => {
+                    if (!isStreaming) { clearInterval(interval); reject(new Error('Stream cancelled by user')); return; }
+                    if (idx < text.length) {
+                        textEl.textContent += text.charAt(idx);
+                        idx++; container.scrollTop = container.scrollHeight;
+                    } else {
+                        clearInterval(interval); resolve();
+                    }
+                }, 20);
+            });
+        }
+
+        function copyBubbleContent(button, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check-lg"></i><span>تم النسخ</span>';
+                setTimeout(() => { button.innerHTML = original; }, 1500);
+            }).catch(() => {
+                button.innerHTML = '<i class="bi bi-x-lg"></i><span>فشل</span>';
+                setTimeout(() => { button.innerHTML = '<i class="bi bi-files"></i><span>نسخ</span>'; }, 1500);
+            });
+        }
+
+        // ---- فحص الحظر قبل إرسال الرسالة ----
+        function checkIfAllowedToSend() {
+            const char = characters.find(c => c.callback_key === currentCharacter);
+            if (char && char.is_max === true) {
+                openMaxModal();
+                return false;
+            }
+            return true;
+        }
+
+        async function actuallySendMessage(message) {
+            if (isProcessing) return;
+            isProcessing = true; abortController = new AbortController(); isStreaming = true;
+            updateSendButton(true);
+
+            addMessage(message, true);
+            document.getElementById('welcomeInput').value = '';
+            document.getElementById('chatInput').value = '';
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ character: currentCharacter, message: message }), signal: abortController.signal });
+                if (!isStreaming) { removeLoading(); throw new Error('Stream cancelled'); }
+                
+                const reader = response.body.getReader(); const decoder = new TextDecoder(); let fullText = '';
+                while (true) { const { done, value } = await reader.read(); if (done) break; fullText += decoder.decode(value, { stream: true }); }
+                
+                removeLoading();
+                if (fullText) { await streamResponse(fullText); } else { addMessage('لم يتم استلام رد من الخادم.', false); }
+            } catch (err) {
+                removeLoading();
+                if (err.name !== 'AbortError' && err.message !== 'Stream cancelled') {
+                    addMessage('خطأ في الاتصال بالخادم.', false); console.error(err);
+                }
+            } finally {
+                isStreaming = false; isProcessing = false; abortController = null; updateSendButton(false);
+            }
+        }
+
+        function handleSendWelcome() {
+            if (isStreaming) { stopStreaming(); return; }
+            if (isProcessing) return;
+            if (!checkIfAllowedToSend()) return;
+            const input = document.getElementById('welcomeInput'); const msg = input.value.trim();
+            if (!msg) return;
+            if (isFirstMessage) { welcomeSection.classList.remove('active'); chatSection.classList.add('active'); isFirstMessage = false; }
+            actuallySendMessage(msg);
+        }
+
+        function handleSendChat() {
+            if (isStreaming) { stopStreaming(); return; }
+            if (isProcessing) return;
+            if (!checkIfAllowedToSend()) return;
+            const input = document.getElementById('chatInput'); const msg = input.value.trim();
+            if (!msg) return;
+            actuallySendMessage(msg);
+        }
+
+        // منع زر Enter من الإرسال
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('welcomeInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); } 
+            });
+            document.getElementById('chatInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); } 
+            });
         });
 
-        function updateDashboardStats() {
-            document.getElementById('channelCount').innerText = registeredChannel ? '1' : '0';
-            document.getElementById('postCount').innerText = registeredChannel ? '124' : '0';
+        function openCharactersSheet() { renderCharactersSheet(); document.getElementById('charactersSheet').classList.add('active'); }
+        async function openNotificationsSheet() { await renderNotificationsSheet(); document.getElementById('notificationsSheet').classList.add('active'); document.getElementById('notifBadge').style.display = 'none'; }
+        function closeSheet(id) { document.getElementById(id).classList.remove('active'); }
+        function closeSheetOnBackdrop(e, id) { if (e.target === e.currentTarget) closeSheet(id); }
+        function selectCharacter(key) {
+            currentCharacter = key;
+            renderCharSelector(); renderCharactersSheet(); updateWelcomeDisplay();
+            closeSheet('charactersSheet');
+            const char = characters.find(c => c.callback_key === key);
+            if (char) {
+                document.getElementById('welcomeInput').placeholder = `اكتب لـ ${char.name}...`;
+                document.getElementById('chatInput').placeholder = `اكتب لـ ${char.name}...`;
+            }
+        }
+        function goHome() {
+            chatSection.classList.remove('active'); welcomeSection.classList.add('active');
+            document.getElementById('messagesContainer').innerHTML = '';
+            isFirstMessage = true;
         }
 
-        // --- 5. تشغيل عند التحميل ---
-        window.onload = function() {
-            initCarousel();
-            updateIntegrationUI();
-            updateDashboardStats();
+        document.addEventListener('DOMContentLoaded', () => {
+            initScreen(); updateActiveUsers(); setInterval(updateActiveUsers, 30000);
+            renderCharSelector(); 
+            renderNotificationsSheet(); updateWelcomeDisplay();
             
-            const hash = window.location.hash.substring(1);
-            if(hash && document.getElementById(hash)) {
-                showPage(hash);
-            } else if(registeredChannel) {
-                showPage('page-index');
-            } else {
-                showPage('page-welcome');
-            }
-        };
+            document.getElementById('splashRegisterBtn').onclick = performSplashRegister;
+            document.getElementById('splashTelegramId').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSplashRegister();
+            });
+        });
     </script>
 </body>
 </html>
